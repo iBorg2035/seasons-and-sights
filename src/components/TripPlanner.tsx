@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import type { Continent, Region } from "@/types";
 import { REGIONS, getRegion } from "@/data/regions";
 import { SeasonStrip } from "@/components/SeasonStrip";
-import { buildBookingUrl } from "@/lib/booking";
+import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
+import { buildIcs } from "@/lib/ics";
 import {
   MONTH_NAMES,
   MONTH_NAMES_LONG,
@@ -14,6 +15,7 @@ import {
   datesForMonth,
   fitQuality,
   planItinerary,
+  type ItineraryLeg,
 } from "@/lib/season";
 
 const CONTINENT_ORDER: Continent[] = [
@@ -38,6 +40,26 @@ const DURATION_OPTIONS = [1, 2, 3];
 function fmtMonths(months: number[]): string {
   if (months.length === 1) return MONTH_NAMES[months[0] - 1];
   return `${MONTH_NAMES[months[0] - 1]}–${MONTH_NAMES[months[months.length - 1] - 1]}`;
+}
+
+/** Concrete back-to-back date ranges for the legs, anchored to startMonth. */
+function legDateRanges(
+  startMonth: number,
+  legs: ItineraryLeg[],
+  from = new Date()
+): { start: Date; end: Date }[] {
+  const year =
+    startMonth >= from.getMonth() + 1
+      ? from.getFullYear()
+      : from.getFullYear() + 1;
+  let cursor = new Date(year, startMonth - 1, 1);
+  return legs.map((l) => {
+    const start = new Date(cursor);
+    const end = new Date(cursor);
+    end.setMonth(end.getMonth() + l.months.length);
+    cursor = new Date(end);
+    return { start, end };
+  });
 }
 
 export function TripPlanner({
@@ -78,6 +100,26 @@ export function TripPlanner({
     } catch {
       // Clipboard may be blocked; ignore.
     }
+  };
+
+  const exportIcs = (legs: ItineraryLeg[]) => {
+    const ranges = legDateRanges(startMonth, legs);
+    const ics = buildIcs(
+      legs.map((l, i) => ({
+        title: `${l.region.name}, ${l.region.country}`,
+        start: ranges[i].start,
+        end: ranges[i].end,
+        description: `${fitQuality(l.fit).label} season`,
+      }))
+    );
+    const url = URL.createObjectURL(
+      new Blob([ics], { type: "text/calendar;charset=utf-8" })
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "seasons-and-sights-trip.ics";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const toggle = (id: string) =>
@@ -255,6 +297,12 @@ export function TripPlanner({
                 </p>
               )}
               <button
+                onClick={() => exportIcs(legs)}
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              >
+                Add to calendar
+              </button>
+              <button
                 onClick={copyLink}
                 className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
               >
@@ -326,15 +374,24 @@ export function TripPlanner({
                         />
                       </div>
 
-                      <a
-                        href={bookingUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 inline-block text-sm font-medium text-[#003580] hover:underline"
-                      >
-                        Search {MONTH_NAMES_LONG[leg.months[0] - 1]} stays on
-                        Booking.com ↗
-                      </a>
+                      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium">
+                        <a
+                          href={bookingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#003580] hover:underline"
+                        >
+                          {MONTH_NAMES_LONG[leg.months[0] - 1]} stays ↗
+                        </a>
+                        <a
+                          href={buildFlightsUrl(leg.region.bookingDest)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-600 hover:underline"
+                        >
+                          Find flights ↗
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </li>

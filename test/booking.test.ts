@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildBookingUrl } from "@/lib/booking";
+import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
 
 describe("buildBookingUrl", () => {
   it("builds a Booking.com search URL with the destination", () => {
@@ -47,5 +47,13 @@ describe("buildBookingUrl", () => {
       buildBookingUrl({ dest: "Cusco, Peru", aid: "1234567" })
     );
     expect(url.searchParams.get("aid")).toBe("1234567");
+  });
+});
+
+describe("buildFlightsUrl", () => {
+  it("builds a Google Flights search for the destination", () => {
+    const url = buildFlightsUrl("Cusco, Peru");
+    expect(url).toContain("google.com/travel/flights");
+    expect(url).toContain(encodeURIComponent("flights to Cusco, Peru"));
   });
 });

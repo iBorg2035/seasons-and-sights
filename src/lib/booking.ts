@@ -49,3 +49,10 @@ export function buildBookingUrl(params: BookingUrlParams): string {
 
   return `https://www.booking.com/searchresults.html?${search.toString()}`;
 }
+
+/** Google Flights search deep-link for a destination (e.g. "Cusco, Peru"). */
+export function buildFlightsUrl(dest: string): string {
+  return `https://www.google.com/travel/flights?q=${encodeURIComponent(
+    `flights to ${dest}`
+  )}`;
+}
