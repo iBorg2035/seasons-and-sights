@@ -184,6 +184,17 @@ describe("crowdForMonth", () => {
   });
 });
 
+describe("events", () => {
+  it("attaches marquee festivals to regions", () => {
+    const rio = getRegion("brazil-rio") as Region;
+    const carnival = rio.events?.find((e) => e.name === "Carnival");
+    expect(carnival?.month).toBe(2);
+
+    const kyoto = getRegion("japan-kyoto") as Region;
+    expect(kyoto.events?.some((e) => /cherry blossom/i.test(e.name))).toBe(true);
+  });
+});
+
 describe("wrapMonth", () => {
   it("wraps months across the year boundary", () => {
     expect(wrapMonth(13)).toBe(1);

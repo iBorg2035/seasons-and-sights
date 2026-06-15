@@ -38,6 +38,13 @@ export interface Sight {
   wiki?: string;
 }
 
+export interface Event {
+  name: string;
+  /** 1-based month the event falls in. */
+  month: number;
+  blurb: string;
+}
+
 export interface Region {
   /** Stable slug, e.g. "peru-cusco". */
   id: string;
@@ -52,4 +59,6 @@ export interface Region {
   climateBlurb: string;
   months: MonthlyClimate;
   sights: Sight[];
+  /** Marquee festivals / events, if any. */
+  events?: Event[];
 }

@@ -15,6 +15,7 @@ export function SeasonStrip({
   highlightMonth,
   selectedMonth,
   highlightMonths,
+  eventMonths,
   nowMonth,
   onSelectMonth,
   showLegend = true,
@@ -26,6 +27,8 @@ export function SeasonStrip({
   selectedMonth?: number;
   /** 1-based months to ring (e.g. a multi-month stay window). */
   highlightMonths?: number[];
+  /** 1-based months that have a festival/event, marked with a 🎉. */
+  eventMonths?: number[];
   /** 1-based current month, marked "now" when interactive. */
   nowMonth?: number;
   /** When provided, months render as buttons. */
@@ -34,6 +37,7 @@ export function SeasonStrip({
 }) {
   const ringMonth = selectedMonth ?? highlightMonth;
   const ringSet = highlightMonths ? new Set(highlightMonths) : null;
+  const eventSet = eventMonths ? new Set(eventMonths) : null;
   const interactive = Boolean(onSelectMonth);
 
   return (
@@ -82,7 +86,7 @@ export function SeasonStrip({
                 {label}
               </div>
               <div className="h-3 text-center text-[9px] font-semibold text-amber-600">
-                {isNow ? "now" : ""}
+                {isNow ? "now" : eventSet?.has(month) ? "🎉" : ""}
               </div>
             </div>
           );

@@ -9,6 +9,7 @@ import { ClimateChart } from "@/components/ClimateChart";
 import { BookingCard } from "@/components/BookingCard";
 import {
   CROWD_META,
+  MONTH_NAMES,
   MONTH_NAMES_LONG,
   bestMonths,
   climateForMonth,
@@ -37,6 +38,11 @@ export function RegionPlanner({
   const monthName = MONTH_NAMES_LONG[month - 1];
   const { checkin, checkout } = datesForMonth(month);
 
+  const events = region.events ?? [];
+  const eventMonths = events.map((e) => e.month);
+  const monthEvents = events.filter((e) => e.month === month);
+  const sortedEvents = [...events].sort((a, b) => a.month - b.month);
+
   return (
     <div>
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -55,6 +61,7 @@ export function RegionPlanner({
           region={region}
           selectedMonth={month}
           nowMonth={initialMonth}
+          eventMonths={eventMonths}
           onSelectMonth={setMonth}
         />
 
@@ -68,6 +75,11 @@ export function RegionPlanner({
             {crowdMeta.label}
           </span>
           {note && <span>{note}</span>}
+          {monthEvents.map((e) => (
+            <span key={e.name} className="font-medium text-fuchsia-600">
+              🎉 {e.name}
+            </span>
+          ))}
         </div>
 
         <div className="mt-5">
@@ -77,6 +89,38 @@ export function RegionPlanner({
           <CrowdStrip region={region} highlightMonths={[month]} />
         </div>
       </section>
+
+      {sortedEvents.length > 0 && (
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="mb-3 font-semibold text-slate-900">
+            Festivals &amp; events
+          </h2>
+          <ul className="divide-y divide-slate-100">
+            {sortedEvents.map((e) => {
+              const active = e.month === month;
+              return (
+                <li
+                  key={e.name}
+                  className={`flex gap-3 py-2.5 ${active ? "rounded-lg bg-fuchsia-50 px-2" : ""}`}
+                >
+                  <span className="w-9 shrink-0 text-sm font-semibold text-fuchsia-600">
+                    {MONTH_NAMES[e.month - 1]}
+                  </span>
+                  <div>
+                    <button
+                      onClick={() => setMonth(e.month)}
+                      className="text-left font-medium text-slate-900 hover:text-fuchsia-600"
+                    >
+                      {e.name}
+                    </button>
+                    <p className="text-sm text-slate-500">{e.blurb}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="mb-3 font-semibold text-slate-900">

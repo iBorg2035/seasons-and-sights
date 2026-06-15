@@ -629,6 +629,62 @@ export const REGIONS: Region[] = [
   },
 ];
 
+// Marquee festivals & events, keyed by region id and attached below. Kept
+// separate so the region definitions stay focused on climate + sights.
+const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
+  {
+    "thailand-chiangmai": [
+      { name: "Yi Peng & Loy Krathong", month: 11, blurb: "Thousands of paper lanterns released into the night sky." },
+      { name: "Songkran", month: 4, blurb: "Thai New Year — the nationwide water-fight festival." },
+    ],
+    "thailand-bangkok": [
+      { name: "Songkran", month: 4, blurb: "Citywide water fights for Thai New Year." },
+      { name: "Loy Krathong", month: 11, blurb: "Floating candle-lit offerings on the rivers." },
+    ],
+    "indonesia-bali": [
+      { name: "Nyepi (Day of Silence)", month: 3, blurb: "The island shuts down completely for Balinese New Year." },
+    ],
+    "vietnam-hanoi": [
+      { name: "Tết (Lunar New Year)", month: 2, blurb: "Vietnam's biggest holiday; much of the country closes." },
+    ],
+    "cambodia-siemreap": [
+      { name: "Water Festival (Bon Om Touk)", month: 11, blurb: "Boat races celebrating the reversing Tonlé Sap." },
+      { name: "Khmer New Year", month: 4, blurb: "Three days of temple visits and games." },
+    ],
+    "peru-cusco": [
+      { name: "Inti Raymi", month: 6, blurb: "Grand Inca festival of the sun at Sacsayhuamán." },
+    ],
+    "brazil-rio": [
+      { name: "Carnival", month: 2, blurb: "The world's biggest street party, citywide." },
+      { name: "Réveillon (New Year's Eve)", month: 12, blurb: "Millions in white on Copacabana for the fireworks." },
+    ],
+    "japan-kyoto": [
+      { name: "Cherry blossom (hanami)", month: 4, blurb: "Sakura season — picnics under the blossoms." },
+      { name: "Gion Matsuri", month: 7, blurb: "Kyoto's grand month-long float procession." },
+      { name: "Autumn foliage (kōyō)", month: 11, blurb: "Temples framed by blazing maple leaves." },
+    ],
+    "nepal-kathmandu": [
+      { name: "Dashain", month: 10, blurb: "Nepal's longest, most important Hindu festival." },
+      { name: "Tihar (Diwali)", month: 11, blurb: "The festival of lights across the valley." },
+      { name: "Holi", month: 3, blurb: "The riotous festival of colours." },
+    ],
+    "sri-lanka-south": [
+      { name: "Esala Perahera", month: 8, blurb: "Kandy's spectacular procession of caparisoned elephants." },
+    ],
+    "colombia-cartagena": [
+      { name: "Hay Festival", month: 1, blurb: "Major literature and arts festival in the old city." },
+      { name: "Independence Festival", month: 11, blurb: "Cartagena's raucous music-filled street celebration." },
+    ],
+    "montenegro-kotor": [
+      { name: "Kotor Carnival", month: 2, blurb: "Masked winter carnival in the walled town." },
+      { name: "Boka Night", month: 8, blurb: "Decorated boats and fireworks across the bay." },
+    ],
+  };
+
+for (const region of REGIONS) {
+  if (EVENTS[region.id]) region.events = EVENTS[region.id];
+}
+
 export function getRegion(id: string): Region | undefined {
   return REGIONS.find((r) => r.id === id);
 }
