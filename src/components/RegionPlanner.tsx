@@ -4,11 +4,15 @@ import { useState, type ReactNode } from "react";
 import type { Region } from "@/types";
 import { SeasonStrip } from "@/components/SeasonStrip";
 import { SeasonBadge } from "@/components/SeasonBadge";
+import { CrowdStrip } from "@/components/CrowdStrip";
+import { ClimateChart } from "@/components/ClimateChart";
 import { BookingCard } from "@/components/BookingCard";
 import {
+  CROWD_META,
   MONTH_NAMES_LONG,
   bestMonths,
   climateForMonth,
+  crowdForMonth,
   datesForMonth,
 } from "@/lib/season";
 
@@ -29,6 +33,7 @@ export function RegionPlanner({
   const [month, setMonth] = useState(initialMonth);
   const isNow = month === initialMonth;
   const { season, note } = climateForMonth(region, month);
+  const crowdMeta = CROWD_META[crowdForMonth(region, month)];
   const monthName = MONTH_NAMES_LONG[month - 1];
   const { checkin, checkout } = datesForMonth(month);
 
@@ -56,8 +61,28 @@ export function RegionPlanner({
         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
           <span className="font-semibold text-slate-900">{monthName}:</span>
           <SeasonBadge season={season} suffix={isNow ? "now" : undefined} />
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${crowdMeta.chip}`}
+          >
+            <span className={`h-2 w-2 rounded-full ${crowdMeta.dot}`} />
+            {crowdMeta.label}
+          </span>
           {note && <span>{note}</span>}
         </div>
+
+        <div className="mt-5">
+          <p className="mb-2 text-sm font-medium text-slate-700">
+            Crowds &amp; prices
+          </p>
+          <CrowdStrip region={region} highlightMonths={[month]} />
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-3 font-semibold text-slate-900">
+          Historical climate
+        </h2>
+        <ClimateChart lat={region.lat} lng={region.lng} />
       </section>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
