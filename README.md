@@ -29,6 +29,30 @@ Optional: copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_BOOKING_AID`
 to your Booking.com affiliate id so accommodation links are attributed for
 commission. Links work without it.
 
+## Deploy (Vercel)
+
+The app is a standard Next.js project with no database and no required secrets,
+so it deploys to Vercel as-is.
+
+1. **Create an empty GitHub repo** at https://github.com/new (no README or
+   `.gitignore` — they already exist here).
+2. **Push:**
+   ```bash
+   git remote add origin https://github.com/<your-username>/seasons-and-sights.git
+   git push -u origin main
+   ```
+3. **Import to Vercel** at https://vercel.com/new → select the repo. Vercel
+   auto-detects Next.js; no build settings to change. Click **Deploy**. Every
+   push to `main` then redeploys automatically.
+
+**Environment variables:** none required. Optionally set `NEXT_PUBLIC_BOOKING_AID`
+in the Vercel project settings for affiliate attribution.
+
+**Before real traffic:** swap the raw OpenStreetMap tiles in
+[`RegionMapInner.tsx`](src/components/RegionMapInner.tsx) for a keyed tile
+provider (e.g. MapTiler or Stadia free tier) — OSM's public tiles are fine for
+development but not meant for production load.
+
 ## How it works
 
 - **Season data** is curated, accurate climatology in [`src/data/regions.ts`](src/data/regions.ts):
@@ -45,7 +69,9 @@ commission. Links work without it.
 
 - `/` — **Explore**: browse destinations, filter by region or "good to visit now".
 - `/when-to-go` — **Season planner**: pick a month, see where it's dry vs. wet
-  across both continents.
+  across all regions.
+- `/planner` — **Trip planner**: pick destinations + a start month + time per
+  stop; it sequences each stop into its dry/shoulder window (`planItinerary`).
 - `/regions/[id]` — **Destination**: full season calendar, sights map, live
   weather, and a season-aware Booking.com link.
 
