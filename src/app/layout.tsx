@@ -45,6 +45,18 @@ export default function RootLayout({
               >
                 Planner
               </Link>
+              <Link
+                href="/festivals"
+                className="rounded-lg px-3 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                Festivals
+              </Link>
+              <Link
+                href="/surprise"
+                className="rounded-lg px-3 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                Surprise
+              </Link>
             </nav>
           </div>
         </header>
