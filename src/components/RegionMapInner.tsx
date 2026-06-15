@@ -11,6 +11,7 @@ import {
   useMap,
 } from "react-leaflet";
 import type { Region, SightType } from "@/types";
+import { TILE_ATTRIBUTION, TILE_URL } from "@/lib/map";
 
 const TYPE_COLORS: Record<SightType, string> = {
   nature: "#10b981",
@@ -19,16 +20,6 @@ const TYPE_COLORS: Record<SightType, string> = {
   beach: "#06b6d4",
   wildlife: "#ec4899",
 };
-
-// Configurable tile source. Defaults to OpenStreetMap (fine for development);
-// set NEXT_PUBLIC_MAP_TILE_URL to a keyed provider (MapTiler, Stadia, Carto…)
-// for production traffic, since OSM's public tiles aren't meant for load.
-const TILE_URL =
-  process.env.NEXT_PUBLIC_MAP_TILE_URL ||
-  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-const TILE_ATTRIBUTION =
-  process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION ||
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
