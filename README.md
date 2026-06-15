@@ -1,12 +1,11 @@
 # Seasons & Sights
 
-A travel app for **Southeast Asia**, **South America**, and the **Mediterranean
-Balkans** built around the one question that makes or breaks a trip in these
-regions: *is it the dry or wet season here, right now?* (In the Balkans the
-pattern simply inverts — dry summers, wet winters.) Each destination shows a
-12-month dry/wet calendar,
-local sights on a map, live weather, and a Booking.com link with dates
-pre-set to the best season.
+A travel app for **25 destinations across Asia, South America, Europe, and
+Africa**, built around the one question that makes or breaks a trip: *is it the
+dry or wet season here, right now — and is it worth the crowds?* Each
+destination shows a 12-month dry/wet calendar, a matching crowds/price strip,
+real historical climate data, local sights on a map, live weather, and a
+Booking.com link with dates pre-set to the best season.
 
 ## Stack
 
@@ -48,10 +47,11 @@ so it deploys to Vercel as-is.
 **Environment variables:** none required. Optionally set `NEXT_PUBLIC_BOOKING_AID`
 in the Vercel project settings for affiliate attribution.
 
-**Before real traffic:** swap the raw OpenStreetMap tiles in
-[`RegionMapInner.tsx`](src/components/RegionMapInner.tsx) for a keyed tile
-provider (e.g. MapTiler or Stadia free tier) — OSM's public tiles are fine for
-development but not meant for production load.
+**Before real traffic:** the map defaults to OpenStreetMap's public tiles, which
+are fine for development but not meant for production load. Point it at a keyed
+provider (MapTiler / Stadia / Carto — all have free tiers) by setting
+`NEXT_PUBLIC_MAP_TILE_URL` and `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION` in your Vercel
+env (see [`.env.example`](.env.example)). No code change needed.
 
 ## How it works
 
@@ -59,21 +59,29 @@ development but not meant for production load.
   each region has a 12-month `dry`/`wet`/`shoulder` calendar with notes (peak
   trekking, typhoon risk, the Uyuni mirror effect, etc.). This makes the app
   instant and fully functional offline.
-- **Live weather** ([`src/lib/weather.ts`](src/lib/weather.ts)) is a non-blocking
-  enhancement fetched through `/api/weather` and cached for an hour.
+- **Crowds & prices** are a second seasonal dimension: `crowdForMonth`
+  ([`src/lib/season.ts`](src/lib/season.ts)) derives a peak/moderate/quiet level
+  from the season, with per-month overrides for divergences (Rio's Carnival,
+  Japan's Obon, holiday spikes).
+- **Live weather** ([`src/lib/weather.ts`](src/lib/weather.ts)) and **historical
+  climate normals** (2019–2023 avg rain + temperature) are fetched through
+  `/api/weather` and `/api/climate` and cached; both are non-blocking
+  enhancements over the curated data.
 - **Booking links** ([`src/lib/booking.ts`](src/lib/booking.ts)) are prefilled
   Booking.com search deep-links — no partner API required. Check-in dates default
-  to the region's next best season via `suggestTravelDates`.
+  to the region's next best season (15-night stay) via `suggestTravelDates`.
 
 ## Pages
 
 - `/` — **Explore**: browse destinations, filter by region or "good to visit now".
 - `/when-to-go` — **Season planner**: pick a month, see where it's dry vs. wet
   across all regions.
-- `/planner` — **Trip planner**: pick destinations + a start month + time per
-  stop; it sequences each stop into its dry/shoulder window (`planItinerary`).
-- `/regions/[id]` — **Destination**: full season calendar, sights map, live
-  weather, and a season-aware Booking.com link.
+- `/planner` — **Trip planner**: pick destinations + a start month + a duration
+  per stop; it sequences the stops so each lands in its dry/shoulder window
+  (`planItinerary`). Plans are encoded in the URL, so they're shareable.
+- `/regions/[id]` — **Destination**: season calendar, crowds/price strip,
+  historical climate chart, sights map, live weather, and a season-aware
+  Booking.com link.
 
 ## Adding a destination
 

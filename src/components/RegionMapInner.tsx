@@ -20,6 +20,16 @@ const TYPE_COLORS: Record<SightType, string> = {
   wildlife: "#ec4899",
 };
 
+// Configurable tile source. Defaults to OpenStreetMap (fine for development);
+// set NEXT_PUBLIC_MAP_TILE_URL to a keyed provider (MapTiler, Stadia, Carto…)
+// for production traffic, since OSM's public tiles aren't meant for load.
+const TILE_URL =
+  process.env.NEXT_PUBLIC_MAP_TILE_URL ||
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const TILE_ATTRIBUTION =
+  process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION ||
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
   useEffect(() => {
@@ -43,10 +53,7 @@ export default function RegionMapInner({ region }: { region: Region }) {
       scrollWheelZoom={false}
       style={{ height: "100%", width: "100%" }}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
       {region.sights.map((sight) => (
         <CircleMarker
           key={sight.name}
