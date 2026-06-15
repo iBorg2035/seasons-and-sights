@@ -9,6 +9,7 @@ import {
   datesForMonth,
   planItinerary,
   wrapMonth,
+  crowdForMonth,
 } from "@/lib/season";
 import { REGIONS } from "@/data/regions";
 import type { Region } from "@/types";
@@ -66,7 +67,7 @@ describe("suggestTravelDates", () => {
     const from = new Date(2026, 5, 1); // June, Cusco dry
     const { checkin, checkout } = suggestTravelDates(cusco, from);
     expect(checkin).toBe("2026-06-15");
-    expect(checkout).toBe("2026-06-20");
+    expect(checkout).toBe("2026-06-30"); // 15-day stay
   });
 
   it("jumps to the next dry month when currently wet", () => {
@@ -88,7 +89,7 @@ describe("datesForMonth", () => {
     const from = new Date(2026, 5, 1); // June
     const { checkin, checkout } = datesForMonth(6, from);
     expect(checkin).toBe("2026-06-15");
-    expect(checkout).toBe("2026-06-20");
+    expect(checkout).toBe("2026-06-30"); // 15-day stay
   });
 
   it("uses this year for a later month", () => {
@@ -103,18 +104,22 @@ describe("datesForMonth", () => {
 });
 
 describe("planItinerary", () => {
-  const pick = (...ids: string[]) =>
-    ids.map((id) => REGIONS.find((r) => r.id === id)!);
+  const stops = (durationMonths: number, ...ids: string[]) =>
+    ids.map((id) => ({
+      region: REGIONS.find((r) => r.id === id)!,
+      durationMonths,
+    }));
 
   it("sequences Brazil → SE Asia into dry/shoulder windows from September", () => {
-    const trip = pick(
+    // Two months per stop, deliberately shuffled input order.
+    const trip = stops(
+      2,
       "vietnam-hoian",
       "brazil-rio",
       "philippines-palawan",
       "thailand-bangkok"
     );
-    // Start in September, two months per stop.
-    const legs = planItinerary(trip, 9, 2);
+    const legs = planItinerary(trip, 9);
 
     // Order should follow the seasons regardless of input order.
     expect(legs.map((l) => l.region.id)).toEqual([
@@ -130,8 +135,52 @@ describe("planItinerary", () => {
     expect(legs.every((l) => l.fit >= 50)).toBe(true);
   });
 
+  it("respects per-stop durations when laying out the timeline", () => {
+    const trip = [
+      { region: REGIONS.find((r) => r.id === "brazil-rio")!, durationMonths: 1 },
+      {
+        region: REGIONS.find((r) => r.id === "thailand-bangkok")!,
+        durationMonths: 2,
+      },
+    ];
+    const legs = planItinerary(trip, 9); // September
+    expect(legs.map((l) => l.region.id)).toEqual([
+      "brazil-rio",
+      "thailand-bangkok",
+    ]);
+    expect(legs[0].months).toEqual([9]); // Rio: 1 month (Sep)
+    expect(legs[1].months).toEqual([10, 11]); // Bangkok: 2 months (Oct–Nov)
+  });
+
+  it("handles a 3-month stay across the year boundary", () => {
+    const trip = [
+      {
+        region: REGIONS.find((r) => r.id === "thailand-bangkok")!,
+        durationMonths: 3,
+      },
+    ];
+    const legs = planItinerary(trip, 11); // November
+    expect(legs[0].months).toEqual([11, 12, 1]); // Nov–Dec–Jan, all dry
+    expect(legs[0].fit).toBe(100);
+  });
+
   it("returns an empty plan for no destinations", () => {
-    expect(planItinerary([], 1, 2)).toEqual([]);
+    expect(planItinerary([], 1)).toEqual([]);
+  });
+});
+
+describe("crowdForMonth", () => {
+  it("derives crowds from the season by default", () => {
+    expect(crowdForMonth(cusco, 6)).toBe("high"); // dry → busy
+    expect(crowdForMonth(cusco, 1)).toBe("low"); // wet → quiet
+    expect(crowdForMonth(cusco, 4)).toBe("mid"); // shoulder → moderate
+  });
+
+  it("honors explicit overrides that diverge from the weather", () => {
+    const rio = getRegion("brazil-rio") as Region;
+    // February is wet but Carnival packs the city.
+    expect(climateForMonth(rio, 2).season).toBe("wet");
+    expect(crowdForMonth(rio, 2)).toBe("high");
   });
 });
 

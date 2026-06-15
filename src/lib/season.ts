@@ -1,4 +1,4 @@
-import type { Region, Season, MonthClimate } from "@/types";
+import type { Region, Season, MonthClimate, CrowdLevel } from "@/types";
 
 /** Normalize any integer to a 1-12 month, wrapping across the year. */
 export function wrapMonth(month: number): number {
@@ -42,6 +42,46 @@ export const SEASON_META: Record<
     chip: "bg-emerald-100 text-emerald-800 border-emerald-200",
   },
 };
+
+/** Display metadata for each crowd/price level. */
+export const CROWD_META: Record<
+  CrowdLevel,
+  { label: string; short: string; dot: string; chip: string }
+> = {
+  high: {
+    label: "Busy & pricey",
+    short: "Peak",
+    dot: "bg-rose-500",
+    chip: "bg-rose-100 text-rose-800 border-rose-200",
+  },
+  mid: {
+    label: "Moderate",
+    short: "Mid",
+    dot: "bg-violet-400",
+    chip: "bg-violet-100 text-violet-800 border-violet-200",
+  },
+  low: {
+    label: "Quiet & cheap",
+    short: "Low",
+    dot: "bg-teal-500",
+    chip: "bg-teal-100 text-teal-800 border-teal-200",
+  },
+};
+
+const CROWD_BY_SEASON: Record<Season, CrowdLevel> = {
+  dry: "high",
+  shoulder: "mid",
+  wet: "low",
+};
+
+/**
+ * Crowd/price level for a month: the region's explicit override if set,
+ * otherwise derived from the season (dry→busy, shoulder→moderate, wet→quiet).
+ */
+export function crowdForMonth(region: Region, month: number): CrowdLevel {
+  const entry = region.months[month];
+  return entry?.crowd ?? CROWD_BY_SEASON[entry?.season ?? "shoulder"];
+}
 
 /** 1-based month (1=Jan) for a Date, defaulting to now. */
 export function monthOf(date: Date = new Date()): number {
@@ -152,7 +192,7 @@ function toISODate(d: Date): string {
 export function suggestTravelDates(
   region: Region,
   from: Date = new Date(),
-  nights = 5
+  nights = 15
 ): { checkin: string; checkout: string } {
   const currentSeason = getCurrentSeason(region, from).season;
   let checkin: Date;
@@ -185,62 +225,108 @@ export interface ItineraryLeg {
   fit: number;
 }
 
+export interface PlannerStop {
+  region: Region;
+  /** How many whole months to stay. */
+  durationMonths: number;
+}
+
+/** The 1-based months a stay covers, wrapping the year. */
+function stayMonths(start: number, duration: number): number[] {
+  return Array.from({ length: duration }, (_, k) => wrapMonth(start + k));
+}
+
+/** Average season fit over a stay's months. */
+function stayFit(region: Region, start: number, duration: number): number {
+  const months = stayMonths(start, duration);
+  return (
+    months.reduce((sum, m) => sum + seasonFitScore(region, m), 0) /
+    months.length
+  );
+}
+
+function range(n: number): number[] {
+  return Array.from({ length: n }, (_, i) => i);
+}
+
+/** All permutations of `items`, identity first (so ties favour input order). */
+function permutations(items: number[]): number[][] {
+  if (items.length <= 1) return [items];
+  const result: number[][] = [];
+  for (let i = 0; i < items.length; i++) {
+    const rest = [...items.slice(0, i), ...items.slice(i + 1)];
+    for (const tail of permutations(rest)) result.push([items[i], ...tail]);
+  }
+  return result;
+}
+
 /**
- * Sequence destinations into back-to-back stays starting from `startMonth`,
- * assigning each to the time slot where its season fit is highest. Each stay
- * occupies `monthsPerStop` whole months. Greedy max-fit assignment over the
- * region × slot grid — good and deterministic for the handful of stops a trip
- * usually has.
+ * Sequence stops — each with its own duration — into back-to-back stays from
+ * `startMonth`, ordered so every stop lands in the best season possible. Since
+ * durations vary, a stop's months depend on the order, so this is a sequencing
+ * problem: solved exactly for up to 8 stops, greedily beyond that.
  */
 export function planItinerary(
-  regions: Region[],
-  startMonth: number,
-  monthsPerStop: number
+  stops: PlannerStop[],
+  startMonth: number
 ): ItineraryLeg[] {
-  const n = regions.length;
+  const n = stops.length;
   if (n === 0) return [];
 
-  const slotMonths = (slot: number): number[] =>
-    Array.from({ length: monthsPerStop }, (_, k) =>
-      wrapMonth(startMonth + slot * monthsPerStop + k)
-    );
-
-  const slotFit = (region: Region, slot: number): number => {
-    const months = slotMonths(slot);
-    return (
-      months.reduce((sum, m) => sum + seasonFitScore(region, m), 0) /
-      months.length
-    );
+  const buildLegs = (
+    order: number[]
+  ): { legs: ItineraryLeg[]; total: number } => {
+    const legs: ItineraryLeg[] = [];
+    let cursor = startMonth;
+    let total = 0;
+    for (let pos = 0; pos < order.length; pos++) {
+      const stop = stops[order[pos]];
+      const fit = stayFit(stop.region, cursor, stop.durationMonths);
+      legs.push({
+        region: stop.region,
+        position: pos,
+        months: stayMonths(cursor, stop.durationMonths),
+        fit,
+      });
+      total += fit;
+      cursor += stop.durationMonths;
+    }
+    return { legs, total };
   };
 
-  const candidates: { region: number; slot: number; score: number }[] = [];
-  for (let r = 0; r < n; r++) {
-    for (let slot = 0; slot < n; slot++) {
-      candidates.push({ region: r, slot, score: slotFit(regions[r], slot) });
+  if (n <= 8) {
+    let best: ItineraryLeg[] = [];
+    let bestTotal = -Infinity;
+    for (const order of permutations(range(n))) {
+      const { legs, total } = buildLegs(order);
+      if (total > bestTotal) {
+        bestTotal = total;
+        best = legs;
+      }
     }
-  }
-  // Highest fit first; ties resolve to earlier slots, then input order.
-  candidates.sort(
-    (a, b) => b.score - a.score || a.slot - b.slot || a.region - b.region
-  );
-
-  const regionTaken = new Array(n).fill(false);
-  const slotToRegion = new Array<number>(n).fill(-1);
-  let placed = 0;
-  for (const c of candidates) {
-    if (placed === n) break;
-    if (regionTaken[c.region] || slotToRegion[c.slot] !== -1) continue;
-    slotToRegion[c.slot] = c.region;
-    regionTaken[c.region] = true;
-    placed++;
+    return best;
   }
 
-  return slotToRegion.map((r, slot) => ({
-    region: regions[r],
-    position: slot,
-    months: slotMonths(slot),
-    fit: slotFit(regions[r], slot),
-  }));
+  // Greedy fallback for large selections: at each step, go where it's best next.
+  const remaining = range(n);
+  const order: number[] = [];
+  let cursor = startMonth;
+  while (remaining.length) {
+    let pick = 0;
+    let pickFit = -Infinity;
+    for (let j = 0; j < remaining.length; j++) {
+      const stop = stops[remaining[j]];
+      const fit = stayFit(stop.region, cursor, stop.durationMonths);
+      if (fit > pickFit) {
+        pickFit = fit;
+        pick = j;
+      }
+    }
+    const chosen = remaining.splice(pick, 1)[0];
+    order.push(chosen);
+    cursor += stops[chosen].durationMonths;
+  }
+  return buildLegs(order).legs;
 }
 
 /** Map an average fit score to a season-like quality bucket for display. */
@@ -258,7 +344,7 @@ export function fitQuality(fit: number): { season: Season; label: string } {
 export function datesForMonth(
   month: number,
   from: Date = new Date(),
-  nights = 5
+  nights = 15
 ): { checkin: string; checkout: string } {
   const current = monthOf(from);
   let checkin: Date;

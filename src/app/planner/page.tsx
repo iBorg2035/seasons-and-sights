@@ -1,4 +1,5 @@
 import { TripPlanner } from "@/components/TripPlanner";
+import { getRegion } from "@/data/regions";
 import { monthOf } from "@/lib/season";
 
 export const metadata = {
@@ -7,7 +8,34 @@ export const metadata = {
     "Pick destinations and a start month; get a route that sequences each stop into its dry or shoulder season.",
 };
 
-export default function PlannerPage() {
+function parseStops(raw?: string): { id: string; duration: number }[] {
+  if (!raw) return [];
+  const seen = new Set<string>();
+  const out: { id: string; duration: number }[] = [];
+  for (const part of raw.split(",")) {
+    const [id, durStr] = part.split(":");
+    if (!id || seen.has(id) || !getRegion(id)) continue;
+    let d = Math.round(Number(durStr));
+    if (!Number.isFinite(d) || d < 1) d = 2;
+    if (d > 3) d = 3;
+    seen.add(id);
+    out.push({ id, duration: d });
+  }
+  return out;
+}
+
+function parseStart(raw?: string): number | null {
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= 12 ? n : null;
+}
+
+export default async function PlannerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ start?: string; stops?: string }>;
+}) {
+  const sp = await searchParams;
+
   return (
     <div>
       <section className="mb-6">
@@ -21,7 +49,10 @@ export default function PlannerPage() {
         </p>
       </section>
 
-      <TripPlanner initialMonth={monthOf()} />
+      <TripPlanner
+        initialMonth={parseStart(sp.start) ?? monthOf()}
+        initialStops={parseStops(sp.stops)}
+      />
     </div>
   );
 }
