@@ -7,6 +7,9 @@ export const metadata = {
     "A month-by-month calendar of marquee festivals across Asia, South America, Europe, and Africa — from Carnival to cherry blossom to Diwali.",
 };
 
+// Regenerate daily so the "this month" highlight stays current.
+export const revalidate = 86400;
+
 export default function FestivalsPage() {
   return (
     <div>

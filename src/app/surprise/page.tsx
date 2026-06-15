@@ -7,6 +7,9 @@ export const metadata = {
     "Tell us when you're free and we'll pick a destination that's in its best season right then.",
 };
 
+// Regenerate daily so the default month stays current.
+export const revalidate = 86400;
+
 export default function SurprisePage() {
   return (
     <div>

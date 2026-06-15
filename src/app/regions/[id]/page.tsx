@@ -9,6 +9,10 @@ import { RegionMap } from "@/components/RegionMap";
 import { RegionPlanner } from "@/components/RegionPlanner";
 import { getCurrentSeason, monthOf } from "@/lib/season";
 
+// Regenerate each page in the background ~daily so the "current season"
+// badge and "now" marker stay accurate as the calendar month rolls over.
+export const revalidate = 86400;
+
 export function generateStaticParams() {
   return REGIONS.map((r) => ({ id: r.id }));
 }
