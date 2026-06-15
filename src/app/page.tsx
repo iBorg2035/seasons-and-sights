@@ -8,10 +8,10 @@ export default function HomePage() {
           Travel in the right season.
         </h1>
         <p className="mt-3 max-w-2xl text-slate-600">
-          Across Southeast Asia, South America, and the Mediterranean Balkans,
-          the season makes or breaks a trip — monsoon downpours, the perfect
-          mirror across a salt flat, or a rain-soaked Adriatic coast out of
-          season. Browse destinations by season, see local sights, and book your
+          From Southeast Asian monsoons to the Andes, the Himalaya, and the
+          Mediterranean, the season makes or breaks a trip — flooded trails, the
+          perfect mirror across a salt flat, or a typhoon-lashed coast. Browse
+          destinations by season and crowds, see local sights, and book your
           stay for the right time of year.
         </p>
       </section>

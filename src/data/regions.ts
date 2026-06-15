@@ -1,4 +1,10 @@
-import type { MonthlyClimate, Region, Season } from "@/types";
+import type {
+  CrowdLevel,
+  MonthClimate,
+  MonthlyClimate,
+  Region,
+  Season,
+} from "@/types";
 
 const SEASON_BY_CHAR: Record<string, Season> = {
   D: "dry",
@@ -8,16 +14,21 @@ const SEASON_BY_CHAR: Record<string, Season> = {
 
 /**
  * Compact 12-char climate pattern (Jan→Dec): D=dry, W=wet, S=shoulder.
- * `notes` is keyed by 1-based month number.
+ * `notes` and `crowds` are keyed by 1-based month number; `crowds` overrides the
+ * crowd level only where it diverges from the weather (e.g. Carnival, holidays).
  */
 function climate(
   pattern: string,
-  notes: Record<number, string> = {}
+  notes: Record<number, string> = {},
+  crowds: Record<number, CrowdLevel> = {}
 ): MonthlyClimate {
   const months: MonthlyClimate = {};
   for (let i = 0; i < 12; i++) {
-    const season = SEASON_BY_CHAR[pattern[i]];
-    months[i + 1] = notes[i + 1] ? { season, note: notes[i + 1] } : { season };
+    const m = i + 1;
+    const entry: MonthClimate = { season: SEASON_BY_CHAR[pattern[i]] };
+    if (notes[m]) entry.note = notes[m];
+    if (crowds[m]) entry.crowd = crowds[m];
+    months[m] = entry;
   }
   return months;
 }
@@ -159,6 +170,52 @@ export const REGIONS: Region[] = [
     ],
   },
   {
+    id: "vietnam-hanoi",
+    name: "Hanoi & the North",
+    country: "Vietnam",
+    continent: "Southeast Asia",
+    lat: 21.0278,
+    lng: 105.8342,
+    bookingDest: "Hanoi, Vietnam",
+    climateBlurb:
+      "Northern Vietnam has a cool, mostly dry winter (Oct–Apr, with a misty drizzle in Feb–Mar) and a hot, wet summer May–Sep. October–November and April are the sweet spots.",
+    months: climate("DSSDWWWWWDDD", {
+      2: "cool drizzle (crachin)",
+      3: "cool drizzle (crachin)",
+      7: "hot and wettest",
+      8: "hot and wettest",
+      10: "ideal — cool and dry",
+    }),
+    sights: [
+      { name: "Hoan Kiem Lake & Old Quarter", type: "city", lat: 21.0287, lng: 105.8525, blurb: "Lake-side heart of Hanoi's tangled old town." },
+      { name: "Ha Long Bay", type: "nature", lat: 20.9101, lng: 107.1839, blurb: "Thousands of limestone karsts in an emerald sea." },
+      { name: "Sapa rice terraces", type: "nature", lat: 22.3364, lng: 103.8438, blurb: "Tiered hill-tribe valleys in the far north." },
+      { name: "Temple of Literature", type: "culture", lat: 21.0287, lng: 105.8355, blurb: "Vietnam's first university, founded 1070." },
+    ],
+  },
+  {
+    id: "vietnam-hcmc",
+    name: "Ho Chi Minh City & Mekong",
+    country: "Vietnam",
+    continent: "Southeast Asia",
+    lat: 10.8231,
+    lng: 106.6297,
+    bookingDest: "Ho Chi Minh City, Vietnam",
+    climateBlurb:
+      "The tropical south is straightforward: dry December–April (hottest in April) and a wet southwest monsoon May–November with short, heavy afternoon downpours.",
+    months: climate("DDDSWWWWWWSD", {
+      4: "hottest month",
+      9: "wettest",
+      10: "wettest",
+    }),
+    sights: [
+      { name: "War Remnants Museum", type: "culture", lat: 10.7797, lng: 106.6922, blurb: "Unflinching museum of the American War." },
+      { name: "Cu Chi Tunnels", type: "culture", lat: 11.1417, lng: 106.4642, blurb: "Vast Viet Cong tunnel network outside the city." },
+      { name: "Mekong Delta", type: "nature", lat: 10.0341, lng: 105.7882, blurb: "Floating markets and orchards on the river maze." },
+      { name: "Bến Thành Market", type: "city", lat: 10.7723, lng: 106.698, blurb: "Landmark market at the city's bustling core." },
+    ],
+  },
+  {
     id: "cambodia-siemreap",
     name: "Siem Reap & Angkor",
     country: "Cambodia",
@@ -285,11 +342,16 @@ export const REGIONS: Region[] = [
     bookingDest: "Rio de Janeiro, Brazil",
     climateBlurb:
       "Hot, humid and rainy in the southern summer December–March (Carnival season); mildest and driest in winter June–August.",
-    months: climate("WWWSSDDDSSWW", {
-      2: "Carnival — hot, humid, packed",
-      7: "mildest and driest",
-      12: "hot; summer rains begin",
-    }),
+    months: climate(
+      "WWWSSDDDSSWW",
+      {
+        2: "Carnival — hot, humid, packed",
+        7: "mildest and driest",
+        12: "hot; summer rains begin",
+      },
+      // Carnival and New Year's pack the city despite it being wet season.
+      { 2: "high", 12: "high" }
+    ),
     sights: [
       { name: "Christ the Redeemer", type: "culture", lat: -22.9519, lng: -43.2105, blurb: "Art-deco statue atop Corcovado mountain." },
       { name: "Sugarloaf Mountain", type: "nature", lat: -22.9492, lng: -43.1545, blurb: "Cable-car granite peak over the bay." },
@@ -373,11 +435,16 @@ export const REGIONS: Region[] = [
     bookingDest: "Puerto Ayora, Galapagos, Ecuador",
     climateBlurb:
       "Two seasons, both rewarding: warm and calm December–May (sunny, best snorkeling), cool and misty June–November (the garúa — choppier seas but peak marine wildlife).",
-    months: climate("DDDDDSSSSSSD", {
-      3: "warm, calm seas — best snorkeling",
-      6: "cool, misty garúa season begins",
-      9: "cool season — peak marine wildlife",
-    }),
+    months: climate(
+      "DDDDDSSSSSSD",
+      {
+        3: "warm, calm seas — best snorkeling",
+        6: "cool, misty garúa season begins",
+        9: "cool season — peak marine wildlife",
+      },
+      // Mid-year holidays spike visitor numbers despite the cool garúa season.
+      { 7: "high", 8: "high" }
+    ),
     sights: [
       { name: "Charles Darwin Research Station", type: "wildlife", lat: -0.7437, lng: -90.3017, blurb: "Giant-tortoise breeding centre at Puerto Ayora." },
       { name: "Tortuga Bay", type: "beach", lat: -0.7657, lng: -90.336, blurb: "White-sand bay with marine iguanas and rays." },
@@ -431,6 +498,133 @@ export const REGIONS: Region[] = [
       { name: "Sveti Stefan", type: "beach", lat: 42.2553, lng: 18.8917, blurb: "Iconic fortified islet on the Budva Riviera." },
       { name: "Budva Old Town", type: "culture", lat: 42.2786, lng: 18.8389, blurb: "Venetian-walled town and the coast's nightlife hub." },
       { name: "Durmitor National Park", type: "nature", lat: 43.1395, lng: 19.048, blurb: "Glacial lakes, peaks, and the deep Tara River canyon." },
+    ],
+  },
+
+  // ───────────────────────────── South Asia ─────────────────────────────
+  {
+    id: "sri-lanka-south",
+    name: "Sri Lanka (South & Hills)",
+    country: "Sri Lanka",
+    continent: "South Asia",
+    lat: 7.2906,
+    lng: 80.6337,
+    bookingDest: "Kandy, Sri Lanka",
+    climateBlurb:
+      "The south, west and hill country are driest December–March; the southwest monsoon brings rain May–September, with a second wet spell around October–November.",
+    months: climate("DDDSWWWWWWSD", {
+      4: "inter-monsoon, warm",
+      6: "southwest monsoon — wettest",
+      10: "second rains (inter-monsoon)",
+    }),
+    sights: [
+      { name: "Sigiriya Rock Fortress", type: "culture", lat: 7.957, lng: 80.7603, blurb: "Ancient palace atop a sheer granite monolith." },
+      { name: "Temple of the Sacred Tooth", type: "culture", lat: 7.2936, lng: 80.6413, blurb: "Kandy's revered Buddhist relic shrine." },
+      { name: "Ella & Nine Arch Bridge", type: "nature", lat: 6.8667, lng: 81.0466, blurb: "Tea-country hills, waterfalls and a colonial viaduct." },
+      { name: "Yala National Park", type: "wildlife", lat: 6.3735, lng: 81.5089, blurb: "Leopards, elephants and lagoon birdlife." },
+    ],
+  },
+  {
+    id: "nepal-kathmandu",
+    name: "Kathmandu & Himalaya",
+    country: "Nepal",
+    continent: "South Asia",
+    lat: 27.7172,
+    lng: 85.324,
+    bookingDest: "Kathmandu, Nepal",
+    climateBlurb:
+      "Clear, dry skies October–April make the Himalaya shine; the summer monsoon (Jun–Sep) clouds the peaks and slicks the trails. Autumn and spring are peak trekking.",
+    months: climate("SSDDSWWWWDDS", {
+      1: "cold but clear",
+      4: "spring trekking; some haze",
+      6: "monsoon begins",
+      10: "peak trekking — clearest mountain views",
+      11: "peak trekking — crisp and clear",
+    }),
+    sights: [
+      { name: "Kathmandu Durbar Square", type: "culture", lat: 27.7045, lng: 85.307, blurb: "Newari palaces and temples in the old royal plaza." },
+      { name: "Boudhanath Stupa", type: "culture", lat: 27.7215, lng: 85.362, blurb: "One of the world's largest Buddhist stupas." },
+      { name: "Pokhara & Annapurna", type: "nature", lat: 28.2096, lng: 83.9856, blurb: "Lakeside gateway to the Annapurna treks." },
+      { name: "Chitwan National Park", type: "wildlife", lat: 27.5291, lng: 84.454, blurb: "Lowland jungle of rhinos, tigers and gharials." },
+    ],
+  },
+
+  // ───────────────────────────── East Asia ──────────────────────────────
+  {
+    id: "japan-kyoto",
+    name: "Kyoto & Kansai",
+    country: "Japan",
+    continent: "East Asia",
+    lat: 35.0116,
+    lng: 135.7681,
+    bookingDest: "Kyoto, Japan",
+    climateBlurb:
+      "Spring (cherry blossom) and autumn (foliage) are the golden windows; the rainy season (tsuyu) hits Jun–Jul and summers are hot and typhoon-prone into September.",
+    months: climate(
+      "SSDDDWWWWDDS",
+      {
+        4: "cherry blossom — spectacular but busy",
+        6: "rainy season (tsuyu)",
+        9: "typhoon risk",
+        11: "autumn foliage",
+      },
+      // August is packed (Obon holiday + school break) despite the summer rain.
+      { 8: "high" }
+    ),
+    sights: [
+      { name: "Fushimi Inari Shrine", type: "culture", lat: 34.9671, lng: 135.7727, blurb: "Thousands of vermilion torii up a wooded hill." },
+      { name: "Arashiyama Bamboo Grove", type: "nature", lat: 35.0094, lng: 135.6737, blurb: "Towering bamboo paths west of the city." },
+      { name: "Kinkaku-ji (Golden Pavilion)", type: "culture", lat: 35.0394, lng: 135.7292, blurb: "Gold-leaf temple mirrored in its pond." },
+      { name: "Nara deer park", type: "wildlife", lat: 34.6851, lng: 135.843, blurb: "Free-roaming sacred deer among ancient temples." },
+    ],
+  },
+
+  // ─────────────────────────────── Africa ───────────────────────────────
+  {
+    id: "morocco-marrakech",
+    name: "Marrakech & Atlas",
+    country: "Morocco",
+    continent: "Africa",
+    lat: 31.6295,
+    lng: -7.9811,
+    bookingDest: "Marrakech, Morocco",
+    climateBlurb:
+      "Semi-arid: spring (Mar–May) and autumn (Sep–Nov) are ideal, high summer (Jun–Aug) is scorching, and mild winters bring what little rain there is.",
+    months: climate("SSDDDSSSDDDS", {
+      1: "mild; occasional rain",
+      4: "ideal — warm and clear",
+      7: "scorching (40°C+)",
+      8: "scorching (40°C+)",
+      10: "ideal — warm and clear",
+    }),
+    sights: [
+      { name: "Jemaa el-Fnaa", type: "city", lat: 31.6258, lng: -7.9891, blurb: "The medina's chaotic, theatrical main square." },
+      { name: "Majorelle Garden", type: "nature", lat: 31.6417, lng: -8.0033, blurb: "Cobalt-blue botanical retreat in the city." },
+      { name: "Atlas Mountains & Imlil", type: "nature", lat: 31.1356, lng: -7.9192, blurb: "Berber villages and trailheads up Mt Toubkal." },
+      { name: "Aït Benhaddou", type: "culture", lat: 31.047, lng: -7.1318, blurb: "Fortified earthen ksar on the old caravan route." },
+    ],
+  },
+  {
+    id: "tanzania-zanzibar",
+    name: "Zanzibar",
+    country: "Tanzania",
+    continent: "Africa",
+    lat: -6.1659,
+    lng: 39.2026,
+    bookingDest: "Zanzibar, Tanzania",
+    climateBlurb:
+      "An Indian-Ocean island: dry and ideal June–October and December–February, with the long rains March–May (best avoided) and short rains around November.",
+    months: climate("DDWWWDDDDDSD", {
+      3: "long rains begin — avoid",
+      4: "long rains — wettest",
+      7: "dry, ideal",
+      11: "short rains",
+    }),
+    sights: [
+      { name: "Stone Town", type: "culture", lat: -6.1632, lng: 39.1889, blurb: "Labyrinthine UNESCO old town of Swahili history." },
+      { name: "Nungwi Beach", type: "beach", lat: -5.726, lng: 39.296, blurb: "Powder sand and dhows at the island's north tip." },
+      { name: "Jozani Forest", type: "wildlife", lat: -6.27, lng: 39.41, blurb: "Home of the endemic red colobus monkey." },
+      { name: "Prison Island", type: "nature", lat: -6.12, lng: 39.18, blurb: "Giant tortoises a short boat ride offshore." },
     ],
   },
 ];

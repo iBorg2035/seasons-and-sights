@@ -3,9 +3,9 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Seasons & Sights — SE Asia, South America & the Balkans",
+  title: "Seasons & Sights — travel in the right season",
   description:
-    "Know the dry and wet seasons across Southeast Asia, South America, and the Mediterranean Balkans, find local sights, and book your stay at the right time of year.",
+    "Know the dry and wet seasons (and the crowds) for destinations across Asia, South America, Europe, and Africa — find local sights and book your stay at the right time of year.",
 };
 
 export default function RootLayout({

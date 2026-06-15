@@ -1,6 +1,15 @@
 export type Season = "dry" | "wet" | "shoulder";
 
-export type Continent = "Southeast Asia" | "South America" | "Europe";
+export type Continent =
+  | "Southeast Asia"
+  | "South Asia"
+  | "East Asia"
+  | "South America"
+  | "Europe"
+  | "Africa";
+
+/** Crowd / price level — the "other half" of when to go. */
+export type CrowdLevel = "high" | "mid" | "low";
 
 export type SightType = "nature" | "culture" | "city" | "beach" | "wildlife";
 
@@ -9,6 +18,12 @@ export interface MonthClimate {
   season: Season;
   /** Short context, e.g. "peak trekking", "typhoon risk", "salt-flat mirror". */
   note?: string;
+  /**
+   * Crowd/price level for the month. Optional — when absent it is derived from
+   * the season (dry→high, shoulder→mid, wet→low). Set it to capture divergences
+   * like Rio's Carnival or holiday spikes that don't track the weather.
+   */
+  crowd?: CrowdLevel;
 }
 
 /** Months keyed 1 (January) through 12 (December). */

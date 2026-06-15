@@ -3,7 +3,7 @@ import { WhenToGoView } from "@/components/WhenToGoView";
 export const metadata = {
   title: "When to go — Seasons & Sights",
   description:
-    "Pick a month and see which destinations across Southeast Asia, South America, and the Mediterranean Balkans are in dry, shoulder, or wet season.",
+    "Pick a month and see which destinations across Asia, South America, Europe, and Africa are in dry, shoulder, or wet season.",
 };
 
 export default function WhenToGoPage() {
