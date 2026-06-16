@@ -6,6 +6,7 @@ import { SeasonStrip } from "@/components/SeasonStrip";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { CrowdStrip } from "@/components/CrowdStrip";
 import { ClimateChart } from "@/components/ClimateChart";
+import { PackingList } from "@/components/PackingList";
 import { BookingCard } from "@/components/BookingCard";
 import {
   CROWD_META,
@@ -128,6 +129,8 @@ export function RegionPlanner({
         </h2>
         <ClimateChart lat={region.lat} lng={region.lng} />
       </section>
+
+      <PackingList region={region} month={month} />
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
