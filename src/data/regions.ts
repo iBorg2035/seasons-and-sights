@@ -6,6 +6,7 @@ import type {
   Region,
   Season,
 } from "@/types";
+import photos from "@/data/photos.json";
 
 const SEASON_BY_CHAR: Record<string, Season> = {
   D: "dry",
@@ -180,12 +181,13 @@ export const REGIONS: Region[] = [
     bookingDest: "Hanoi, Vietnam",
     climateBlurb:
       "Northern Vietnam has a cool, mostly dry winter (Oct–Apr, with a misty drizzle in Feb–Mar) and a hot, wet summer May–Sep. October–November and April are the sweet spots.",
-    months: climate("DSSDWWWWWDDD", {
+    months: climate("DSSDWWWWWSDD", {
       2: "cool drizzle (crachin)",
       3: "cool drizzle (crachin)",
       7: "hot and wettest",
       8: "hot and wettest",
-      10: "ideal — cool and dry",
+      10: "cooler; late rains easing",
+      11: "ideal — cool and dry",
     }),
     sights: [
       { name: "Hoan Kiem Lake & Old Quarter", type: "city", lat: 21.0287, lng: 105.8525, blurb: "Lake-side heart of Hanoi's tangled old town." },
@@ -320,6 +322,8 @@ export const REGIONS: Region[] = [
     bookingDest: "El Calafate, Argentina",
     climateBlurb:
       "Far-south Patagonia is a summer destination: long days and (very windy) mild weather November–March; deep winter June–August closes many trails and lodges.",
+    // Note: Patagonia is semi-arid (low rain year-round), so "wet" here means
+    // "avoid" — the deep cold/closures of winter — rather than literal rainfall.
     months: climate("DDSSWWWWSSDD", {
       1: "peak summer — long days, fierce wind",
       2: "peak summer, busiest",
@@ -435,15 +439,15 @@ export const REGIONS: Region[] = [
     lng: -90.3136,
     bookingDest: "Puerto Ayora, Galapagos, Ecuador",
     climateBlurb:
-      "Two seasons, both rewarding: warm and calm December–May (sunny, best snorkeling), cool and misty June–November (the garúa — choppier seas but peak marine wildlife).",
+      "Rewarding year-round — there's no real dry/wet split. Warm and calm December–May (sunny between showers, best snorkeling); cool and misty June–November (the garúa — choppier seas but peak marine wildlife).",
     months: climate(
-      "DDDDDSSSSSSD",
+      "SSSSSSSSSSSS",
       {
-        3: "warm, calm seas — best snorkeling",
-        6: "cool, misty garúa season begins",
+        3: "warmest, calm seas — great snorkeling",
+        6: "cool, misty garúa begins",
         9: "cool season — peak marine wildlife",
       },
-      // Mid-year holidays spike visitor numbers despite the cool garúa season.
+      // Mid-year holidays spike visitor numbers.
       { 7: "high", 8: "high" }
     ),
     sights: [
@@ -719,7 +723,7 @@ const WIKI_TITLE: Record<string, string> = {
   "thailand-krabi": "Railay Beach",
   "thailand-kohsamui": "Ko Samui",
   "indonesia-bali": "Bali",
-  "vietnam-hoian": "Hội An",
+  "vietnam-hoian": "Da Nang",
   "vietnam-hanoi": "Hanoi",
   "vietnam-hcmc": "Ho Chi Minh City",
   "cambodia-siemreap": "Angkor Wat",
@@ -741,10 +745,13 @@ const WIKI_TITLE: Record<string, string> = {
   "tanzania-zanzibar": "Zanzibar",
 };
 
+const PHOTOS = photos as Record<string, string>;
+
 for (const region of REGIONS) {
   if (EVENTS[region.id]) region.events = EVENTS[region.id];
   if (DAILY_BUDGET[region.id]) region.dailyBudget = DAILY_BUDGET[region.id];
   if (WIKI_TITLE[region.id]) region.wikiTitle = WIKI_TITLE[region.id];
+  if (PHOTOS[region.id]) region.photo = PHOTOS[region.id];
 }
 
 export function getRegion(id: string): Region | undefined {

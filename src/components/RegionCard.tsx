@@ -24,9 +24,10 @@ export function RegionCard({
     >
       <div className="relative">
         <DestinationImage
-          title={region.wikiTitle}
+          src={region.photo}
           alt={`${region.name}, ${region.country}`}
           className="h-36 w-full"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         <div className="absolute right-2 top-2">
           <SeasonBadge season={season} suffix={isNow ? "now" : undefined} />

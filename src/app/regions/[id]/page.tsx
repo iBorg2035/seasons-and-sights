@@ -60,10 +60,11 @@ export default async function RegionPage({
 
       <header className="relative mb-6 overflow-hidden rounded-3xl">
         <DestinationImage
-          title={region.wikiTitle}
+          src={region.photo}
           alt={`${region.name}, ${region.country}`}
-          variant="hero"
           className="h-56 w-full sm:h-72"
+          sizes="(max-width: 1024px) 100vw, 1024px"
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-3 p-5">

@@ -63,6 +63,8 @@ export interface Region {
   events?: Event[];
   /** Rough mid-range cost per person per day, in USD. */
   dailyBudget?: number;
-  /** Wikipedia article title used to fetch a representative photo. */
+  /** Wikipedia article title the photo was sourced from. */
   wikiTitle?: string;
+  /** Precomputed representative photo URL (see scripts/fetch-photos.mjs). */
+  photo?: string;
 }
