@@ -1,17 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { getDraft, DRAFT_EVENT } from "@/lib/trip-draft";
 
 const NAV = [
   { href: "/", label: "Explore" },
   { href: "/when-to-go", label: "When to go" },
   { href: "/planner", label: "Planner" },
   { href: "/compare", label: "Compare" },
+  { href: "/today", label: "Today" },
   { href: "/festivals", label: "Festivals" },
   { href: "/surprise", label: "Surprise" },
 ];
+
+function TripChip() {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const sync = () => setCount(getDraft().stops.length);
+    sync();
+    window.addEventListener(DRAFT_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(DRAFT_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  if (count === 0) return null;
+  return (
+    <Link
+      href="/planner"
+      className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-amber-600"
+      title="Your current trip"
+    >
+      🧳 {count}
+    </Link>
+  );
+}
 
 export function SiteNav() {
   const [open, setOpen] = useState(false);
@@ -29,11 +55,13 @@ export function SiteNav() {
             {item.label}
           </Link>
         ))}
+        <TripChip />
         <ThemeToggle />
       </nav>
 
       {/* Mobile controls */}
       <div className="flex items-center gap-1 sm:hidden">
+        <TripChip />
         <ThemeToggle />
         <button
           onClick={() => setOpen((o) => !o)}

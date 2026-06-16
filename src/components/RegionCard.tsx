@@ -3,6 +3,7 @@ import type { Region } from "@/types";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { SeasonStrip } from "@/components/SeasonStrip";
 import { DestinationImage } from "@/components/DestinationImage";
+import { AddToTripButton } from "@/components/AddToTripButton";
 import { bestMonths, climateForMonth, monthOf } from "@/lib/season";
 
 export function RegionCard({
@@ -32,6 +33,10 @@ export function RegionCard({
         <div className="absolute right-2 top-2">
           <SeasonBadge season={season} suffix={isNow ? "now" : undefined} />
         </div>
+        <AddToTripButton
+          regionId={region.id}
+          className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
+        />
       </div>
 
       <div className="flex flex-col gap-3 p-5">

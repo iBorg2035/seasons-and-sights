@@ -9,6 +9,7 @@ import { SeasonStrip } from "@/components/SeasonStrip";
 import { RouteMap } from "@/components/RouteMap";
 import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
 import { buildIcs } from "@/lib/ics";
+import { getDraft, saveDraft } from "@/lib/trip-draft";
 import {
   MONTH_NAMES,
   MONTH_NAMES_LONG,
@@ -18,6 +19,7 @@ import {
   estimateTripCost,
   fitQuality,
   formatUsd,
+  legDateRanges,
   planItinerary,
   type ItineraryLeg,
 } from "@/lib/season";
@@ -58,26 +60,6 @@ const DURATION_OPTIONS = [1, 2, 3];
 
 function fmtMonthYear(d: Date): string {
   return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-/** Concrete back-to-back date ranges for the legs, anchored to startMonth. */
-function legDateRanges(
-  startMonth: number,
-  legs: ItineraryLeg[],
-  from = new Date()
-): { start: Date; end: Date }[] {
-  const year =
-    startMonth >= from.getMonth() + 1
-      ? from.getFullYear()
-      : from.getFullYear() + 1;
-  let cursor = new Date(year, startMonth - 1, 1);
-  return legs.map((l) => {
-    const start = new Date(cursor);
-    const end = new Date(cursor);
-    end.setMonth(end.getMonth() + l.months.length);
-    cursor = new Date(end);
-    return { start, end };
-  });
 }
 
 interface SavedTrip {
@@ -139,7 +121,17 @@ export function TripPlanner({
   const deleteTrip = (id: string) =>
     persistSaved(saved.filter((t) => t.id !== id));
 
-  // Keep the URL in sync so any plan is shareable / bookmarkable.
+  // Seed from the saved "current trip" if we arrived without a shared URL.
+  useEffect(() => {
+    if (initialStops.length > 0) return;
+    const d = getDraft();
+    if (d.stops.length === 0) return;
+    setStops(new Map(d.stops.map((s) => [s.id, s.duration])));
+    if (d.start) setStartMonth(d.start);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep the URL in sync (shareable) and persist the current trip (draft).
   useEffect(() => {
     const qs = new URLSearchParams();
     qs.set("start", String(startMonth));
@@ -152,6 +144,10 @@ export function TripPlanner({
       );
     }
     router.replace(`/planner?${qs.toString()}`, { scroll: false });
+    saveDraft({
+      start: startMonth,
+      stops: Array.from(stops).map(([id, duration]) => ({ id, duration })),
+    });
   }, [stops, startMonth, router]);
 
   const copyLink = async () => {

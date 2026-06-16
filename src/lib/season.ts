@@ -346,6 +346,26 @@ export function formatUsd(n: number): string {
   return `$${Math.round(n).toLocaleString("en-US")}`;
 }
 
+/** Concrete back-to-back date ranges for legs, anchored to the next startMonth. */
+export function legDateRanges(
+  startMonth: number,
+  legs: ItineraryLeg[],
+  from = new Date()
+): { start: Date; end: Date }[] {
+  const year =
+    startMonth >= from.getMonth() + 1
+      ? from.getFullYear()
+      : from.getFullYear() + 1;
+  let cursor = new Date(year, startMonth - 1, 1);
+  return legs.map((l) => {
+    const start = new Date(cursor);
+    const end = new Date(cursor);
+    end.setMonth(end.getMonth() + l.months.length);
+    cursor = new Date(end);
+    return { start, end };
+  });
+}
+
 /** Map an average fit score to a season-like quality bucket for display. */
 export function fitQuality(fit: number): { season: Season; label: string } {
   if (fit >= 80) return { season: "dry", label: "Dry — ideal" };

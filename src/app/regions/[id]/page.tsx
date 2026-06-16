@@ -10,6 +10,7 @@ import { RegionMap } from "@/components/RegionMap";
 import { RegionPlanner } from "@/components/RegionPlanner";
 import { TravelEssentials } from "@/components/TravelEssentials";
 import { TravelToolkit } from "@/components/TravelToolkit";
+import { AddToTripButton } from "@/components/AddToTripButton";
 import { getCurrentSeason, monthOf } from "@/lib/season";
 
 // Regenerate each page in the background ~daily so the "current season"
@@ -82,7 +83,15 @@ export default async function RegionPage({
         </div>
       </header>
 
-      <p className="mb-6 max-w-3xl text-stone-600">{region.climateBlurb}</p>
+      <div className="mb-6 flex flex-wrap items-center gap-4">
+        <p className="max-w-3xl text-stone-600">{region.climateBlurb}</p>
+      </div>
+      <div className="mb-6">
+        <AddToTripButton
+          regionId={region.id}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+        />
+      </div>
 
       <RegionPlanner
         region={region}
