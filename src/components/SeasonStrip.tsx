@@ -50,7 +50,7 @@ export function SeasonStrip({
           const isRinged = ringSet ? ringSet.has(month) : month === ringMonth;
           const isNow = month === nowMonth;
           const title = note ? `${label}: ${note}` : `${label}: ${meta.label}`;
-          const cellClass = `h-9 w-full rounded ${meta.dot} transition ${
+          const cellClass = `flex h-9 w-full items-center justify-center rounded text-[11px] font-bold text-white/95 ${meta.dot} transition ${
             isRinged
               ? "ring-2 ring-slate-900 ring-offset-1"
               : "opacity-90"
@@ -74,9 +74,13 @@ export function SeasonStrip({
                   aria-label={title}
                   title={title}
                   className={cellClass}
-                />
+                >
+                  {meta.letter}
+                </button>
               ) : (
-                <div title={title} className={cellClass} />
+                <div title={title} className={cellClass}>
+                  {meta.letter}
+                </div>
               )}
               <div
                 className={`mt-1 text-center text-[10px] ${
@@ -97,7 +101,11 @@ export function SeasonStrip({
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
           {ALL_SEASONS.map((s) => (
             <span key={s} className="inline-flex items-center gap-1.5">
-              <span className={`h-2.5 w-2.5 rounded-full ${SEASON_META[s].dot}`} />
+              <span
+                className={`flex h-3.5 w-3.5 items-center justify-center rounded-full text-[8px] font-bold text-white ${SEASON_META[s].dot}`}
+              >
+                {SEASON_META[s].letter}
+              </span>
               {SEASON_META[s].label}
             </span>
           ))}

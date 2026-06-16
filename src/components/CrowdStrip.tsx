@@ -26,10 +26,12 @@ export function CrowdStrip({
             <div key={label} className="flex-1">
               <div
                 title={`${label}: ${meta.label}`}
-                className={`h-9 rounded ${meta.dot} opacity-90 transition ${
+                className={`flex h-9 items-center justify-center rounded text-[10px] font-bold text-white/95 ${meta.dot} opacity-90 transition ${
                   isRinged ? "ring-2 ring-slate-900 ring-offset-1" : ""
                 }`}
-              />
+              >
+                {meta.letter}
+              </div>
               <div className="mt-1 text-center text-[10px] text-slate-500">
                 {label}
               </div>
@@ -42,7 +44,11 @@ export function CrowdStrip({
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
           {LEVELS.map((l) => (
             <span key={l} className="inline-flex items-center gap-1.5">
-              <span className={`h-2.5 w-2.5 rounded-full ${CROWD_META[l].dot}`} />
+              <span
+                className={`flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-1 text-[8px] font-bold text-white ${CROWD_META[l].dot}`}
+              >
+                {CROWD_META[l].letter}
+              </span>
               {CROWD_META[l].label}
             </span>
           ))}

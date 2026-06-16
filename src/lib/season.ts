@@ -18,11 +18,12 @@ export const MONTH_NAMES_LONG = [
 /** Display metadata for each season, reused across badges, strips, and legends. */
 export const SEASON_META: Record<
   Season,
-  { label: string; short: string; tone: string; dot: string; chip: string }
+  { label: string; short: string; letter: string; tone: string; dot: string; chip: string }
 > = {
   dry: {
     label: "Dry season",
     short: "Dry",
+    letter: "D",
     tone: "text-amber-700",
     dot: "bg-amber-500",
     chip: "bg-amber-100 text-amber-800 border-amber-200",
@@ -30,6 +31,7 @@ export const SEASON_META: Record<
   wet: {
     label: "Wet season",
     short: "Wet",
+    letter: "W",
     tone: "text-sky-700",
     dot: "bg-sky-500",
     chip: "bg-sky-100 text-sky-800 border-sky-200",
@@ -37,6 +39,7 @@ export const SEASON_META: Record<
   shoulder: {
     label: "Shoulder season",
     short: "Shoulder",
+    letter: "S",
     tone: "text-emerald-700",
     dot: "bg-emerald-500",
     chip: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -46,23 +49,26 @@ export const SEASON_META: Record<
 /** Display metadata for each crowd/price level. */
 export const CROWD_META: Record<
   CrowdLevel,
-  { label: string; short: string; dot: string; chip: string }
+  { label: string; short: string; letter: string; dot: string; chip: string }
 > = {
   high: {
     label: "Busy & pricey",
     short: "Peak",
+    letter: "$$$",
     dot: "bg-rose-500",
     chip: "bg-rose-100 text-rose-800 border-rose-200",
   },
   mid: {
     label: "Moderate",
     short: "Mid",
+    letter: "$$",
     dot: "bg-violet-400",
     chip: "bg-violet-100 text-violet-800 border-violet-200",
   },
   low: {
     label: "Quiet & cheap",
     short: "Low",
+    letter: "$",
     dot: "bg-teal-500",
     chip: "bg-teal-100 text-teal-800 border-teal-200",
   },
