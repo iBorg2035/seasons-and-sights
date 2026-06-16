@@ -52,6 +52,12 @@ export default function RootLayout({
                 Festivals
               </Link>
               <Link
+                href="/compare"
+                className="rounded-lg px-3 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                Compare
+              </Link>
+              <Link
                 href="/surprise"
                 className="rounded-lg px-3 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
               >
