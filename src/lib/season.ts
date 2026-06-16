@@ -329,6 +329,23 @@ export function planItinerary(
   return buildLegs(order).legs;
 }
 
+const DAYS_PER_MONTH = 30;
+
+/** Estimated cost of a single leg (daily budget × days). */
+export function estimateLegCost(leg: ItineraryLeg): number {
+  return (leg.region.dailyBudget ?? 0) * leg.months.length * DAYS_PER_MONTH;
+}
+
+/** Estimated total cost across all legs of an itinerary. */
+export function estimateTripCost(legs: ItineraryLeg[]): number {
+  return legs.reduce((sum, leg) => sum + estimateLegCost(leg), 0);
+}
+
+/** Whole-dollar USD, e.g. "$2,400". */
+export function formatUsd(n: number): string {
+  return `$${Math.round(n).toLocaleString("en-US")}`;
+}
+
 /** Map an average fit score to a season-like quality bucket for display. */
 export function fitQuality(fit: number): { season: Season; label: string } {
   if (fit >= 80) return { season: "dry", label: "Dry — ideal" };

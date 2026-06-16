@@ -682,8 +682,39 @@ const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
     ],
   };
 
+// Rough mid-range cost per person per day (USD): lodging + food + activities +
+// local transport. Ballpark figures for budgeting, not quotes.
+const DAILY_BUDGET: Record<string, number> = {
+  "thailand-chiangmai": 40,
+  "thailand-bangkok": 50,
+  "thailand-krabi": 55,
+  "thailand-kohsamui": 55,
+  "indonesia-bali": 45,
+  "vietnam-hoian": 40,
+  "vietnam-hanoi": 40,
+  "vietnam-hcmc": 40,
+  "cambodia-siemreap": 40,
+  "philippines-palawan": 50,
+  "peru-cusco": 50,
+  "bolivia-uyuni": 45,
+  "patagonia-elcalafate": 110,
+  "brazil-rio": 70,
+  "brazil-amazon-manaus": 80,
+  "colombia-cartagena": 55,
+  "chile-atacama": 90,
+  "ecuador-galapagos": 200,
+  "albania-riviera": 50,
+  "montenegro-kotor": 70,
+  "sri-lanka-south": 40,
+  "nepal-kathmandu": 35,
+  "japan-kyoto": 130,
+  "morocco-marrakech": 55,
+  "tanzania-zanzibar": 80,
+};
+
 for (const region of REGIONS) {
   if (EVENTS[region.id]) region.events = EVENTS[region.id];
+  if (DAILY_BUDGET[region.id]) region.dailyBudget = DAILY_BUDGET[region.id];
 }
 
 export function getRegion(id: string): Region | undefined {

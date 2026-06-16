@@ -1,6 +1,6 @@
 import type { Region } from "@/types";
 import { buildBookingUrl } from "@/lib/booking";
-import { MONTH_NAMES_LONG } from "@/lib/season";
+import { MONTH_NAMES_LONG, formatUsd } from "@/lib/season";
 
 function prettyDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
@@ -34,6 +34,15 @@ export function BookingCard({
       <p className="mt-0.5 text-sm font-medium text-slate-700">
         {prettyDate(checkin)} → {prettyDate(checkout)} · 2 guests
       </p>
+      {region.dailyBudget && (
+        <p className="mt-2 text-sm text-slate-500">
+          Typical budget:{" "}
+          <span className="font-medium text-slate-700">
+            {formatUsd(region.dailyBudget)}/day
+          </span>{" "}
+          per person
+        </p>
+      )}
       <a
         href={url}
         target="_blank"

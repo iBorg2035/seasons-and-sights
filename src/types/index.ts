@@ -61,4 +61,6 @@ export interface Region {
   sights: Sight[];
   /** Marquee festivals / events, if any. */
   events?: Event[];
+  /** Rough mid-range cost per person per day, in USD. */
+  dailyBudget?: number;
 }

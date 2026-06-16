@@ -10,6 +10,8 @@ import {
   planItinerary,
   wrapMonth,
   crowdForMonth,
+  estimateTripCost,
+  formatUsd,
 } from "@/lib/season";
 import { REGIONS } from "@/data/regions";
 import type { Region } from "@/types";
@@ -192,6 +194,16 @@ describe("events", () => {
 
     const kyoto = getRegion("japan-kyoto") as Region;
     expect(kyoto.events?.some((e) => /cherry blossom/i.test(e.name))).toBe(true);
+  });
+});
+
+describe("budget", () => {
+  it("attaches daily budgets and estimates trip cost", () => {
+    const cusco = getRegion("peru-cusco") as Region;
+    expect(cusco.dailyBudget).toBe(50);
+    const legs = planItinerary([{ region: cusco, durationMonths: 2 }], 6);
+    expect(estimateTripCost(legs)).toBe(3000); // 50 × 2 months × 30 days
+    expect(formatUsd(3000)).toBe("$3,000");
   });
 });
 

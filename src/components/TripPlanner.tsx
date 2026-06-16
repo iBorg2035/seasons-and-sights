@@ -13,7 +13,10 @@ import {
   MONTH_NAMES_LONG,
   SEASON_META,
   datesForMonth,
+  estimateLegCost,
+  estimateTripCost,
   fitQuality,
+  formatUsd,
   planItinerary,
   type ItineraryLeg,
 } from "@/lib/season";
@@ -293,7 +296,8 @@ export function TripPlanner({
               {tripSpan && (
                 <p className="text-sm text-slate-500">
                   {tripSpan.label} · {tripSpan.totalMonths} month
-                  {tripSpan.totalMonths > 1 ? "s" : ""}
+                  {tripSpan.totalMonths > 1 ? "s" : ""} · est.{" "}
+                  {formatUsd(estimateTripCost(legs))}/person
                 </p>
               )}
               <button
@@ -355,7 +359,8 @@ export function TripPlanner({
                           </span>
                         </div>
                         <span className="text-sm font-medium text-slate-700">
-                          {fmtMonths(leg.months)} · {leg.months.length} mo
+                          {fmtMonths(leg.months)} · {leg.months.length} mo ·{" "}
+                          {formatUsd(estimateLegCost(leg))}
                         </span>
                       </div>
 
