@@ -146,3 +146,45 @@ h3 {
 .dark .leaflet-tile {
   filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
 }
+
+/* Colored pills (season/crowd/festival chips, banners) read as bright pastels
+   in dark mode — retint them to translucent fills with lighter text. */
+.dark .bg-amber-50,
+.dark .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.16);
+}
+.dark .bg-sky-50,
+.dark .bg-sky-100 {
+  background-color: rgba(56, 189, 248, 0.16);
+}
+.dark .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.16);
+}
+.dark .bg-rose-100 {
+  background-color: rgba(244, 63, 94, 0.16);
+}
+.dark .bg-violet-100 {
+  background-color: rgba(139, 92, 246, 0.18);
+}
+.dark .bg-teal-100 {
+  background-color: rgba(20, 184, 166, 0.16);
+}
+.dark .bg-fuchsia-50 {
+  background-color: rgba(217, 70, 239, 0.14);
+}
+
+.dark .text-amber-800 { color: #fcd34d; }
+.dark .text-sky-800 { color: #7dd3fc; }
+.dark .text-emerald-800 { color: #6ee7b7; }
+.dark .text-rose-800 { color: #fda4af; }
+.dark .text-violet-800 { color: #c4b5fd; }
+.dark .text-teal-800 { color: #5eead4; }
+.dark .text-amber-600 { color: #fbbf24; }
+.dark .text-fuchsia-600 { color: #e879f9; }
+
+.dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.3); }
+.dark .border-sky-200 { border-color: rgba(56, 189, 248, 0.3); }
+.dark .border-emerald-200 { border-color: rgba(16, 185, 129, 0.3); }
+.dark .border-rose-200 { border-color: rgba(244, 63, 94, 0.3); }
+.dark .border-violet-200 { border-color: rgba(139, 92, 246, 0.3); }
+.dark .border-teal-200 { border-color: rgba(20, 184, 166, 0.3); }

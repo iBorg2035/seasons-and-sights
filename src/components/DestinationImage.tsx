@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 
 export function DestinationImage({
   src,
@@ -13,8 +16,10 @@ export function DestinationImage({
   sizes?: string;
   priority?: boolean;
 }) {
-  // Warm gradient fallback when there's no photo.
-  if (!src) {
+  const [failed, setFailed] = useState(false);
+
+  // Warm gradient fallback when there's no photo, or one fails to load.
+  if (!src || failed) {
     return (
       <div
         aria-hidden
@@ -30,6 +35,7 @@ export function DestinationImage({
         fill
         sizes={sizes}
         priority={priority}
+        onError={() => setFailed(true)}
         className="object-cover"
       />
     </div>
