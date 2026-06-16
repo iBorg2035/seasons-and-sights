@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Fraunces, Inter } from "next/font/google";
 import { SiteNav } from "@/components/SiteNav";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { AuthProvider } from "@/lib/contexts/auth-context";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -70,6 +71,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
+        <AuthProvider>
         <header className="sticky top-0 z-[1000] border-b border-[var(--hairline)] bg-[var(--chrome)] backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
             <Link
@@ -94,6 +96,7 @@ export default function RootLayout({
           from Open-Meteo; photos via Wikipedia. Accommodation links open
           Booking.com.
         </footer>
+        </AuthProvider>
       </body>
     </html>
   );

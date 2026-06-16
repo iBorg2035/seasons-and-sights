@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountMenu } from "@/components/AccountMenu";
 import { getDraft, DRAFT_EVENT } from "@/lib/trip-draft";
 
 const NAV = [
@@ -57,12 +58,14 @@ export function SiteNav() {
         ))}
         <TripChip />
         <ThemeToggle />
+        <AccountMenu />
       </nav>
 
       {/* Mobile controls */}
       <div className="flex items-center gap-1 sm:hidden">
         <TripChip />
         <ThemeToggle />
+        <AccountMenu />
         <button
           onClick={() => setOpen((o) => !o)}
           aria-label="Toggle menu"

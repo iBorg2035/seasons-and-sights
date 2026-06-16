@@ -10,6 +10,14 @@ import { RouteMap } from "@/components/RouteMap";
 import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
 import { buildIcs } from "@/lib/ics";
 import { getDraft, saveDraft } from "@/lib/trip-draft";
+import { useAuth } from "@/lib/contexts/auth-context";
+import {
+  fetchRemoteTrips,
+  upsertRemoteTrip,
+  deleteRemoteTrip,
+  mergeTrips,
+  type SavedTrip,
+} from "@/lib/supabase/trips";
 import {
   MONTH_NAMES,
   MONTH_NAMES_LONG,
@@ -62,13 +70,6 @@ function fmtMonthYear(d: Date): string {
   return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-interface SavedTrip {
-  id: string;
-  name: string;
-  start: number;
-  stops: [string, number][];
-}
-
 const SAVED_KEY = "seasons-saved-trips";
 
 function tripName(legs: ItineraryLeg[]): string {
@@ -85,6 +86,7 @@ export function TripPlanner({
   initialStops?: { id: string; duration: number }[];
 }) {
   const router = useRouter();
+  const { user } = useAuth();
   // Map of regionId -> duration (months). Insertion order = selection order.
   const [stops, setStops] = useState<Map<string, number>>(
     () => new Map(initialStops.map((s) => [s.id, s.duration]))
@@ -118,8 +120,34 @@ export function TripPlanner({
     setStartMonth(t.start);
   };
 
-  const deleteTrip = (id: string) =>
+  const deleteTrip = (id: string) => {
     persistSaved(saved.filter((t) => t.id !== id));
+    if (user) void deleteRemoteTrip(id);
+  };
+
+  // On sign-in, pull the user's cloud trips, merge with what's local, and push
+  // up any local-only trips (e.g. made before signing in).
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const remote = await fetchRemoteTrips();
+      if (cancelled) return;
+      setSaved((local) => {
+        const { merged, localOnly } = mergeTrips(local, remote);
+        try {
+          localStorage.setItem(SAVED_KEY, JSON.stringify(merged));
+        } catch {
+          // ignore
+        }
+        for (const t of localOnly) void upsertRemoteTrip(user.id, t);
+        return merged;
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // Seed from the saved "current trip" if we arrived without a shared URL.
   useEffect(() => {
@@ -211,6 +239,7 @@ export function TripPlanner({
       stops: Array.from(stops),
     };
     persistSaved([trip, ...saved.filter((t) => t.name !== trip.name)]);
+    if (user) void upsertRemoteTrip(user.id, trip);
     setJustSaved(true);
     setTimeout(() => setJustSaved(false), 1500);
   };
