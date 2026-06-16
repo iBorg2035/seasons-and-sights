@@ -35,6 +35,9 @@ const TITLES = {
   "turkey-cappadocia": "Cappadocia",
   "greece-santorini": "Santorini",
   "south-africa-capetown": "Cape Town",
+  "japan-tokyo": "Tokyo",
+  "japan-hokkaido": "Sapporo",
+  "japan-okinawa": "Shuri Castle",
 };
 
 const out = {};

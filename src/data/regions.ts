@@ -677,6 +677,80 @@ export const REGIONS: Region[] = [
       { name: "Nara deer park", type: "wildlife", lat: 34.6851, lng: 135.843, blurb: "Free-roaming sacred deer among ancient temples." },
     ],
   },
+  {
+    id: "japan-tokyo",
+    name: "Tokyo & around",
+    country: "Japan",
+    continent: "East Asia",
+    lat: 35.6762,
+    lng: 139.6503,
+    bookingDest: "Tokyo, Japan",
+    climateBlurb:
+      "Spring (cherry blossom) and autumn (crisp, clear) are the golden windows; the rainy season hits June, summers are hot and humid, and winters are cold but dry and sunny.",
+    months: climate(
+      "SSDDDWWWWDDS",
+      {
+        4: "cherry blossom — spectacular but busy",
+        6: "rainy season (tsuyu)",
+        9: "typhoon risk",
+        11: "autumn foliage",
+      },
+      { 8: "high" }
+    ),
+    sights: [
+      { name: "Sensō-ji, Asakusa", type: "culture", lat: 35.7148, lng: 139.7967, blurb: "Tokyo's oldest temple and bustling Nakamise lane." },
+      { name: "Shibuya Crossing", type: "city", lat: 35.6595, lng: 139.7004, blurb: "The world's busiest pedestrian scramble." },
+      { name: "Meiji Shrine", type: "culture", lat: 35.6764, lng: 139.6993, blurb: "Forested Shinto shrine in the heart of the city." },
+      { name: "Mt Fuji & Hakone", type: "nature", lat: 35.3606, lng: 138.7274, blurb: "Iconic volcano and hot-spring country day-trip." },
+    ],
+  },
+  {
+    id: "japan-hokkaido",
+    name: "Hokkaido (Sapporo)",
+    country: "Japan",
+    continent: "East Asia",
+    lat: 43.0618,
+    lng: 141.3545,
+    bookingDest: "Sapporo, Japan",
+    climateBlurb:
+      "Japan's north has two peak seasons and no June rainy season: world-class powder snow December–March and cool, green summers June–September (lavender in July). Spring thaw and late autumn are the quiet shoulders.",
+    months: climate("DDDSSDDDDSSD", {
+      1: "peak powder — skiing",
+      2: "peak powder — skiing",
+      7: "lavender fields in bloom",
+      9: "early autumn foliage",
+      12: "ski season begins",
+    }),
+    sights: [
+      { name: "Odori Park, Sapporo", type: "city", lat: 43.0606, lng: 141.3469, blurb: "City's central park; Snow Festival home." },
+      { name: "Niseko", type: "nature", lat: 42.8048, lng: 140.6874, blurb: "Legendary powder-snow ski resort." },
+      { name: "Furano lavender fields", type: "nature", lat: 43.3416, lng: 142.383, blurb: "Rolling purple fields in midsummer." },
+      { name: "Shiretoko National Park", type: "wildlife", lat: 44.09, lng: 145.1, blurb: "Wild UNESCO peninsula of bears and sea eagles." },
+    ],
+  },
+  {
+    id: "japan-okinawa",
+    name: "Okinawa",
+    country: "Japan",
+    continent: "East Asia",
+    lat: 26.2124,
+    lng: 127.6809,
+    bookingDest: "Okinawa, Japan",
+    climateBlurb:
+      "Subtropical islands with a different rhythm to the mainland: warm, dry spring (Mar–Apr) and autumn (Oct–Nov) are ideal; a May–June rainy season and Aug–Sep typhoons bracket a hot summer; winters stay mild.",
+    months: climate("SSDDWWSWWDDS", {
+      3: "warm spring — ideal beaches",
+      5: "rainy season (tsuyu)",
+      8: "typhoon peak",
+      10: "warm, calm — great beaches",
+    }),
+    sights: [
+      { name: "Shuri Castle, Naha", type: "culture", lat: 26.217, lng: 127.7195, blurb: "Ryūkyū Kingdom palace (under restoration)." },
+      { name: "Churaumi Aquarium", type: "wildlife", lat: 26.694, lng: 127.8779, blurb: "Giant tank of whale sharks and manta rays." },
+      { name: "Kerama Islands", type: "beach", lat: 26.19, lng: 127.3, blurb: "'Kerama blue' reefs for snorkeling & diving." },
+      { name: "Kabira Bay, Ishigaki", type: "beach", lat: 24.4539, lng: 124.1456, blurb: "Postcard turquoise bay in the far south." },
+    ],
+  },
 
   // ─────────────────────────────── Africa ───────────────────────────────
   {
@@ -812,6 +886,19 @@ const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
     "greece-santorini": [
       { name: "Ifestia Festival", month: 8, blurb: "Re-enacted volcanic eruption with fireworks over the caldera." },
     ],
+    "japan-tokyo": [
+      { name: "Cherry blossom (hanami)", month: 4, blurb: "Sakura picnics in the city's parks." },
+      { name: "Sumida River Fireworks", month: 7, blurb: "Tokyo's grand summer fireworks festival." },
+      { name: "Autumn foliage (kōyō)", month: 11, blurb: "Ginkgo and maple ablaze across the city." },
+    ],
+    "japan-hokkaido": [
+      { name: "Sapporo Snow Festival", month: 2, blurb: "Giant snow and ice sculptures fill Odori Park." },
+      { name: "Furano Lavender season", month: 7, blurb: "Hillsides of blooming lavender." },
+    ],
+    "japan-okinawa": [
+      { name: "Eisā drum festival", month: 8, blurb: "Thunderous Okinawan drum-and-dance celebrations." },
+      { name: "Naha Great Tug-of-War", month: 10, blurb: "A giant rope and street festival in the capital." },
+    ],
   };
 
 // Rough mid-range cost per person per day (USD): lodging + food + activities +
@@ -847,6 +934,9 @@ const DAILY_BUDGET: Record<string, number> = {
   "turkey-cappadocia": 60,
   "greece-santorini": 90,
   "south-africa-capetown": 70,
+  "japan-tokyo": 130,
+  "japan-hokkaido": 120,
+  "japan-okinawa": 100,
 };
 
 // Wikipedia article titles for representative photos (fetched via /api/photo).
@@ -881,6 +971,9 @@ const WIKI_TITLE: Record<string, string> = {
   "turkey-cappadocia": "Cappadocia",
   "greece-santorini": "Santorini",
   "south-africa-capetown": "Cape Town",
+  "japan-tokyo": "Tokyo",
+  "japan-hokkaido": "Sapporo",
+  "japan-okinawa": "Shuri Castle",
 };
 
 const PHOTOS = photos as Record<string, string>;
@@ -918,6 +1011,9 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "turkey-cappadocia": { visa: "Visa-free / e-Visa for many", currency: "Turkish lira (TRY)", language: "Turkish", plugs: "Types C/F · 230V", gettingThere: "Kayseri (ASR) via Istanbul · ~5h from London", health: "Strong sun; cold, snowy winters" },
   "greece-santorini": { visa: "Visa-free 90 days (Schengen) for many", currency: "Euro (EUR)", language: "Greek", plugs: "Types C/F · 230V", gettingThere: "Santorini (JTR) · ~4h from London", health: "Strong sun; steep caldera steps" },
   "south-africa-capetown": { visa: "Visa-free up to 90 days for many", currency: "South African rand (ZAR)", language: "English, Afrikaans & Xhosa", plugs: "Types C/D/M/N · 230V", gettingThere: "Cape Town (CPT) · ~12h from London", health: "Strong sun; petty-theft awareness" },
+  "japan-tokyo": { visa: "Visa-free ~90 days for many", currency: "Japanese yen (JPY)", language: "Japanese", plugs: "Types A/B · 100V", gettingThere: "Tokyo (HND/NRT) · ~12h from London", health: "Very safe; hot, humid summers" },
+  "japan-hokkaido": { visa: "Visa-free ~90 days for many", currency: "Japanese yen (JPY)", language: "Japanese", plugs: "Types A/B · 100V", gettingThere: "Sapporo (CTS) via Tokyo · ~13h from London", health: "Very safe; severe cold & snow Dec–Mar — dress warm" },
+  "japan-okinawa": { visa: "Visa-free ~90 days for many", currency: "Japanese yen (JPY)", language: "Japanese (Okinawan)", plugs: "Types A/B · 100V", gettingThere: "Naha (OKA) via Tokyo · ~15h from London", health: "Strong sun; typhoon awareness Aug–Sep" },
 };
 
 for (const region of REGIONS) {
