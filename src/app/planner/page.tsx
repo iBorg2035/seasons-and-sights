@@ -45,7 +45,8 @@ export default async function PlannerPage({
         <p className="mt-3 max-w-2xl text-slate-600">
           Pick where you want to go and when you&apos;ll set off. The planner
           orders your stops so each one lands in its dry or shoulder season —
-          chasing the good weather across hemispheres.
+          chasing the good weather across hemispheres. Works for a two-week trip
+          or a multi-year slow-travel loop (try the example presets).
         </p>
       </section>
 

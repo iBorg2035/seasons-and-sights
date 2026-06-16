@@ -37,12 +37,25 @@ const EXAMPLE_IDS = [
   "vietnam-hoian",
 ];
 
+// A long multi-year "slow travel" loop to show off the year-spanning timeline.
+const SLOW_TRAVEL_IDS = [
+  "indonesia-bali",
+  "thailand-chiangmai",
+  "vietnam-hanoi",
+  "nepal-kathmandu",
+  "japan-kyoto",
+  "peru-cusco",
+  "bolivia-uyuni",
+  "patagonia-elcalafate",
+  "morocco-marrakech",
+  "montenegro-kotor",
+];
+
 const DEFAULT_DURATION = 2;
 const DURATION_OPTIONS = [1, 2, 3];
 
-function fmtMonths(months: number[]): string {
-  if (months.length === 1) return MONTH_NAMES[months[0] - 1];
-  return `${MONTH_NAMES[months[0] - 1]}–${MONTH_NAMES[months[months.length - 1] - 1]}`;
+function fmtMonthYear(d: Date): string {
+  return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /** Concrete back-to-back date ranges for the legs, anchored to startMonth. */
@@ -145,17 +158,20 @@ export function TripPlanner({
     return planItinerary(chosen, startMonth);
   }, [stops, startMonth]);
 
+  const ranges = useMemo(() => legDateRanges(startMonth, legs), [startMonth, legs]);
+
   const tripSpan = useMemo(() => {
     if (legs.length === 0) return null;
-    const first = legs[0].months[0];
-    const lastLeg = legs[legs.length - 1];
-    const last = lastLeg.months[lastLeg.months.length - 1];
-    const totalMonths = Array.from(stops.values()).reduce((a, b) => a + b, 0);
+    const first = ranges[0].start;
+    const lastDay = new Date(ranges[ranges.length - 1].end);
+    lastDay.setDate(lastDay.getDate() - 1);
+    const totalMonths = legs.reduce((s, l) => s + l.months.length, 0);
     return {
-      label: `${MONTH_NAMES[first - 1]} → ${MONTH_NAMES[last - 1]}`,
+      label: `${fmtMonthYear(first)} → ${fmtMonthYear(lastDay)}`,
       totalMonths,
+      years: totalMonths / 12,
     };
-  }, [legs, stops]);
+  }, [legs, ranges]);
 
   const hasRisky = legs.some((l) => l.fit < 50);
 
@@ -166,14 +182,26 @@ export function TripPlanner({
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="font-semibold text-slate-900">1. Pick destinations</h2>
-            <button
-              onClick={() =>
-                setStops(new Map(EXAMPLE_IDS.map((id) => [id, DEFAULT_DURATION])))
-              }
-              className="text-xs font-medium text-amber-600 hover:underline"
-            >
-              Try an example
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() =>
+                  setStops(
+                    new Map(EXAMPLE_IDS.map((id) => [id, DEFAULT_DURATION]))
+                  )
+                }
+                className="text-xs font-medium text-amber-600 hover:underline"
+              >
+                Try an example
+              </button>
+              <button
+                onClick={() =>
+                  setStops(new Map(SLOW_TRAVEL_IDS.map((id) => [id, 2])))
+                }
+                className="text-xs font-medium text-amber-600 hover:underline"
+              >
+                Slow-travel loop
+              </button>
+            </div>
           </div>
           <div className="space-y-3">
             {CONTINENT_ORDER.map((continent) => (
@@ -296,8 +324,11 @@ export function TripPlanner({
               {tripSpan && (
                 <p className="text-sm text-slate-500">
                   {tripSpan.label} · {tripSpan.totalMonths} month
-                  {tripSpan.totalMonths > 1 ? "s" : ""} · est.{" "}
-                  {formatUsd(estimateTripCost(legs))}/person
+                  {tripSpan.totalMonths > 1 ? "s" : ""}
+                  {tripSpan.totalMonths >= 18
+                    ? ` (~${tripSpan.years.toFixed(1)} yrs)`
+                    : ""}{" "}
+                  · est. {formatUsd(estimateTripCost(legs))}/person
                 </p>
               )}
               <button
@@ -359,8 +390,8 @@ export function TripPlanner({
                           </span>
                         </div>
                         <span className="text-sm font-medium text-slate-700">
-                          {fmtMonths(leg.months)} · {leg.months.length} mo ·{" "}
-                          {formatUsd(estimateLegCost(leg))}
+                          {fmtMonthYear(ranges[leg.position].start)} ·{" "}
+                          {leg.months.length} mo · {formatUsd(estimateLegCost(leg))}
                         </span>
                       </div>
 
