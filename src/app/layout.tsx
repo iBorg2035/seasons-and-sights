@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Fraunces, Inter } from "next/font/google";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
+
+// Set the theme class before paint to avoid a flash of the wrong theme.
+const themeScript = `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`;
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -36,9 +40,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${fraunces.variable} ${inter.variable}`}
+    >
       <body className="min-h-screen antialiased">
-        <header className="sticky top-0 z-[1000] border-b border-[#e7ddca] bg-[#f7f1e6]/80 backdrop-blur">
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <header className="sticky top-0 z-[1000] border-b border-[var(--hairline)] bg-[var(--chrome)] backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
             <Link
               href="/"
@@ -61,6 +70,7 @@ export default function RootLayout({
                   {item.label}
                 </Link>
               ))}
+              <ThemeToggle />
             </nav>
           </div>
         </header>

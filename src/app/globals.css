@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f7f1e6; /* sand */
   --foreground: #1c1917; /* ink */
+  --glow-1: rgba(249, 115, 22, 0.1);
+  --glow-2: rgba(14, 116, 144, 0.1);
+  --chrome: rgba(247, 241, 230, 0.8);
+  --hairline: #e7ddca;
+}
+
+.dark {
+  --background: #181410; /* warm near-black */
+  --foreground: #f3ece0;
+  --glow-1: rgba(249, 115, 22, 0.1);
+  --glow-2: rgba(14, 116, 144, 0.14);
+  --chrome: rgba(24, 20, 16, 0.8);
+  --hairline: #3a322a;
 }
 
 .font-display {
@@ -15,16 +30,8 @@ html {
 
 body {
   background:
-    radial-gradient(
-      1100px 520px at 85% -8%,
-      rgba(249, 115, 22, 0.1),
-      transparent 60%
-    ),
-    radial-gradient(
-      900px 480px at -5% 8%,
-      rgba(14, 116, 144, 0.1),
-      transparent 60%
-    ),
+    radial-gradient(1100px 520px at 85% -8%, var(--glow-1), transparent 60%),
+    radial-gradient(900px 480px at -5% 8%, var(--glow-2), transparent 60%),
     var(--background);
   background-attachment: fixed;
   color: var(--foreground);
@@ -32,7 +39,6 @@ body {
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Headings get the editorial serif everywhere, regardless of utility classes. */
 h1,
 h2,
 h3 {
@@ -40,8 +46,84 @@ h3 {
   letter-spacing: -0.015em;
 }
 
-/* Keep Leaflet tiles below app chrome and rounded inside their container. */
 .leaflet-container {
   font: inherit;
   border-radius: 0.75rem;
+}
+
+/* ───────── Dark mode: remap the common light-mode utilities ─────────
+   The components use literal Tailwind colors; these scoped overrides flip
+   the surfaces, text, and borders without editing every component. */
+.dark .bg-white {
+  background-color: #221c16;
+}
+.dark .bg-slate-50 {
+  background-color: #2a231c;
+}
+.dark .border-slate-200,
+.dark .border-slate-100,
+.dark .border-slate-300 {
+  border-color: #3a322a;
+}
+.dark .ring-slate-200 {
+  --tw-ring-color: #3a322a;
+}
+.dark .divide-slate-100 > * {
+  border-color: #3a322a;
+}
+
+.dark .text-slate-900,
+.dark .text-stone-900 {
+  color: #f3ece0;
+}
+.dark .text-slate-800,
+.dark .text-stone-800 {
+  color: #e8dccb;
+}
+.dark .text-slate-700,
+.dark .text-stone-700 {
+  color: #d8ccba;
+}
+.dark .text-slate-600,
+.dark .text-stone-600 {
+  color: #b9ad9b;
+}
+.dark .text-slate-500,
+.dark .text-stone-500 {
+  color: #9c907f;
+}
+.dark .text-slate-400,
+.dark .text-stone-400 {
+  color: #837767;
+}
+.dark .text-slate-300 {
+  color: #6f6456;
+}
+
+/* Active/dark pills (e.g. selected filters, number badges) invert to light. */
+.dark .bg-slate-900 {
+  background-color: #f3ece0;
+}
+.dark .bg-slate-900.text-white {
+  color: #181410;
+}
+.dark .hover\:bg-slate-700:hover {
+  background-color: #e0d5c4;
+}
+
+/* Warm hover backgrounds. */
+.dark .hover\:bg-slate-100:hover {
+  background-color: #2a231c;
+}
+.dark .hover\:bg-orange-100\/70:hover {
+  background-color: rgba(249, 115, 22, 0.16);
+}
+
+/* Dim and tint the map tiles so the basemap reads dark; markers are overlays
+   and keep their colors. */
+.dark .leaflet-container {
+  background: #2a231c;
+}
+.dark .leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
 }

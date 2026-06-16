@@ -3,7 +3,7 @@ import { ExploreGrid } from "@/components/ExploreGrid";
 export default function HomePage() {
   return (
     <div>
-      <section className="mb-10 border-b border-[#e7ddca] pb-8">
+      <section className="mb-10 border-b border-[var(--hairline)] pb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">
           Plan around the weather
         </p>
