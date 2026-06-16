@@ -12,6 +12,7 @@ import {
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { WeatherNow } from "@/components/WeatherNow";
 import { DestinationImage } from "@/components/DestinationImage";
+import { PreDepartureChecklist } from "@/components/PreDepartureChecklist";
 
 function fmtDate(d: Date): string {
   return d.toLocaleDateString("en-US", {
@@ -181,6 +182,10 @@ export function TodayView({ initialMonth }: { initialMonth: number }) {
           ))}
         </ol>
       </div>
+
+      {status !== "after" && (
+        <PreDepartureChecklist regions={legs.map((l) => l.region)} />
+      )}
     </div>
   );
 }
