@@ -13,6 +13,9 @@ export interface WeatherSnapshot {
     weatherCode: number;
   };
   daily: DailyForecast[];
+  /** Today's sunrise/sunset (ISO local, e.g. "2026-06-16T05:12"), if available. */
+  sunrise: string | null;
+  sunset: string | null;
 }
 
 interface OpenMeteoResponse {
@@ -27,6 +30,8 @@ interface OpenMeteoResponse {
     temperature_2m_min: number[];
     precipitation_sum: number[];
     weather_code: number[];
+    sunrise?: string[];
+    sunset?: string[];
   };
 }
 
@@ -44,7 +49,7 @@ export async function fetchWeather(
   );
   url.searchParams.set(
     "daily",
-    "temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code"
+    "temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code,sunrise,sunset"
   );
   url.searchParams.set("forecast_days", "5");
   url.searchParams.set("timezone", "auto");
@@ -70,6 +75,8 @@ export async function fetchWeather(
       weatherCode: data.current?.weather_code ?? 0,
     },
     daily,
+    sunrise: data.daily?.sunrise?.[0] ?? null,
+    sunset: data.daily?.sunset?.[0] ?? null,
   };
 }
 

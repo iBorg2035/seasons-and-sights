@@ -15,6 +15,18 @@ function shortDate(iso: string): string {
   return `${MONTH_NAMES[m - 1]} ${d}`;
 }
 
+function clockTime(iso: string): string {
+  // ISO like "2026-06-16T05:12"
+  return iso.slice(11, 16);
+}
+
+function dayLength(sunrise: string, sunset: string): string {
+  const mins =
+    (new Date(sunset).getTime() - new Date(sunrise).getTime()) / 60000;
+  if (!Number.isFinite(mins) || mins <= 0) return "";
+  return `${Math.floor(mins / 60)}h ${Math.round(mins % 60)}m`;
+}
+
 export function WeatherNow({ lat, lng }: { lat: number; lng: number }) {
   const [data, setData] = useState<WeatherSnapshot | null>(null);
   const [error, setError] = useState(false);
@@ -59,6 +71,18 @@ export function WeatherNow({ lat, lng }: { lat: number; lng: number }) {
               </div>
             </div>
           </div>
+
+          {data.sunrise && data.sunset && (
+            <div className="mt-3 flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              <span aria-hidden>🌅</span>
+              <span>
+                {clockTime(data.sunrise)} – {clockTime(data.sunset)}
+              </span>
+              <span className="text-slate-400">
+                · {dayLength(data.sunrise, data.sunset)} of daylight
+              </span>
+            </div>
+          )}
 
           <div className="mt-4 grid grid-cols-5 gap-2">
             {data.daily.slice(0, 5).map((d) => (
