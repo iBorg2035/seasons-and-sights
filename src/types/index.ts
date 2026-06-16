@@ -45,6 +45,16 @@ export interface Event {
   blurb: string;
 }
 
+/** Practical "know before you go" essentials (indicative for many nationalities). */
+export interface TravelInfo {
+  visa: string;
+  currency: string;
+  language: string;
+  plugs: string;
+  gettingThere: string;
+  health: string;
+}
+
 export interface Region {
   /** Stable slug, e.g. "peru-cusco". */
   id: string;
@@ -67,4 +77,6 @@ export interface Region {
   wikiTitle?: string;
   /** Precomputed representative photo URL (see scripts/fetch-photos.mjs). */
   photo?: string;
+  /** Practical travel essentials. */
+  info?: TravelInfo;
 }

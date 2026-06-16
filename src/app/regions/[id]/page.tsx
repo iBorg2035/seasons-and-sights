@@ -8,6 +8,7 @@ import { WeatherNow } from "@/components/WeatherNow";
 import { SightsList } from "@/components/SightsList";
 import { RegionMap } from "@/components/RegionMap";
 import { RegionPlanner } from "@/components/RegionPlanner";
+import { TravelEssentials } from "@/components/TravelEssentials";
 import { getCurrentSeason, monthOf } from "@/lib/season";
 
 // Regenerate each page in the background ~daily so the "current season"
@@ -89,6 +90,8 @@ export default async function RegionPage({
         mapSlot={<RegionMap region={region} />}
         sightsSlot={<SightsList sights={region.sights} />}
       />
+
+      {region.info && <TravelEssentials info={region.info} />}
     </div>
   );
 }

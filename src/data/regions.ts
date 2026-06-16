@@ -5,6 +5,7 @@ import type {
   MonthlyClimate,
   Region,
   Season,
+  TravelInfo,
 } from "@/types";
 import photos from "@/data/photos.json";
 
@@ -747,11 +748,42 @@ const WIKI_TITLE: Record<string, string> = {
 
 const PHOTOS = photos as Record<string, string>;
 
+// Practical essentials per destination. Indicative (esp. visa) — the UI shows a
+// "verify for your nationality" disclaimer.
+const TRAVEL_INFO: Record<string, TravelInfo> = {
+  "thailand-chiangmai": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "Chiang Mai (CNX) via Bangkok · ~13h from London", health: "Crop-burning haze Mar–Apr; mosquito repellent" },
+  "thailand-bangkok": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "Bangkok (BKK) · ~11h from London", health: "Generally safe; mind traffic & street-food hygiene" },
+  "thailand-krabi": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "Krabi (KBV) via Bangkok · ~13h from London", health: "Strong sun & sea currents; reef-safe sunscreen" },
+  "thailand-kohsamui": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "Samui (USM) via Bangkok · ~13h from London", health: "Sun & sea safety; mosquito repellent" },
+  "indonesia-bali": { visa: "Visa on arrival (30 days) for many", currency: "Indonesian rupiah (IDR)", language: "Indonesian (Balinese)", plugs: "Types C/F · 230V", gettingThere: "Denpasar (DPS) · ~16h from London (1 stop)", health: "Dengue — repellent; care on scooters" },
+  "vietnam-hoian": { visa: "e-Visa (most); some visa-free", currency: "Vietnamese đồng (VND)", language: "Vietnamese", plugs: "Types A/C/F · 220V", gettingThere: "Da Nang (DAD) via hub · ~14h from London", health: "Flood & typhoon risk Oct–Nov" },
+  "vietnam-hanoi": { visa: "e-Visa (most); some visa-free", currency: "Vietnamese đồng (VND)", language: "Vietnamese", plugs: "Types A/C/F · 220V", gettingThere: "Hanoi (HAN) · ~12h from London", health: "Air quality can dip; mind traffic" },
+  "vietnam-hcmc": { visa: "e-Visa (most); some visa-free", currency: "Vietnamese đồng (VND)", language: "Vietnamese", plugs: "Types A/C/F · 220V", gettingThere: "Ho Chi Minh City (SGN) · ~12h from London", health: "Dengue — repellent; mind traffic" },
+  "cambodia-siemreap": { visa: "e-Visa / visa on arrival", currency: "Riel (KHR); USD widely used", language: "Khmer", plugs: "Types A/C/G · 230V", gettingThere: "Siem Reap (SAI) via hub · ~14h from London", health: "Heat & dehydration; mosquito repellent" },
+  "philippines-palawan": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "El Nido/Puerto Princesa via Manila · ~16h from London", health: "Strong sun & currents; dengue — repellent" },
+  "peru-cusco": { visa: "Visa-free 90–183 days for many", currency: "Peruvian sol (PEN)", language: "Spanish (Quechua)", plugs: "Types A/C · 220V", gettingThere: "Cusco (CUZ) via Lima · ~16h from London", health: "Altitude 3,400m — acclimatize & hydrate" },
+  "bolivia-uyuni": { visa: "Visa-free for many; US needs visa", currency: "Boliviano (BOB)", language: "Spanish (Quechua/Aymara)", plugs: "Types A/C · 230V", gettingThere: "Uyuni (UYU) via La Paz · ~18h from London", health: "Altitude 3,600m+; cold nights — layers" },
+  "patagonia-elcalafate": { visa: "Visa-free 90 days for many", currency: "Argentine & Chilean peso", language: "Spanish", plugs: "Types C/I/L · 220V", gettingThere: "El Calafate (FTE) via Buenos Aires · ~17h from London", health: "Fierce wind & sun; dress in layers" },
+  "brazil-rio": { visa: "Visa-free ~90 days for many", currency: "Brazilian real (BRL)", language: "Portuguese", plugs: "Types C/N · 127/220V", gettingThere: "Rio de Janeiro (GIG) · ~11h from London", health: "Petty theft — stay aware; strong sun" },
+  "brazil-amazon-manaus": { visa: "Visa-free ~90 days for many", currency: "Brazilian real (BRL)", language: "Portuguese", plugs: "Types C/N · 127V", gettingThere: "Manaus (MAO) via São Paulo · ~14h from London", health: "Yellow-fever vaccine advised; repellent" },
+  "colombia-cartagena": { visa: "Visa-free ~90 days for many", currency: "Colombian peso (COP)", language: "Spanish", plugs: "Types A/B · 110V", gettingThere: "Cartagena (CTG) via Bogotá · ~13h from London", health: "Strong sun; petty-theft awareness" },
+  "chile-atacama": { visa: "Visa-free 90 days for many", currency: "Chilean peso (CLP)", language: "Spanish", plugs: "Types C/L · 220V", gettingThere: "Calama (CJC) via Santiago · ~17h from London", health: "Altitude & intense UV — hydrate, SPF" },
+  "ecuador-galapagos": { visa: "Visa-free 90 days; transit card + park fee", currency: "US dollar (USD)", language: "Spanish", plugs: "Types A/B · 120V", gettingThere: "Baltra (GPS) via Quito/Guayaquil · ~16h from London", health: "Intense equatorial sun; follow park rules" },
+  "albania-riviera": { visa: "Visa-free ~90 days for many", currency: "Albanian lek (ALL)", language: "Albanian", plugs: "Types C/F · 230V", gettingThere: "Tirana (TIA) · ~3h from London", health: "Very safe; standard sun care" },
+  "montenegro-kotor": { visa: "Visa-free ~90 days for many", currency: "Euro (EUR)", language: "Montenegrin", plugs: "Types C/F · 230V", gettingThere: "Tivat (TIV) · ~3h from London", health: "Very safe; winding mountain roads" },
+  "sri-lanka-south": { visa: "ETA / e-Visa required for most", currency: "Sri Lankan rupee (LKR)", language: "Sinhala & Tamil", plugs: "Types D/G/M · 230V", gettingThere: "Colombo (CMB) · ~11h from London", health: "Dengue — repellent; strong sun" },
+  "nepal-kathmandu": { visa: "Visa on arrival for most", currency: "Nepalese rupee (NPR)", language: "Nepali", plugs: "Types C/D/M · 230V", gettingThere: "Kathmandu (KTM) · ~12h from London (1 stop)", health: "Altitude on treks — acclimatize" },
+  "japan-kyoto": { visa: "Visa-free ~90 days for many", currency: "Japanese yen (JPY)", language: "Japanese", plugs: "Types A/B · 100V", gettingThere: "Osaka Kansai (KIX) · ~12h from London", health: "Very safe; summer heat & humidity" },
+  "morocco-marrakech": { visa: "Visa-free ~90 days for many", currency: "Moroccan dirham (MAD)", language: "Arabic & Berber (French common)", plugs: "Types C/E · 220V", gettingThere: "Marrakech (RAK) · ~3.5h from London", health: "Strong sun; standard street awareness" },
+  "tanzania-zanzibar": { visa: "Visa required (e-Visa / on arrival)", currency: "Tanzanian shilling (TZS); USD common", language: "Swahili", plugs: "Type G · 230V", gettingThere: "Zanzibar (ZNZ) · ~10h from London (1 stop)", health: "Malaria — prophylaxis & repellent; strong sun" },
+};
+
 for (const region of REGIONS) {
   if (EVENTS[region.id]) region.events = EVENTS[region.id];
   if (DAILY_BUDGET[region.id]) region.dailyBudget = DAILY_BUDGET[region.id];
   if (WIKI_TITLE[region.id]) region.wikiTitle = WIKI_TITLE[region.id];
   if (PHOTOS[region.id]) region.photo = PHOTOS[region.id];
+  if (TRAVEL_INFO[region.id]) region.info = TRAVEL_INFO[region.id];
 }
 
 export function getRegion(id: string): Region | undefined {
