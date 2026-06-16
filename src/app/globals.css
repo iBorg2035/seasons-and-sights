@@ -51,6 +51,25 @@ h3 {
   border-radius: 0.75rem;
 }
 
+/* Visible keyboard focus everywhere. */
+:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Respect users who prefer less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ───────── Dark mode: remap the common light-mode utilities ─────────
    The components use literal Tailwind colors; these scoped overrides flip
    the surfaces, text, and borders without editing every component. */

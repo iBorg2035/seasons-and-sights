@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Fraunces, Inter } from "next/font/google";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { SiteNav } from "@/components/SiteNav";
 import "./globals.css";
 
 // Set the theme class before paint to avoid a flash of the wrong theme.
@@ -19,20 +19,31 @@ const inter = Inter({
   variable: "--font-body",
 });
 
+const SITE_URL = "https://seasons-and-sights.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Seasons & Sights — travel in the right season",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Seasons & Sights — travel in the right season",
+    template: "%s · Seasons & Sights",
+  },
   description:
     "Know the dry and wet seasons (and the crowds) for destinations across Asia, South America, Europe, and Africa — find local sights and book your stay at the right time of year.",
+  openGraph: {
+    title: "Seasons & Sights — travel in the right season",
+    description:
+      "Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across 25 destinations.",
+    url: SITE_URL,
+    siteName: "Seasons & Sights",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Seasons & Sights — travel in the right season",
+    description:
+      "Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across 25 destinations.",
+  },
 };
-
-const NAV = [
-  { href: "/", label: "Explore" },
-  { href: "/when-to-go", label: "When to go" },
-  { href: "/planner", label: "Planner" },
-  { href: "/compare", label: "Compare" },
-  { href: "/festivals", label: "Festivals" },
-  { href: "/surprise", label: "Surprise" },
-];
 
 export default function RootLayout({
   children,
@@ -47,6 +58,12 @@ export default function RootLayout({
     >
       <body className="min-h-screen antialiased">
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[2000] focus:rounded-lg focus:bg-stone-900 focus:px-4 focus:py-2 focus:text-white"
+        >
+          Skip to content
+        </a>
         <header className="sticky top-0 z-[1000] border-b border-[var(--hairline)] bg-[var(--chrome)] backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
             <Link
@@ -60,24 +77,16 @@ export default function RootLayout({
                 Seasons<span className="italic text-orange-500">&amp;</span>Sights
               </span>
             </Link>
-            <nav className="flex flex-wrap items-center gap-0.5 text-sm font-medium">
-              {NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-lg px-2.5 py-1.5 text-stone-600 transition hover:bg-orange-100/70 hover:text-stone-900"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <ThemeToggle />
-            </nav>
+            <SiteNav />
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+        <main id="main" className="mx-auto max-w-6xl px-4 py-10">
+          {children}
+        </main>
         <footer className="mx-auto max-w-6xl px-4 py-10 text-xs text-stone-400">
           Season data is curated climatology; live weather & historical normals
-          from Open-Meteo. Accommodation links open Booking.com.
+          from Open-Meteo; photos via Wikipedia. Accommodation links open
+          Booking.com.
         </footer>
       </body>
     </html>
