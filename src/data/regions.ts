@@ -8,6 +8,7 @@ import type {
   TravelInfo,
 } from "@/types";
 import photos from "@/data/photos.json";
+import { TOOLKITS } from "@/data/toolkits";
 
 const SEASON_BY_CHAR: Record<string, Season> = {
   D: "dry",
@@ -1022,6 +1023,7 @@ for (const region of REGIONS) {
   if (WIKI_TITLE[region.id]) region.wikiTitle = WIKI_TITLE[region.id];
   if (PHOTOS[region.id]) region.photo = PHOTOS[region.id];
   if (TRAVEL_INFO[region.id]) region.info = TRAVEL_INFO[region.id];
+  if (TOOLKITS[region.id]) region.toolkit = TOOLKITS[region.id];
 }
 
 export function getRegion(id: string): Region | undefined {

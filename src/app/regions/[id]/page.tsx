@@ -9,6 +9,7 @@ import { SightsList } from "@/components/SightsList";
 import { RegionMap } from "@/components/RegionMap";
 import { RegionPlanner } from "@/components/RegionPlanner";
 import { TravelEssentials } from "@/components/TravelEssentials";
+import { TravelToolkit } from "@/components/TravelToolkit";
 import { getCurrentSeason, monthOf } from "@/lib/season";
 
 // Regenerate each page in the background ~daily so the "current season"
@@ -92,6 +93,9 @@ export default async function RegionPage({
       />
 
       {region.info && <TravelEssentials info={region.info} />}
+      {region.toolkit && (
+        <TravelToolkit toolkit={region.toolkit} currency={region.info?.currency} />
+      )}
     </div>
   );
 }

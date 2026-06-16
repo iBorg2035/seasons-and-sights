@@ -56,6 +56,19 @@ export interface TravelInfo {
   health: string;
 }
 
+export interface Phrase {
+  en: string;
+  local: string;
+}
+
+/** On-the-ground toolkit: phrases, emergency numbers, tipping and water norms. */
+export interface TravelToolkit {
+  phrases: Phrase[];
+  emergency: string;
+  tipping: string;
+  water: string;
+}
+
 export interface Region {
   /** Stable slug, e.g. "peru-cusco". */
   id: string;
@@ -80,4 +93,6 @@ export interface Region {
   photo?: string;
   /** Practical travel essentials. */
   info?: TravelInfo;
+  /** On-the-ground toolkit. */
+  toolkit?: TravelToolkit;
 }
