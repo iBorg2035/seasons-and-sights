@@ -27,6 +27,7 @@ const CONTINENT_ORDER: Continent[] = [
   "South Asia",
   "East Asia",
   "South America",
+  "North America",
   "Europe",
   "Africa",
 ];

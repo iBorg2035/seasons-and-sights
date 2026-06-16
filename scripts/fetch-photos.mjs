@@ -30,6 +30,11 @@ const TITLES = {
   "japan-kyoto": "Fushimi Inari-taisha",
   "morocco-marrakech": "Marrakesh",
   "tanzania-zanzibar": "Zanzibar",
+  "mexico-yucatan": "Tulum",
+  "india-rajasthan": "Hawa Mahal",
+  "turkey-cappadocia": "Cappadocia",
+  "greece-santorini": "Santorini",
+  "south-africa-capetown": "Cape Town",
 };
 
 const out = {};

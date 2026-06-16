@@ -506,8 +506,101 @@ export const REGIONS: Region[] = [
       { name: "Durmitor National Park", type: "nature", lat: 43.1395, lng: 19.048, blurb: "Glacial lakes, peaks, and the deep Tara River canyon." },
     ],
   },
+  {
+    id: "turkey-cappadocia",
+    name: "Cappadocia",
+    country: "Turkey",
+    continent: "Europe",
+    lat: 38.6431,
+    lng: 34.8307,
+    bookingDest: "Cappadocia, Turkey",
+    climateBlurb:
+      "High-plateau Anatolia: clear and mild in spring (Apr–Jun) and autumn (Sep–Oct) — prime for balloon flights — with hot summers and cold, snowy winters.",
+    months: climate("WWSDDDSSDDSW", {
+      4: "ideal — clear balloon mornings",
+      7: "hot and dusty",
+      10: "ideal — crisp and clear",
+      1: "cold & snowy",
+    }),
+    sights: [
+      { name: "Göreme Open-Air Museum", type: "culture", lat: 38.6431, lng: 34.8456, blurb: "Rock-cut churches with Byzantine frescoes." },
+      { name: "Hot-air balloon fields", type: "nature", lat: 38.6425, lng: 34.829, blurb: "Sunrise balloons over the fairy chimneys." },
+      { name: "Derinkuyu Underground City", type: "culture", lat: 38.3739, lng: 34.735, blurb: "Eight-level subterranean city carved in tuff." },
+      { name: "Uçhisar Castle", type: "culture", lat: 38.63, lng: 34.806, blurb: "Tallest fairy chimney, with valley views." },
+    ],
+  },
+  {
+    id: "greece-santorini",
+    name: "Santorini & the Cyclades",
+    country: "Greece",
+    continent: "Europe",
+    lat: 36.4072,
+    lng: 25.4567,
+    bookingDest: "Santorini, Greece",
+    climateBlurb:
+      "Classic Mediterranean: hot, dry, sun-soaked May–October (peak and pricey Jul–Aug) and mild, wetter winters November–April. May–June and September are the sweet spots.",
+    months: climate("WWWSDDDDDSWW", {
+      5: "warm shoulder, fewer crowds",
+      7: "peak season — hot and busy",
+      8: "peak season — hot and busy",
+      9: "warm shoulder, ideal",
+    }),
+    sights: [
+      { name: "Oia village & sunset", type: "city", lat: 36.4618, lng: 25.3753, blurb: "Whitewashed clifftop village famed for sunsets." },
+      { name: "Fira", type: "city", lat: 36.4167, lng: 25.4333, blurb: "Caldera-rim capital of cafés and views." },
+      { name: "Akrotiri", type: "culture", lat: 36.3517, lng: 25.4036, blurb: "Bronze-Age 'Minoan Pompeii' ruins." },
+      { name: "Red Beach", type: "beach", lat: 36.3489, lng: 25.3947, blurb: "Dramatic red-cliff volcanic cove." },
+    ],
+  },
+
+  // ──────────────────────────── North America ───────────────────────────
+  {
+    id: "mexico-yucatan",
+    name: "Yucatán & Riviera Maya",
+    country: "Mexico",
+    continent: "North America",
+    lat: 20.2114,
+    lng: -87.4654,
+    bookingDest: "Tulum, Mexico",
+    climateBlurb:
+      "Caribbean Mexico: dry, sunny December–April (peak), a hot, humid wet season May–October, with hurricane risk strongest August–October.",
+    months: climate("DDDDSWWWWWSD", {
+      4: "driest, hot",
+      9: "wettest; hurricane risk",
+      10: "hurricane risk easing",
+    }),
+    sights: [
+      { name: "Tulum Ruins", type: "culture", lat: 20.2148, lng: -87.429, blurb: "Clifftop Maya ruins above a turquoise beach." },
+      { name: "Chichén Itzá", type: "culture", lat: 20.6843, lng: -88.5678, blurb: "The great Maya pyramid of El Castillo." },
+      { name: "Cenote Dos Ojos", type: "nature", lat: 20.3253, lng: -87.3899, blurb: "Crystalline freshwater sinkhole for swimming/diving." },
+      { name: "Cozumel reefs", type: "beach", lat: 20.423, lng: -86.9223, blurb: "World-class snorkeling and dive sites." },
+    ],
+  },
 
   // ───────────────────────────── South Asia ─────────────────────────────
+  {
+    id: "india-rajasthan",
+    name: "Rajasthan (Jaipur & Udaipur)",
+    country: "India",
+    continent: "South Asia",
+    lat: 26.9124,
+    lng: 75.7873,
+    bookingDest: "Jaipur, India",
+    climateBlurb:
+      "Cool, dry and ideal October–March; a fierce dry heat April–June; then the monsoon July–September. Forts and palaces shine in the winter months.",
+    months: climate("DDDSSWWWWDDD", {
+      1: "cool, ideal",
+      5: "extreme heat (45°C+)",
+      7: "monsoon — wettest",
+      11: "cool, ideal; festivals",
+    }),
+    sights: [
+      { name: "Amber Fort", type: "culture", lat: 26.9855, lng: 75.8513, blurb: "Hilltop fort-palace above Jaipur." },
+      { name: "Hawa Mahal", type: "culture", lat: 26.9239, lng: 75.8267, blurb: "Jaipur's honeycomb 'Palace of Winds'." },
+      { name: "City Palace, Udaipur", type: "culture", lat: 24.5764, lng: 73.6835, blurb: "Lakeside palace complex in the 'City of Lakes'." },
+      { name: "Ranthambore National Park", type: "wildlife", lat: 26.0173, lng: 76.5026, blurb: "Tiger reserve among ruined forts." },
+    ],
+  },
   {
     id: "sri-lanka-south",
     name: "Sri Lanka (South & Hills)",
@@ -633,6 +726,29 @@ export const REGIONS: Region[] = [
       { name: "Prison Island", type: "nature", lat: -6.12, lng: 39.18, blurb: "Giant tortoises a short boat ride offshore." },
     ],
   },
+  {
+    id: "south-africa-capetown",
+    name: "Cape Town",
+    country: "South Africa",
+    continent: "Africa",
+    lat: -33.9249,
+    lng: 18.4241,
+    bookingDest: "Cape Town, South Africa",
+    climateBlurb:
+      "Southern-hemisphere Mediterranean: warm, dry summers November–March (peak) and cool, wet winters June–August. Spring and autumn are mild and quiet.",
+    months: climate("DDDSWWWWSDDD", {
+      1: "peak summer — warm, busy",
+      6: "wettest, cool",
+      7: "wettest, cool",
+      11: "spring — wildflowers",
+    }),
+    sights: [
+      { name: "Table Mountain", type: "nature", lat: -33.9628, lng: 18.4098, blurb: "Flat-topped peak by cableway over the city." },
+      { name: "Cape of Good Hope", type: "nature", lat: -34.3568, lng: 18.474, blurb: "Dramatic cliffs at the peninsula's tip." },
+      { name: "Robben Island", type: "culture", lat: -33.8076, lng: 18.3712, blurb: "Mandela's prison island, now a museum." },
+      { name: "Boulders Beach", type: "wildlife", lat: -34.1976, lng: 18.451, blurb: "Beach colony of African penguins." },
+    ],
+  },
 ];
 
 // Marquee festivals & events, keyed by region id and attached below. Kept
@@ -685,6 +801,17 @@ const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
       { name: "Kotor Carnival", month: 2, blurb: "Masked winter carnival in the walled town." },
       { name: "Boka Night", month: 8, blurb: "Decorated boats and fireworks across the bay." },
     ],
+    "india-rajasthan": [
+      { name: "Diwali", month: 11, blurb: "The festival of lights across the region." },
+      { name: "Pushkar Camel Fair", month: 11, blurb: "Vast desert livestock fair and folk festival." },
+      { name: "Holi", month: 3, blurb: "The riotous festival of colours." },
+    ],
+    "mexico-yucatan": [
+      { name: "Día de Muertos", month: 11, blurb: "Day of the Dead — altars, marigolds, processions." },
+    ],
+    "greece-santorini": [
+      { name: "Ifestia Festival", month: 8, blurb: "Re-enacted volcanic eruption with fireworks over the caldera." },
+    ],
   };
 
 // Rough mid-range cost per person per day (USD): lodging + food + activities +
@@ -715,6 +842,11 @@ const DAILY_BUDGET: Record<string, number> = {
   "japan-kyoto": 130,
   "morocco-marrakech": 55,
   "tanzania-zanzibar": 80,
+  "mexico-yucatan": 70,
+  "india-rajasthan": 40,
+  "turkey-cappadocia": 60,
+  "greece-santorini": 90,
+  "south-africa-capetown": 70,
 };
 
 // Wikipedia article titles for representative photos (fetched via /api/photo).
@@ -744,6 +876,11 @@ const WIKI_TITLE: Record<string, string> = {
   "japan-kyoto": "Fushimi Inari-taisha",
   "morocco-marrakech": "Marrakesh",
   "tanzania-zanzibar": "Zanzibar",
+  "mexico-yucatan": "Tulum",
+  "india-rajasthan": "Hawa Mahal",
+  "turkey-cappadocia": "Cappadocia",
+  "greece-santorini": "Santorini",
+  "south-africa-capetown": "Cape Town",
 };
 
 const PHOTOS = photos as Record<string, string>;
@@ -776,6 +913,11 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "japan-kyoto": { visa: "Visa-free ~90 days for many", currency: "Japanese yen (JPY)", language: "Japanese", plugs: "Types A/B · 100V", gettingThere: "Osaka Kansai (KIX) · ~12h from London", health: "Very safe; summer heat & humidity" },
   "morocco-marrakech": { visa: "Visa-free ~90 days for many", currency: "Moroccan dirham (MAD)", language: "Arabic & Berber (French common)", plugs: "Types C/E · 220V", gettingThere: "Marrakech (RAK) · ~3.5h from London", health: "Strong sun; standard street awareness" },
   "tanzania-zanzibar": { visa: "Visa required (e-Visa / on arrival)", currency: "Tanzanian shilling (TZS); USD common", language: "Swahili", plugs: "Type G · 230V", gettingThere: "Zanzibar (ZNZ) · ~10h from London (1 stop)", health: "Malaria — prophylaxis & repellent; strong sun" },
+  "mexico-yucatan": { visa: "Visa-free up to 180 days for many", currency: "Mexican peso (MXN)", language: "Spanish", plugs: "Types A/B · 127V", gettingThere: "Cancún (CUN) · ~11h from London", health: "Drink bottled water; strong sun; hurricane season Aug–Oct" },
+  "india-rajasthan": { visa: "e-Visa required for most", currency: "Indian rupee (INR)", language: "Hindi & English", plugs: "Types C/D/M · 230V", gettingThere: "Jaipur (JAI) via Delhi · ~10h from London", health: "Bottled water; extreme heat Apr–Jun" },
+  "turkey-cappadocia": { visa: "Visa-free / e-Visa for many", currency: "Turkish lira (TRY)", language: "Turkish", plugs: "Types C/F · 230V", gettingThere: "Kayseri (ASR) via Istanbul · ~5h from London", health: "Strong sun; cold, snowy winters" },
+  "greece-santorini": { visa: "Visa-free 90 days (Schengen) for many", currency: "Euro (EUR)", language: "Greek", plugs: "Types C/F · 230V", gettingThere: "Santorini (JTR) · ~4h from London", health: "Strong sun; steep caldera steps" },
+  "south-africa-capetown": { visa: "Visa-free up to 90 days for many", currency: "South African rand (ZAR)", language: "English, Afrikaans & Xhosa", plugs: "Types C/D/M/N · 230V", gettingThere: "Cape Town (CPT) · ~12h from London", health: "Strong sun; petty-theft awareness" },
 };
 
 for (const region of REGIONS) {

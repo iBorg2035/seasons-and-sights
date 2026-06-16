@@ -1,6 +1,6 @@
 # Seasons & Sights
 
-A travel app for **25 destinations across Asia, South America, Europe, and
+A travel app for **30 destinations across Asia, South America, Europe, and
 Africa**, built around the one question that makes or breaks a trip: *is it the
 dry or wet season here, right now — and is it worth the crowds?* Each
 destination shows a 12-month dry/wet calendar, a matching crowds/price strip,

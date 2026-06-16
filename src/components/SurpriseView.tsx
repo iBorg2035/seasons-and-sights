@@ -20,6 +20,7 @@ const CONTINENTS: (Continent | "any")[] = [
   "South Asia",
   "East Asia",
   "South America",
+  "North America",
   "Europe",
   "Africa",
 ];

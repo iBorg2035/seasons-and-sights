@@ -21,6 +21,7 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "South Asia", label: "South Asia" },
   { value: "East Asia", label: "East Asia" },
   { value: "South America", label: "South America" },
+  { value: "North America", label: "N. America" },
   { value: "Europe", label: "Europe" },
   { value: "Africa", label: "Africa" },
 ];
