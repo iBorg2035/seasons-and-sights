@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { Continent, Region } from "@/types";
 import { REGIONS, getRegion } from "@/data/regions";
 import { SeasonStrip } from "@/components/SeasonStrip";
+import { RouteMap } from "@/components/RouteMap";
 import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
 import { buildIcs } from "@/lib/ics";
 import {
@@ -353,6 +354,16 @@ export function TripPlanner({
               stays, or drop the flagged ones.
             </p>
           )}
+
+          <div className="mb-5">
+            <div className="h-[420px] w-full overflow-hidden rounded-2xl border border-slate-200">
+              <RouteMap legs={legs} />
+            </div>
+            <p className="mt-2 text-xs text-slate-400">
+              Your route in order (1 → {legs.length}), each stop colored by its
+              season for that leg.
+            </p>
+          </div>
 
           <ol className="space-y-4">
             {legs.map((leg) => {
