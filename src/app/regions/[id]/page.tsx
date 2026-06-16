@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { REGIONS, getRegion } from "@/data/regions";
 import { SeasonBadge } from "@/components/SeasonBadge";
+import { DestinationImage } from "@/components/DestinationImage";
 import { WeatherNow } from "@/components/WeatherNow";
 import { SightsList } from "@/components/SightsList";
 import { RegionMap } from "@/components/RegionMap";
@@ -25,9 +26,15 @@ export async function generateMetadata({
   const { id } = await params;
   const region = getRegion(id);
   if (!region) return { title: "Not found" };
+  const title = `${region.name}, ${region.country}`;
   return {
-    title: `${region.name}, ${region.country} — Seasons & Sights`,
+    title,
     description: region.climateBlurb,
+    openGraph: {
+      title: `${title} — when to go`,
+      description: region.climateBlurb,
+      type: "article",
+    },
   };
 }
 
@@ -46,24 +53,33 @@ export default async function RegionPage({
     <div>
       <Link
         href="/"
-        className="text-sm font-medium text-slate-500 hover:text-slate-900"
+        className="mb-3 inline-block text-sm font-medium text-stone-500 hover:text-stone-900"
       >
         ← All destinations
       </Link>
 
-      <header className="mt-3 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            {region.name}
-          </h1>
-          <p className="text-slate-500">
-            {region.country} · {region.continent}
-          </p>
+      <header className="relative mb-6 overflow-hidden rounded-3xl">
+        <DestinationImage
+          title={region.wikiTitle}
+          alt={`${region.name}, ${region.country}`}
+          variant="hero"
+          className="h-56 w-full sm:h-72"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-3 p-5">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-white drop-shadow sm:text-4xl">
+              {region.name}
+            </h1>
+            <p className="text-white/85">
+              {region.country} · {region.continent}
+            </p>
+          </div>
+          <SeasonBadge season={current.season} suffix="now" />
         </div>
-        <SeasonBadge season={current.season} suffix="now" className="mt-1" />
       </header>
 
-      <p className="mb-6 mt-4 max-w-3xl text-slate-600">{region.climateBlurb}</p>
+      <p className="mb-6 max-w-3xl text-stone-600">{region.climateBlurb}</p>
 
       <RegionPlanner
         region={region}

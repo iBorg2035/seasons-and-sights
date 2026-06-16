@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Region } from "@/types";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { SeasonStrip } from "@/components/SeasonStrip";
+import { DestinationImage } from "@/components/DestinationImage";
 import { bestMonths, climateForMonth, monthOf } from "@/lib/season";
 
 export function RegionCard({
@@ -19,9 +20,20 @@ export function RegionCard({
   return (
     <Link
       href={`/regions/${region.id}`}
-      className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="relative">
+        <DestinationImage
+          title={region.wikiTitle}
+          alt={`${region.name}, ${region.country}`}
+          className="h-36 w-full"
+        />
+        <div className="absolute right-2 top-2">
+          <SeasonBadge season={season} suffix={isNow ? "now" : undefined} />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 p-5">
         <div>
           <h3 className="font-semibold text-slate-900 group-hover:text-amber-600">
             {region.name}
@@ -30,19 +42,18 @@ export function RegionCard({
             {region.country} · {region.continent}
           </p>
         </div>
-        <SeasonBadge season={season} suffix={isNow ? "now" : undefined} />
+
+        <SeasonStrip
+          region={region}
+          highlightMonth={activeMonth}
+          showLegend={false}
+        />
+
+        <p className="mt-1 text-xs text-slate-500">
+          <span className="font-medium text-slate-700">Best time:</span>{" "}
+          {bestMonths(region)}
+        </p>
       </div>
-
-      <SeasonStrip
-        region={region}
-        highlightMonth={activeMonth}
-        showLegend={false}
-      />
-
-      <p className="mt-1 text-xs text-slate-500">
-        <span className="font-medium text-slate-700">Best time:</span>{" "}
-        {bestMonths(region)}
-      </p>
     </Link>
   );
 }

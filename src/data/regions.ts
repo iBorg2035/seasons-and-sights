@@ -712,9 +712,39 @@ const DAILY_BUDGET: Record<string, number> = {
   "tanzania-zanzibar": 80,
 };
 
+// Wikipedia article titles for representative photos (fetched via /api/photo).
+const WIKI_TITLE: Record<string, string> = {
+  "thailand-chiangmai": "Chiang Mai",
+  "thailand-bangkok": "Bangkok",
+  "thailand-krabi": "Railay Beach",
+  "thailand-kohsamui": "Ko Samui",
+  "indonesia-bali": "Bali",
+  "vietnam-hoian": "Hội An",
+  "vietnam-hanoi": "Hanoi",
+  "vietnam-hcmc": "Ho Chi Minh City",
+  "cambodia-siemreap": "Angkor Wat",
+  "philippines-palawan": "El Nido, Palawan",
+  "peru-cusco": "Machu Picchu",
+  "bolivia-uyuni": "Salar de Uyuni",
+  "patagonia-elcalafate": "Perito Moreno Glacier",
+  "brazil-rio": "Rio de Janeiro",
+  "brazil-amazon-manaus": "Amazon rainforest",
+  "colombia-cartagena": "Cartagena, Colombia",
+  "chile-atacama": "Atacama Desert",
+  "ecuador-galapagos": "Galápagos Islands",
+  "albania-riviera": "Albanian Riviera",
+  "montenegro-kotor": "Kotor",
+  "sri-lanka-south": "Sigiriya",
+  "nepal-kathmandu": "Boudhanath",
+  "japan-kyoto": "Fushimi Inari-taisha",
+  "morocco-marrakech": "Marrakesh",
+  "tanzania-zanzibar": "Zanzibar",
+};
+
 for (const region of REGIONS) {
   if (EVENTS[region.id]) region.events = EVENTS[region.id];
   if (DAILY_BUDGET[region.id]) region.dailyBudget = DAILY_BUDGET[region.id];
+  if (WIKI_TITLE[region.id]) region.wikiTitle = WIKI_TITLE[region.id];
 }
 
 export function getRegion(id: string): Region | undefined {
