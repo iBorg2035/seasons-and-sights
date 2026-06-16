@@ -79,6 +79,21 @@ function legDateRanges(
   });
 }
 
+interface SavedTrip {
+  id: string;
+  name: string;
+  start: number;
+  stops: [string, number][];
+}
+
+const SAVED_KEY = "seasons-saved-trips";
+
+function tripName(legs: ItineraryLeg[]): string {
+  if (legs.length === 0) return "Trip";
+  if (legs.length === 1) return legs[0].region.name;
+  return `${legs[0].region.name} → ${legs[legs.length - 1].region.name}`;
+}
+
 export function TripPlanner({
   initialMonth,
   initialStops = [],
@@ -93,6 +108,35 @@ export function TripPlanner({
   );
   const [startMonth, setStartMonth] = useState(initialMonth);
   const [copied, setCopied] = useState(false);
+  const [saved, setSaved] = useState<SavedTrip[]>([]);
+  const [justSaved, setJustSaved] = useState(false);
+
+  // Load saved trips from localStorage on mount.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SAVED_KEY);
+      if (raw) setSaved(JSON.parse(raw));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const persistSaved = (next: SavedTrip[]) => {
+    setSaved(next);
+    try {
+      localStorage.setItem(SAVED_KEY, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
+
+  const loadTrip = (t: SavedTrip) => {
+    setStops(new Map(t.stops));
+    setStartMonth(t.start);
+  };
+
+  const deleteTrip = (id: string) =>
+    persistSaved(saved.filter((t) => t.id !== id));
 
   // Keep the URL in sync so any plan is shareable / bookmarkable.
   useEffect(() => {
@@ -161,6 +205,19 @@ export function TripPlanner({
 
   const ranges = useMemo(() => legDateRanges(startMonth, legs), [startMonth, legs]);
 
+  const saveCurrent = () => {
+    if (!stops.size) return;
+    const trip: SavedTrip = {
+      id: `${Date.now()}`,
+      name: tripName(legs),
+      start: startMonth,
+      stops: Array.from(stops),
+    };
+    persistSaved([trip, ...saved.filter((t) => t.name !== trip.name)]);
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1500);
+  };
+
   const tripSpan = useMemo(() => {
     if (legs.length === 0) return null;
     const first = ranges[0].start;
@@ -178,6 +235,33 @@ export function TripPlanner({
 
   return (
     <div className="space-y-8">
+      {/* ── Saved trips ── */}
+      {saved.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-slate-700">Saved trips:</span>
+          {saved.map((t) => (
+            <span
+              key={t.id}
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white py-1 pl-3 pr-1.5 text-sm shadow-sm"
+            >
+              <button
+                onClick={() => loadTrip(t)}
+                className="font-medium text-slate-700 hover:text-amber-600"
+              >
+                {t.name}
+              </button>
+              <button
+                onClick={() => deleteTrip(t.id)}
+                aria-label={`Delete ${t.name}`}
+                className="rounded-full px-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* ── Controls ── */}
       <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div>
@@ -332,6 +416,12 @@ export function TripPlanner({
                   · est. {formatUsd(estimateTripCost(legs))}/person
                 </p>
               )}
+              <button
+                onClick={saveCurrent}
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              >
+                {justSaved ? "Saved!" : "Save trip"}
+              </button>
               <button
                 onClick={() => exportIcs(legs)}
                 className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
