@@ -1,4 +1,5 @@
 import type { TravelInfo } from "@/types";
+import { VisaByNationality } from "@/components/VisaByNationality";
 
 const ITEMS: { key: keyof TravelInfo; icon: string; label: string }[] = [
   { key: "visa", icon: "🛂", label: "Visa" },
@@ -9,7 +10,13 @@ const ITEMS: { key: keyof TravelInfo; icon: string; label: string }[] = [
   { key: "health", icon: "🩺", label: "Health & safety" },
 ];
 
-export function TravelEssentials({ info }: { info: TravelInfo }) {
+export function TravelEssentials({
+  info,
+  country,
+}: {
+  info: TravelInfo;
+  country: string;
+}) {
   return (
     <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="mb-4 font-semibold text-slate-900">Know before you go</h2>
@@ -23,7 +30,13 @@ export function TravelEssentials({ info }: { info: TravelInfo }) {
               <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
                 {item.label}
               </dt>
-              <dd className="text-sm text-slate-700">{info[item.key]}</dd>
+              <dd className="text-sm text-slate-700">
+                {item.key === "visa" ? (
+                  <VisaByNationality country={country} fallback={info.visa} />
+                ) : (
+                  info[item.key]
+                )}
+              </dd>
             </div>
           </div>
         ))}

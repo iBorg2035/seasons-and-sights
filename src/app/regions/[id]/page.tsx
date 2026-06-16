@@ -101,7 +101,9 @@ export default async function RegionPage({
         sightsSlot={<SightsList sights={region.sights} />}
       />
 
-      {region.info && <TravelEssentials info={region.info} />}
+      {region.info && (
+        <TravelEssentials info={region.info} country={region.country} />
+      )}
       {region.toolkit && (
         <TravelToolkit toolkit={region.toolkit} currency={region.info?.currency} />
       )}
