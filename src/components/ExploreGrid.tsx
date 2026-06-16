@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Continent, Season } from "@/types";
+import type { Continent, Season, SightType } from "@/types";
 import { REGIONS } from "@/data/regions";
 import { RegionCard } from "@/components/RegionCard";
 import { WorldMap } from "@/components/WorldMap";
@@ -13,6 +13,7 @@ import {
 } from "@/lib/season";
 
 type Filter = "all" | Continent;
+type StyleFilter = "all" | SightType;
 type View = "grid" | "map";
 
 const FILTERS: { value: Filter; label: string }[] = [
@@ -26,18 +27,37 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "Africa", label: "Africa" },
 ];
 
+const STYLES: { value: StyleFilter; label: string }[] = [
+  { value: "all", label: "Any style" },
+  { value: "beach", label: "🏖️ Beaches" },
+  { value: "nature", label: "🏔️ Outdoors" },
+  { value: "wildlife", label: "🦜 Wildlife" },
+  { value: "culture", label: "🏛️ Culture" },
+  { value: "city", label: "🏙️ Cities" },
+];
+
 const LEGEND: Season[] = ["dry", "shoulder", "wet"];
 
 export function ExploreGrid() {
   const [filter, setFilter] = useState<Filter>("all");
+  const [style, setStyle] = useState<StyleFilter>("all");
+  const [query, setQuery] = useState("");
   const [goodNow, setGoodNow] = useState(false);
   const [view, setView] = useState<View>("grid");
   const currentMonth = monthOf();
 
   const regions = useMemo(() => {
+    const q = query.trim().toLowerCase();
     let list = REGIONS.filter(
       (r) => filter === "all" || r.continent === filter
-    );
+    )
+      .filter((r) => style === "all" || r.sights.some((s) => s.type === style))
+      .filter(
+        (r) =>
+          !q ||
+          r.name.toLowerCase().includes(q) ||
+          r.country.toLowerCase().includes(q)
+      );
     if (goodNow) {
       list = list
         .filter((r) => seasonFitScore(r, currentMonth) >= 60)
@@ -47,10 +67,37 @@ export function ExploreGrid() {
         );
     }
     return list;
-  }, [filter, goodNow, currentMonth]);
+  }, [filter, style, query, goodNow, currentMonth]);
 
   return (
     <div>
+      <div className="mb-4">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search destinations or countries…"
+          aria-label="Search destinations"
+          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400"
+        />
+      </div>
+
+      <div className="mb-3 flex flex-wrap gap-2">
+        {STYLES.map((s) => (
+          <button
+            key={s.value}
+            onClick={() => setStyle(s.value)}
+            className={`rounded-full border px-3 py-1 text-sm transition ${
+              style === s.value
+                ? "border-slate-900 bg-slate-900 text-white"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
           {FILTERS.map((f) => (
@@ -104,8 +151,7 @@ export function ExploreGrid() {
 
       {regions.length === 0 ? (
         <p className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
-          Nothing in a good season right now for this filter. Try the{" "}
-          <span className="font-medium">When to go</span> planner.
+          No destinations match. Try clearing the search or filters.
         </p>
       ) : view === "map" ? (
         <div>
