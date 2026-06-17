@@ -20,3 +20,37 @@ create policy "Users manage their own trips"
   to authenticated
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+-- ── Shareable trips ──────────────────────────────────────────────────────────
+-- Public, read-only share links. Anyone (even signed-out) can publish a trip to
+-- a random-token link, and anyone with the link can view it. Reads go through a
+-- security-definer function keyed by token, so shares can't be enumerated.
+
+create table if not exists public.shared_trips (
+  token      uuid        primary key default gen_random_uuid(),
+  name       text        not null default 'Trip',
+  data       jsonb       not null,                -- { start, stops }
+  created_at timestamptz not null default now()
+);
+
+alter table public.shared_trips enable row level security;
+
+-- Anyone may publish a share. No SELECT policy is granted, so the table can't be
+-- listed; reads happen only via get_shared_trip() below.
+drop policy if exists "Anyone can publish a share" on public.shared_trips;
+create policy "Anyone can publish a share"
+  on public.shared_trips
+  for insert
+  to anon, authenticated
+  with check (true);
+
+create or replace function public.get_shared_trip(p_token uuid)
+returns table (name text, data jsonb)
+language sql
+security definer
+set search_path = public
+as $$
+  select name, data from public.shared_trips where token = p_token;
+$$;
+
+grant execute on function public.get_shared_trip(uuid) to anon, authenticated;

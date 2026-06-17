@@ -7,6 +7,7 @@ import type { Continent, Region } from "@/types";
 import { REGIONS, getRegion } from "@/data/regions";
 import { SeasonStrip } from "@/components/SeasonStrip";
 import { RouteMap } from "@/components/RouteMap";
+import { ShareTripButton } from "@/components/ShareTripButton";
 import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
 import { buildIcs } from "@/lib/ics";
 import { getDraft, saveDraft } from "@/lib/trip-draft";
@@ -460,6 +461,13 @@ export function TripPlanner({
               >
                 {copied ? "Copied!" : "Copy link"}
               </button>
+              <ShareTripButton
+                trip={{
+                  name: tripName(legs),
+                  start: startMonth,
+                  stops: Array.from(stops),
+                }}
+              />
             </div>
           </div>
 

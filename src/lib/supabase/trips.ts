@@ -51,6 +51,38 @@ export async function deleteRemoteTrip(id: string): Promise<void> {
 }
 
 /**
+ * Publish a trip to a public, random-token share link. Works for anyone
+ * (signed in or not). Returns the token, or null if Supabase isn't configured.
+ */
+export async function publishShare(trip: {
+  name: string;
+  start: number;
+  stops: [string, number][];
+}): Promise<string | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const token = crypto.randomUUID();
+  const { error } = await sb.from("shared_trips").insert({
+    token,
+    name: trip.name,
+    data: { start: trip.start, stops: trip.stops },
+  });
+  return error ? null : token;
+}
+
+/** Read a shared trip by token (via the enumeration-safe RPC). */
+export async function fetchSharedTrip(
+  token: string
+): Promise<{ name: string; start: number; stops: [string, number][] } | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb.rpc("get_shared_trip", { p_token: token });
+  const row = (data as { name: string; data: TripRow["data"] }[] | null)?.[0];
+  if (error || !row) return null;
+  return { name: row.name, start: row.data.start, stops: row.data.stops };
+}
+
+/**
  * Union local + remote by id (remote wins on conflict, since it's the synced
  * canonical copy). `localOnly` are trips to push up — e.g. ones made before
  * signing in.
