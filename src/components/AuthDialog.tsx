@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/contexts/auth-context";
 
 /** Email/password sign-in & sign-up modal. */
@@ -33,15 +34,16 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
     onClose();
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-[3000] overflow-y-auto bg-black/40"
       onClick={onClose}
     >
-      <div
-        className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
         {confirm ? (
           <div className="text-center">
             <p className="text-lg font-semibold text-slate-900">Check your email</p>
@@ -114,7 +116,9 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
             </button>
           </>
         )}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
