@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/contexts/auth-context";
 
@@ -13,6 +13,26 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
+
+  // Close on Escape and lock background scroll while the modal is open.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
+  const heading = confirm
+    ? "Check your email"
+    : mode === "in"
+      ? "Sign in"
+      : "Create account";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,12 +61,15 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
     >
       <div className="flex min-h-full items-center justify-center p-4">
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={heading}
           className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >
         {confirm ? (
           <div className="text-center">
-            <p className="text-lg font-semibold text-slate-900">Check your email</p>
+            <p className="text-lg font-semibold text-slate-900">{heading}</p>
             <p className="mt-2 text-sm text-slate-600">
               We sent a confirmation link to <strong>{email}</strong>. Confirm it,
               then sign in to sync your trips.
@@ -61,9 +84,7 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
         ) : (
           <>
             <div className="mb-1 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">
-                {mode === "in" ? "Sign in" : "Create account"}
-              </h2>
+              <h2 className="text-lg font-semibold text-slate-900">{heading}</h2>
               <button
                 onClick={onClose}
                 aria-label="Close"

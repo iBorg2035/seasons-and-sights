@@ -33,6 +33,14 @@ create table if not exists public.shared_trips (
   created_at timestamptz not null default now()
 );
 
+-- Bound the size of anonymous, unauthenticated inserts so the share endpoint
+-- can't be used to dump large payloads. Applied via ALTER so it also patches
+-- tables created before these limits existed.
+alter table public.shared_trips drop constraint if exists shared_trips_name_len;
+alter table public.shared_trips add  constraint shared_trips_name_len  check (length(name) <= 200);
+alter table public.shared_trips drop constraint if exists shared_trips_data_size;
+alter table public.shared_trips add  constraint shared_trips_data_size check (pg_column_size(data) < 8192);
+
 alter table public.shared_trips enable row level security;
 
 -- Anyone may publish a share. No SELECT policy is granted, so the table can't be

@@ -127,28 +127,36 @@ export function TripPlanner({
   };
 
   // On sign-in, pull the user's cloud trips, merge with what's local, and push
-  // up any local-only trips (e.g. made before signing in).
+  // up any local-only trips (e.g. made before signing in). Keyed on user.id so
+  // it doesn't re-run on every token refresh (which swaps the user object).
   useEffect(() => {
     if (!user) return;
+    const userId = user.id;
     let cancelled = false;
     (async () => {
       const remote = await fetchRemoteTrips();
       if (cancelled) return;
-      setSaved((local) => {
-        const { merged, localOnly } = mergeTrips(local, remote);
-        try {
-          localStorage.setItem(SAVED_KEY, JSON.stringify(merged));
-        } catch {
-          // ignore
-        }
-        for (const t of localOnly) void upsertRemoteTrip(user.id, t);
-        return merged;
-      });
+      let local: SavedTrip[] = [];
+      try {
+        local = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
+      } catch {
+        // ignore
+      }
+      const { merged, localOnly } = mergeTrips(local, remote);
+      try {
+        localStorage.setItem(SAVED_KEY, JSON.stringify(merged));
+      } catch {
+        // ignore
+      }
+      setSaved(merged);
+      // Side-effects live outside setState so React's StrictMode double-invoke
+      // can't double-upload.
+      for (const t of localOnly) void upsertRemoteTrip(userId, t);
     })();
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user?.id]);
 
   // Seed from the saved "current trip" if we arrived without a shared URL.
   useEffect(() => {
@@ -239,8 +247,14 @@ export function TripPlanner({
       start: startMonth,
       stops: Array.from(stops),
     };
+    // Saving replaces any same-name trip locally; mirror that remotely by
+    // deleting the old rows so the cloud doesn't accumulate duplicates.
+    const replaced = saved.filter((t) => t.name === trip.name);
     persistSaved([trip, ...saved.filter((t) => t.name !== trip.name)]);
-    if (user) void upsertRemoteTrip(user.id, trip);
+    if (user) {
+      for (const t of replaced) void deleteRemoteTrip(t.id);
+      void upsertRemoteTrip(user.id, trip);
+    }
     setJustSaved(true);
     setTimeout(() => setJustSaved(false), 1500);
   };
