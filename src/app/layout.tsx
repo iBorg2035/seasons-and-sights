@@ -4,6 +4,8 @@ import { Fraunces, Inter } from "next/font/google";
 import { SiteNav } from "@/components/SiteNav";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { AuthProvider } from "@/lib/contexts/auth-context";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -97,6 +99,8 @@ export default function RootLayout({
           Booking.com.
         </footer>
         </AuthProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

@@ -5,16 +5,25 @@ export interface SavedTrip {
   name: string;
   start: number;
   stops: [string, number][];
+  /** Epoch ms of the last edit; drives last-write-wins on sync. */
+  updatedAt?: number;
 }
 
 interface TripRow {
   id: string;
   name: string;
   data: { start: number; stops: [string, number][] };
+  updated_at?: string;
 }
 
 function fromRow(row: TripRow): SavedTrip {
-  return { id: row.id, name: row.name, start: row.data.start, stops: row.data.stops };
+  return {
+    id: row.id,
+    name: row.name,
+    start: row.data.start,
+    stops: row.data.stops,
+    updatedAt: row.updated_at ? Date.parse(row.updated_at) : 0,
+  };
 }
 
 /** All of the signed-in user's trips (RLS scopes this to them). */
@@ -23,7 +32,7 @@ export async function fetchRemoteTrips(): Promise<SavedTrip[]> {
   if (!sb) return [];
   const { data, error } = await sb
     .from("trips")
-    .select("id, name, data")
+    .select("id, name, data, updated_at")
     .order("updated_at", { ascending: false });
   if (error || !data) return [];
   return (data as TripRow[]).map(fromRow);
@@ -38,7 +47,8 @@ export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise
       user_id: userId,
       name: trip.name,
       data: { start: trip.start, stops: trip.stops },
-      updated_at: new Date().toISOString(),
+      // Preserve the trip's own edit time so last-write-wins stays correct.
+      updated_at: new Date(trip.updatedAt ?? Date.now()).toISOString(),
     },
     { onConflict: "user_id,id" }
   );
@@ -83,15 +93,28 @@ export async function fetchSharedTrip(
 }
 
 /**
- * Union local + remote by id (remote wins on conflict, since it's the synced
- * canonical copy). `localOnly` are trips to push up — e.g. ones made before
- * signing in.
+ * Union local + remote by id with last-write-wins (newer `updatedAt` per id).
+ * `toPush` are the trips whose local copy should be written to the cloud —
+ * local-only trips and ones edited locally more recently than the remote copy.
  */
 export function mergeTrips(
   local: SavedTrip[],
   remote: SavedTrip[]
-): { merged: SavedTrip[]; localOnly: SavedTrip[] } {
-  const remoteIds = new Set(remote.map((t) => t.id));
-  const localOnly = local.filter((t) => !remoteIds.has(t.id));
-  return { merged: [...remote, ...localOnly], localOnly };
+): { merged: SavedTrip[]; toPush: SavedTrip[] } {
+  const byId = new Map<string, SavedTrip>();
+  for (const r of remote) byId.set(r.id, r);
+
+  const toPush: SavedTrip[] = [];
+  for (const l of local) {
+    const r = byId.get(l.id);
+    if (!r || (l.updatedAt ?? 0) > (r.updatedAt ?? 0)) {
+      byId.set(l.id, l);
+      toPush.push(l);
+    }
+  }
+
+  const merged = [...byId.values()].sort(
+    (a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0)
+  );
+  return { merged, toPush };
 }

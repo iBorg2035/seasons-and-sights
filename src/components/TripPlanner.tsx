@@ -93,7 +93,6 @@ export function TripPlanner({
     () => new Map(initialStops.map((s) => [s.id, s.duration]))
   );
   const [startMonth, setStartMonth] = useState(initialMonth);
-  const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState<SavedTrip[]>([]);
   const [justSaved, setJustSaved] = useState(false);
 
@@ -142,7 +141,7 @@ export function TripPlanner({
       } catch {
         // ignore
       }
-      const { merged, localOnly } = mergeTrips(local, remote);
+      const { merged, toPush } = mergeTrips(local, remote);
       try {
         localStorage.setItem(SAVED_KEY, JSON.stringify(merged));
       } catch {
@@ -151,7 +150,7 @@ export function TripPlanner({
       setSaved(merged);
       // Side-effects live outside setState so React's StrictMode double-invoke
       // can't double-upload.
-      for (const t of localOnly) void upsertRemoteTrip(userId, t);
+      for (const t of toPush) void upsertRemoteTrip(userId, t);
     })();
     return () => {
       cancelled = true;
@@ -186,16 +185,6 @@ export function TripPlanner({
       stops: Array.from(stops).map(([id, duration]) => ({ id, duration })),
     });
   }, [stops, startMonth, router]);
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // Clipboard may be blocked; ignore.
-    }
-  };
 
   const exportIcs = (legs: ItineraryLeg[]) => {
     const ranges = legDateRanges(startMonth, legs);
@@ -246,6 +235,7 @@ export function TripPlanner({
       name: tripName(legs),
       start: startMonth,
       stops: Array.from(stops),
+      updatedAt: Date.now(),
     };
     // Saving replaces any same-name trip locally; mirror that remotely by
     // deleting the old rows so the cloud doesn't accumulate duplicates.
@@ -468,12 +458,6 @@ export function TripPlanner({
                 className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
               >
                 Add to calendar
-              </button>
-              <button
-                onClick={copyLink}
-                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-              >
-                {copied ? "Copied!" : "Copy link"}
               </button>
               <ShareTripButton
                 trip={{

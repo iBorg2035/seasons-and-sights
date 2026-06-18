@@ -5,8 +5,9 @@ import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { publishShare } from "@/lib/supabase/trips";
 
 /**
- * Publishes the current trip to a public short link. Only rendered when the
- * backend is configured; the planner's "Copy link" still covers URL sharing.
+ * One share control for the whole trip. When the backend is configured it
+ * publishes a short, read-only /trip/<token> link; otherwise it falls back to
+ * copying the current URL (which encodes the trip in its query string).
  */
 export function ShareTripButton({
   trip,
@@ -17,18 +18,19 @@ export function ShareTripButton({
     "idle"
   );
 
-  if (!isSupabaseConfigured) return null;
-
   async function share() {
     if (!trip.stops.length) return;
-    setState("working");
-    const token = await publishShare(trip);
-    if (!token) {
-      setState("error");
-      setTimeout(() => setState("idle"), 2000);
-      return;
+    let url = window.location.href;
+    if (isSupabaseConfigured) {
+      setState("working");
+      const token = await publishShare(trip);
+      if (!token) {
+        setState("error");
+        setTimeout(() => setState("idle"), 2000);
+        return;
+      }
+      url = `${window.location.origin}/trip/${token}`;
     }
-    const url = `${window.location.origin}/trip/${token}`;
     try {
       await navigator.clipboard.writeText(url);
     } catch {
