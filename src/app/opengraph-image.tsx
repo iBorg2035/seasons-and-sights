@@ -34,7 +34,7 @@ export default function Image() {
           </div>
           <div style={{ fontSize: 30, color: "#57534e", maxWidth: 940 }}>
             Dry/wet seasons, crowds, festivals & a season-optimizing trip planner
-            across 46 destinations.
+            across 47 destinations.
           </div>
         </div>
 

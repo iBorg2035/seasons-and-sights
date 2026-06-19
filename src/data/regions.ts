@@ -1135,6 +1135,28 @@ export const REGIONS: Region[] = [
       { name: "Hapao Hot Springs", type: "nature", lat: 16.88, lng: 121.03, blurb: "Riverside springs amid the terraces." },
     ],
   },
+  {
+    id: "philippines-dumaguete",
+    name: "Dumaguete",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 9.3103,
+    lng: 123.3081,
+    bookingDest: "Dumaguete, Philippines",
+    climateBlurb:
+      "The laid-back 'City of Gentle People' on Negros — a diving and university town and the springboard to Apo Island. Driest and sunniest December–May; the wetter season runs June–November, heaviest late in the year.",
+    months: climate("DDDDDWWWWWSD", {
+      3: "driest and sunniest",
+      10: "wettest month",
+      12: "dry and pleasant",
+    }),
+    sights: [
+      { name: "Apo Island", type: "wildlife", lat: 9.075, lng: 123.27, blurb: "Marine sanctuary famed for sea turtles and reefs." },
+      { name: "Rizal Boulevard", type: "city", lat: 9.3081, lng: 123.3083, blurb: "Seaside promenade lined with cafés." },
+      { name: "Casaroro Falls", type: "nature", lat: 9.2667, lng: 123.2, blurb: "Tall jungle waterfall reached by a steep descent." },
+      { name: "Twin Lakes (Balinsasayao)", type: "nature", lat: 9.3667, lng: 123.1667, blurb: "Two crater lakes ringed by rainforest." },
+    ],
+  },
 ];
 
 // Marquee festivals & events, keyed by region id and attached below. Kept
@@ -1240,6 +1262,9 @@ const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
     "philippines-siargao": [
       { name: "Siargao Surfing Cup", month: 9, blurb: "International surf competition at Cloud 9." },
     ],
+    "philippines-dumaguete": [
+      { name: "Buglasan Festival", month: 10, blurb: "Negros Oriental's 'festival of festivals' with street dancing." },
+    ],
   };
 
 // Rough mid-range cost per person per day (USD): lodging + food + activities +
@@ -1291,6 +1316,7 @@ const DAILY_BUDGET: Record<string, number> = {
   "philippines-bohol": 50,
   "philippines-siargao": 50,
   "philippines-banaue": 35,
+  "philippines-dumaguete": 40,
 };
 
 // Wikipedia article titles for representative photos (fetched via /api/photo).
@@ -1341,6 +1367,7 @@ const WIKI_TITLE: Record<string, string> = {
   "philippines-bohol": "Chocolate Hills",
   "philippines-siargao": "Siargao",
   "philippines-banaue": "Banaue Rice Terraces",
+  "philippines-dumaguete": "Apo Island",
 };
 
 const PHOTOS = photos as Record<string, string>;
@@ -1394,6 +1421,7 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "philippines-bohol": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Bohol-Panglao (TAG) via Manila/Cebu · ~17h from London", health: "Strong sun; dengue — repellent" },
   "philippines-siargao": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Siargao (IAO) via Cebu/Manila · ~19h from London", health: "Strong sun & reef cuts; bring cash (few ATMs)" },
   "philippines-banaue": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "~9h by bus from Manila (MNL) · ~14h from London", health: "Cool mountain nights; landslide risk in the wet season" },
+  "philippines-dumaguete": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English (Cebuano)", plugs: "Types A/B/C · 220V", gettingThere: "Dumaguete (DGT) via Manila/Cebu · ~18h from London", health: "Strong sun; dengue — repellent; reef-safe sunscreen" },
 };
 
 for (const region of REGIONS) {

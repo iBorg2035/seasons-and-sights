@@ -51,6 +51,7 @@ const TITLES = {
   "philippines-bohol": "Chocolate Hills",
   "philippines-siargao": "Siargao",
   "philippines-banaue": "Banaue Rice Terraces",
+  "philippines-dumaguete": "Apo Island",
 };
 
 const out = {};

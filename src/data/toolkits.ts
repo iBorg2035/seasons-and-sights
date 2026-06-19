@@ -94,4 +94,5 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "philippines-bohol": { phrases: ph, ...PHIL },
   "philippines-siargao": { phrases: ph, ...PHIL },
   "philippines-banaue": { phrases: ph, ...PHIL },
+  "philippines-dumaguete": { phrases: ph, ...PHIL },
 };
