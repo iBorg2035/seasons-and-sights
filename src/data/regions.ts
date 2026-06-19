@@ -835,9 +835,9 @@ export const REGIONS: Region[] = [
     lng: -84.6531,
     bookingDest: "La Fortuna, Costa Rica",
     climateBlurb:
-      "Classic dry/green-season split: sunny, settled dry season December–April; the green (wet) season May–November brings afternoon downpours, lush jungle and a brief mid-year dry spell (veranillo) around July.",
-    months: climate("DDDDWWSWWWSD", {
-      1: "peak dry season — sunny",
+      "Classic dry/green-season split: sunny, settled dry season January–April; the green (wet) season May–December brings afternoon downpours, lush jungle and a brief mid-year dry spell (veranillo) around July.",
+    months: climate("DDDDWWSWWWWW", {
+      2: "driest, sunniest months",
       4: "end of the dry season",
       7: "brief mid-year dry spell (veranillo)",
       9: "green season — heavy afternoon rain",
@@ -888,9 +888,9 @@ export const REGIONS: Region[] = [
     bookingDest: "Agra, India",
     climateBlurb:
       "North India's Golden Triangle: cool, dry winters October–March are the sweet spot (with morning fog in Dec–Jan); April–June is searingly hot; the monsoon brings rain July–September.",
-    months: climate("DDSWWWWWWSDD", {
+    months: climate("DDSSSWWWWSDD", {
       1: "cool and dry — ideal (some fog)",
-      5: "extreme pre-monsoon heat",
+      5: "extreme pre-monsoon heat (still dry)",
       7: "monsoon rains",
       11: "peak season — cool and clear",
     }),
@@ -1055,11 +1055,11 @@ export const REGIONS: Region[] = [
     bookingDest: "Boracay, Philippines",
     climateBlurb:
       "The famous white-sand island: calm, sunny Amihan season November–May (peak, with December–April best), then the Habagat southwest monsoon brings rain and rougher seas June–October.",
-    months: climate("DDDDSWWWWWSD", {
+    months: climate("DDDDSWWWWWSS", {
       1: "Amihan season — calm & sunny (peak)",
       4: "driest and hottest",
       8: "Habagat monsoon — rough seas",
-      12: "peak season",
+      12: "busy holidays, but some rain",
     }),
     sights: [
       { name: "White Beach", type: "beach", lat: 11.9646, lng: 121.9269, blurb: "Four kilometres of powder-white sand." },
@@ -1078,7 +1078,7 @@ export const REGIONS: Region[] = [
     bookingDest: "Bohol, Philippines",
     climateBlurb:
       "Chocolate Hills, tarsiers and Panglao's beaches: dry and sunny December–May, then a wetter June–November. The Chocolate Hills turn brown in the dry months that give them their name.",
-    months: climate("DDDDDWWWWWWD", {
+    months: climate("DDDDDWWWWWWS", {
       2: "dry & sunny — ideal",
       4: "hills turn 'chocolate' brown",
       10: "wettest month",
@@ -1123,7 +1123,7 @@ export const REGIONS: Region[] = [
     bookingDest: "Banaue, Philippines",
     climateBlurb:
       "The 2,000-year-old Cordillera rice terraces, high in northern Luzon. Cool and drier November–May (clearest views); the June–October monsoon turns the terraces vivid green but brings landslide risk.",
-    months: climate("DDDDDWWWWWSD", {
+    months: climate("DDDDSWWWWWSD", {
       2: "clear, dry — best views",
       4: "golden terraces (harvest)",
       7: "lush green, but landslide risk",
@@ -1325,7 +1325,7 @@ const WIKI_TITLE: Record<string, string> = {
   "thailand-bangkok": "Bangkok",
   "thailand-krabi": "Railay Beach",
   "thailand-kohsamui": "Ko Samui",
-  "indonesia-bali": "Bali",
+  "indonesia-bali": "Tanah Lot",
   "vietnam-hoian": "Da Nang",
   "vietnam-hanoi": "Hanoi",
   "vietnam-hcmc": "Ho Chi Minh City",
@@ -1337,19 +1337,19 @@ const WIKI_TITLE: Record<string, string> = {
   "brazil-rio": "Rio de Janeiro",
   "brazil-amazon-manaus": "Amazon rainforest",
   "colombia-cartagena": "Cartagena, Colombia",
-  "chile-atacama": "Atacama Desert",
+  "chile-atacama": "El Tatio",
   "ecuador-galapagos": "Galápagos Islands",
-  "albania-riviera": "Albanian Riviera",
+  "albania-riviera": "Ksamil",
   "montenegro-kotor": "Kotor",
   "sri-lanka-south": "Sigiriya",
   "nepal-kathmandu": "Boudhanath",
   "japan-kyoto": "Fushimi Inari-taisha",
   "morocco-marrakech": "Marrakesh",
-  "tanzania-zanzibar": "Zanzibar",
+  "tanzania-zanzibar": "Stone Town",
   "mexico-yucatan": "Tulum",
   "india-rajasthan": "Hawa Mahal",
   "turkey-cappadocia": "Cappadocia",
-  "greece-santorini": "Santorini",
+  "greece-santorini": "Oia, Greece",
   "south-africa-capetown": "Cape Town",
   "japan-tokyo": "Tokyo",
   "japan-hokkaido": "Sapporo",

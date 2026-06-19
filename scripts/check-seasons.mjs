@@ -27,6 +27,17 @@ const REGIONS = [
   ["japan-kyoto", 35.0116, 135.7681, "SSDDDWWWWDDS"],
   ["morocco-marrakech", 31.6295, -7.9811, "SSDDDSSSDDDS"],
   ["tanzania-zanzibar", -6.1659, 39.2026, "DDWWWDDDDDSD"],
+  // Newer additions (precip-driven; temperate/comfort-based ones like Paris,
+  // Rome, Sydney, Egypt are intentionally omitted — their D/W/S encodes comfort).
+  ["costa-rica-arenal", 10.4633, -84.6531, "DDDDWWSWWWWW"],
+  ["india-agra", 27.1767, 78.0081, "DDSSSWWWWSDD"],
+  ["philippines-manila", 14.5995, 120.9842, "DDDSSWWWWWSD"],
+  ["philippines-cebu", 10.3157, 123.8854, "DDDDDWWWWWWD"],
+  ["philippines-boracay", 11.9674, 121.9248, "DDDDSWWWWWSS"],
+  ["philippines-bohol", 9.85, 124.1435, "DDDDDWWWWWWS"],
+  ["philippines-siargao", 9.8482, 126.0458, "WWSDDDDDSSWW"],
+  ["philippines-banaue", 16.9114, 121.0586, "DDDDSWWWWWSD"],
+  ["philippines-dumaguete", 9.3103, 123.3081, "DDDDDWWWWWSD"],
 ];
 const M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
