@@ -45,6 +45,12 @@ const TITLES = {
   "italy-rome": "Colosseum",
   "australia-sydney": "Sydney Opera House",
   "newzealand-queenstown": "Queenstown, New Zealand",
+  "philippines-manila": "Intramuros",
+  "philippines-cebu": "Kawasan Falls",
+  "philippines-boracay": "Boracay",
+  "philippines-bohol": "Chocolate Hills",
+  "philippines-siargao": "Siargao",
+  "philippines-banaue": "Banaue Rice Terraces",
 };
 
 const out = {};

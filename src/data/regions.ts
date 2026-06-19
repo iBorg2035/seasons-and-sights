@@ -999,6 +999,142 @@ export const REGIONS: Region[] = [
       { name: "Skyline Gondola & Bob's Peak", type: "city", lat: -45.027, lng: 168.658, blurb: "Panoramic views and the luge above town." },
     ],
   },
+
+  // ───────────────────── Philippines (more) ─────────────────────
+  {
+    id: "philippines-manila",
+    name: "Manila",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 14.5995,
+    lng: 120.9842,
+    bookingDest: "Manila, Philippines",
+    climateBlurb:
+      "The gateway capital: cool, dry and most comfortable December–February, blisteringly hot March–May, then the southwest monsoon brings heavy rain and typhoons June–October.",
+    months: climate("DDDSSWWWWWSD", {
+      4: "peak heat and humidity",
+      8: "typhoon season — flooding likely",
+      12: "cool, dry — the best window",
+    }),
+    sights: [
+      { name: "Intramuros & Fort Santiago", type: "culture", lat: 14.5906, lng: 120.9747, blurb: "Spanish-era walled city and riverside fort." },
+      { name: "San Agustin Church", type: "culture", lat: 14.589, lng: 120.9747, blurb: "UNESCO Baroque church, the country's oldest." },
+      { name: "Rizal Park", type: "city", lat: 14.5826, lng: 120.9787, blurb: "Historic central park and national monument." },
+      { name: "Binondo (Chinatown)", type: "city", lat: 14.6, lng: 120.975, blurb: "The world's oldest Chinatown — a street-food haven." },
+    ],
+  },
+  {
+    id: "philippines-cebu",
+    name: "Cebu",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 10.3157,
+    lng: 123.8854,
+    bookingDest: "Cebu, Philippines",
+    climateBlurb:
+      "Central Visayas hub for diving and waterfalls: dry and sunny December–May, with the wetter, occasionally stormy season June–November. Relatively sheltered from the worst typhoons.",
+    months: climate("DDDDDWWWWWWD", {
+      1: "dry & sunny — peak",
+      4: "hottest, very dry",
+      10: "wettest; typhoon risk",
+    }),
+    sights: [
+      { name: "Kawasan Falls", type: "nature", lat: 9.7986, lng: 123.376, blurb: "Turquoise tiered falls and canyoneering." },
+      { name: "Oslob whale sharks", type: "wildlife", lat: 9.4622, lng: 123.38, blurb: "Snorkel beside gentle whale sharks." },
+      { name: "Moalboal sardine run", type: "wildlife", lat: 9.949, lng: 123.396, blurb: "Vast sardine shoals just off the shore." },
+      { name: "Magellan's Cross & Basilica", type: "culture", lat: 10.2937, lng: 123.9018, blurb: "Where Christianity reached the islands in 1521." },
+    ],
+  },
+  {
+    id: "philippines-boracay",
+    name: "Boracay",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 11.9674,
+    lng: 121.9248,
+    bookingDest: "Boracay, Philippines",
+    climateBlurb:
+      "The famous white-sand island: calm, sunny Amihan season November–May (peak, with December–April best), then the Habagat southwest monsoon brings rain and rougher seas June–October.",
+    months: climate("DDDDSWWWWWSD", {
+      1: "Amihan season — calm & sunny (peak)",
+      4: "driest and hottest",
+      8: "Habagat monsoon — rough seas",
+      12: "peak season",
+    }),
+    sights: [
+      { name: "White Beach", type: "beach", lat: 11.9646, lng: 121.9269, blurb: "Four kilometres of powder-white sand." },
+      { name: "Puka Shell Beach", type: "beach", lat: 11.993, lng: 121.921, blurb: "Quieter, shell-strewn northern beach." },
+      { name: "Willy's Rock", type: "nature", lat: 11.968, lng: 121.923, blurb: "Iconic volcanic rock shrine off White Beach." },
+      { name: "Island-hopping & Crystal Cove", type: "nature", lat: 11.95, lng: 121.91, blurb: "Snorkel stops and tiny island coves." },
+    ],
+  },
+  {
+    id: "philippines-bohol",
+    name: "Bohol & Panglao",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 9.85,
+    lng: 124.1435,
+    bookingDest: "Bohol, Philippines",
+    climateBlurb:
+      "Chocolate Hills, tarsiers and Panglao's beaches: dry and sunny December–May, then a wetter June–November. The Chocolate Hills turn brown in the dry months that give them their name.",
+    months: climate("DDDDDWWWWWWD", {
+      2: "dry & sunny — ideal",
+      4: "hills turn 'chocolate' brown",
+      10: "wettest month",
+    }),
+    sights: [
+      { name: "Chocolate Hills", type: "nature", lat: 9.828, lng: 124.143, blurb: "1,200+ symmetrical hills that brown in dry season." },
+      { name: "Tarsier Sanctuary", type: "wildlife", lat: 9.684, lng: 123.9, blurb: "The tiny, saucer-eyed tarsier primate." },
+      { name: "Alona Beach, Panglao", type: "beach", lat: 9.548, lng: 123.775, blurb: "Lively white-sand beach and dive base." },
+      { name: "Loboc River cruise", type: "nature", lat: 9.637, lng: 124.029, blurb: "Lunch cruise through jungle riverbanks." },
+    ],
+  },
+  {
+    id: "philippines-siargao",
+    name: "Siargao",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 9.8482,
+    lng: 126.0458,
+    bookingDest: "Siargao, Philippines",
+    climateBlurb:
+      "The surf-and-lagoon island faces the Pacific, so it runs opposite to the west: driest and sunniest April–August, the big-swell surf season September–November, and the wettest stretch December–February.",
+    months: climate("WWSDDDDDSSWW", {
+      1: "wettest months (calm seas)",
+      5: "dry & sunny",
+      9: "surf season — bigger swell",
+      12: "wet season",
+    }),
+    sights: [
+      { name: "Cloud 9", type: "nature", lat: 9.812, lng: 126.166, blurb: "World-class reef break with a viewing boardwalk." },
+      { name: "Sugba Lagoon", type: "nature", lat: 9.93, lng: 125.97, blurb: "Jade lagoon for paddleboarding and diving." },
+      { name: "Magpupungko Rock Pools", type: "nature", lat: 9.923, lng: 126.109, blurb: "Tidal rock pools revealed at low tide." },
+      { name: "Naked, Daku & Guyam Islands", type: "beach", lat: 9.84, lng: 126.15, blurb: "The classic three-island hopping day trip." },
+    ],
+  },
+  {
+    id: "philippines-banaue",
+    name: "Banaue & Batad",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 16.9114,
+    lng: 121.0586,
+    bookingDest: "Banaue, Philippines",
+    climateBlurb:
+      "The 2,000-year-old Cordillera rice terraces, high in northern Luzon. Cool and drier November–May (clearest views); the June–October monsoon turns the terraces vivid green but brings landslide risk.",
+    months: climate("DDDDDWWWWWSD", {
+      2: "clear, dry — best views",
+      4: "golden terraces (harvest)",
+      7: "lush green, but landslide risk",
+    }),
+    sights: [
+      { name: "Banaue Rice Terraces", type: "culture", lat: 16.929, lng: 121.057, blurb: "The 2,000-year-old 'Stairway to the Sky'." },
+      { name: "Batad Amphitheatre Terraces", type: "nature", lat: 16.932, lng: 121.13, blurb: "A cascade of terraces around a village bowl." },
+      { name: "Tappiya Falls", type: "nature", lat: 16.929, lng: 121.138, blurb: "Tall waterfall below the Batad terraces." },
+      { name: "Hapao Hot Springs", type: "nature", lat: 16.88, lng: 121.03, blurb: "Riverside springs amid the terraces." },
+    ],
+  },
 ];
 
 // Marquee festivals & events, keyed by region id and attached below. Kept
@@ -1095,6 +1231,15 @@ const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
     "newzealand-queenstown": [
       { name: "Queenstown Winter Festival", month: 6, blurb: "Ski-town carnival kicking off the snow season." },
     ],
+    "philippines-manila": [
+      { name: "Feast of the Black Nazarene", month: 1, blurb: "Vast barefoot devotional procession through the old city." },
+    ],
+    "philippines-cebu": [
+      { name: "Sinulog Festival", month: 1, blurb: "The country's grandest fiesta — drums, dance and colour." },
+    ],
+    "philippines-siargao": [
+      { name: "Siargao Surfing Cup", month: 9, blurb: "International surf competition at Cloud 9." },
+    ],
   };
 
 // Rough mid-range cost per person per day (USD): lodging + food + activities +
@@ -1140,6 +1285,12 @@ const DAILY_BUDGET: Record<string, number> = {
   "italy-rome": 120,
   "australia-sydney": 130,
   "newzealand-queenstown": 130,
+  "philippines-manila": 45,
+  "philippines-cebu": 45,
+  "philippines-boracay": 60,
+  "philippines-bohol": 50,
+  "philippines-siargao": 50,
+  "philippines-banaue": 35,
 };
 
 // Wikipedia article titles for representative photos (fetched via /api/photo).
@@ -1184,6 +1335,12 @@ const WIKI_TITLE: Record<string, string> = {
   "italy-rome": "Colosseum",
   "australia-sydney": "Sydney Opera House",
   "newzealand-queenstown": "Queenstown, New Zealand",
+  "philippines-manila": "Intramuros",
+  "philippines-cebu": "Kawasan Falls",
+  "philippines-boracay": "Boracay",
+  "philippines-bohol": "Chocolate Hills",
+  "philippines-siargao": "Siargao",
+  "philippines-banaue": "Banaue Rice Terraces",
 };
 
 const PHOTOS = photos as Record<string, string>;
@@ -1231,6 +1388,12 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "italy-rome": { visa: "Visa-free 90 days (Schengen) for many", currency: "Euro (EUR)", language: "Italian", plugs: "Types C/F/L · 230V", gettingThere: "Rome (FCO/CIA) · ~2.5h from London", health: "Summer heat — carry water; pickpockets on transit" },
   "australia-sydney": { visa: "ETA / eVisitor required for most", currency: "Australian dollar (AUD)", language: "English", plugs: "Type I · 230V", gettingThere: "Sydney (SYD) · ~22h from London (1 stop)", health: "Fierce UV — high SPF; swim between the flags" },
   "newzealand-queenstown": { visa: "NZeTA required (visa-free entry) for many", currency: "New Zealand dollar (NZD)", language: "English & Māori", plugs: "Type I · 230V", gettingThere: "Queenstown (ZQN) via Auckland · ~26h from London", health: "Strong alpine UV & sandflies; changeable mountain weather" },
+  "philippines-manila": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Manila (MNL) · ~14h from London (1 stop)", health: "Heavy traffic & wet-season flooding; dengue — repellent" },
+  "philippines-cebu": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Cebu (CEB) · ~15h from London (1 stop)", health: "Strong sun; dengue — repellent; reef-safe sunscreen" },
+  "philippines-boracay": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Caticlan (MPH) via Manila/Cebu · ~17h from London", health: "Strong sun & currents; environmental fee on arrival" },
+  "philippines-bohol": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Bohol-Panglao (TAG) via Manila/Cebu · ~17h from London", health: "Strong sun; dengue — repellent" },
+  "philippines-siargao": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Siargao (IAO) via Cebu/Manila · ~19h from London", health: "Strong sun & reef cuts; bring cash (few ATMs)" },
+  "philippines-banaue": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "~9h by bus from Manila (MNL) · ~14h from London", health: "Cool mountain nights; landslide risk in the wet season" },
 };
 
 for (const region of REGIONS) {

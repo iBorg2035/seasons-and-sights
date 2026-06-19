@@ -25,8 +25,15 @@ const vn: Phrase[] = [
   { en: "How much?", local: "Bao nhiêu tiền?" },
   { en: "Help!", local: "Cứu với!" },
 ];
+const ph: Phrase[] = [
+  { en: "Hello", local: "Kumusta" },
+  { en: "Thank you", local: "Salamat" },
+  { en: "How much?", local: "Magkano?" },
+  { en: "Help!", local: "Tulong!" },
+];
 const THAI = { emergency: "191 police · 1669 ambulance · 1155 tourist police", tipping: "Not expected; round up, ~10% at upscale spots", water: "Not potable — drink bottled" };
 const VIET = { emergency: "113 police · 115 ambulance · 114 fire", tipping: "Not customary; appreciated", water: "Not potable — drink bottled" };
+const PHIL = { emergency: "911", tipping: "~10% common", water: "Bottled safer; tap varies" };
 
 export const TOOLKITS: Record<string, TravelToolkit> = {
   // ── Southeast Asia ──
@@ -80,4 +87,11 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   // ── Oceania ──
   "australia-sydney": { phrases: [{ en: "Hello", local: "G'day" }, { en: "Thank you", local: "Thanks / Ta" }, { en: "How much?", local: "How much?" }, { en: "Help!", local: "Help!" }], emergency: "000", tipping: "Not expected; round up for great service", water: "Tap water safe" },
   "newzealand-queenstown": { phrases: [{ en: "Hello", local: "Kia ora" }, { en: "Thank you", local: "Thanks / Ngā mihi" }, { en: "How much?", local: "How much?" }, { en: "Help!", local: "Help!" }], emergency: "111", tipping: "Not expected", water: "Tap water safe" },
+  // ── Philippines ──
+  "philippines-manila": { phrases: ph, ...PHIL },
+  "philippines-cebu": { phrases: ph, ...PHIL },
+  "philippines-boracay": { phrases: ph, ...PHIL },
+  "philippines-bohol": { phrases: ph, ...PHIL },
+  "philippines-siargao": { phrases: ph, ...PHIL },
+  "philippines-banaue": { phrases: ph, ...PHIL },
 };

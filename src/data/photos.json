@@ -38,5 +38,11 @@
   "france-paris": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg/1280px-Tour_Eiffel_Wikimedia_Commons_%28cropped%29.jpg",
   "italy-rome": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/1280px-Colosseo_2020.jpg",
   "australia-sydney": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Sydney_Australia._%2821339175489%29.jpg/1280px-Sydney_Australia._%2821339175489%29.jpg",
-  "newzealand-queenstown": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Queenstown_1_%288168013172%29.jpg/1280px-Queenstown_1_%288168013172%29.jpg"
+  "newzealand-queenstown": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Queenstown_1_%288168013172%29.jpg/1280px-Queenstown_1_%288168013172%29.jpg",
+  "philippines-manila": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Baluartillo_de_San_Jos%C3%A9%2C_Manila%2C_Filipinas%2C_2023-08-26%2C_DD_41.jpg/1280px-Baluartillo_de_San_Jos%C3%A9%2C_Manila%2C_Filipinas%2C_2023-08-26%2C_DD_41.jpg",
+  "philippines-cebu": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Kawasan.jpg/1280px-Kawasan.jpg",
+  "philippines-boracay": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Boracay_White_Beach.png/1280px-Boracay_White_Beach.png",
+  "philippines-bohol": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Chocolate_Hills_Bohol.JPG/1280px-Chocolate_Hills_Bohol.JPG",
+  "philippines-siargao": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Siargao_Island%2C_PH%2C_Sentinel-2.jpg/1280px-Siargao_Island%2C_PH%2C_Sentinel-2.jpg",
+  "philippines-banaue": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Banaue-terrace.JPG/1280px-Banaue-terrace.JPG"
 }
