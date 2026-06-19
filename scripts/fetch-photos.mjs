@@ -38,6 +38,13 @@ const TITLES = {
   "japan-tokyo": "Tokyo",
   "japan-hokkaido": "Sapporo",
   "japan-okinawa": "Shuri Castle",
+  "costa-rica-arenal": "Arenal Volcano",
+  "egypt-cairo": "Giza pyramid complex",
+  "india-agra": "Taj Mahal",
+  "france-paris": "Eiffel Tower",
+  "italy-rome": "Colosseum",
+  "australia-sydney": "Sydney Opera House",
+  "newzealand-queenstown": "Queenstown, New Zealand",
 };
 
 const out = {};

@@ -23,6 +23,7 @@ const CONTINENTS: (Continent | "any")[] = [
   "North America",
   "Europe",
   "Africa",
+  "Oceania",
 ];
 
 export function SurpriseView({ initialMonth }: { initialMonth: number }) {

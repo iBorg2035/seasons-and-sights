@@ -41,6 +41,7 @@ const CONTINENT_ORDER: Continent[] = [
   "North America",
   "Europe",
   "Africa",
+  "Oceania",
 ];
 
 const EXAMPLE_IDS = [

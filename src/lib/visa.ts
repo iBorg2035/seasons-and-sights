@@ -39,6 +39,11 @@ const VISA_RULES: Record<string, Rule> = {
   Turkey: { default: "Visa-free 90 days", US: "eVisa required", AU: "eVisa required" },
   Greece: { default: "Visa-free 90 days (Schengen)" },
   "South Africa": { default: "Visa-free up to 90 days" },
+  "Costa Rica": { default: "Visa-free 90 days" },
+  France: { default: "Visa-free 90 days (Schengen)" },
+  Italy: { default: "Visa-free 90 days (Schengen)" },
+  Australia: { default: "ETA / eVisitor required" },
+  "New Zealand": { default: "NZeTA required (visa-free entry)" },
 };
 
 /** Coarse visa status for a passport + country, or null if uncurated. */

@@ -25,6 +25,7 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "North America", label: "N. America" },
   { value: "Europe", label: "Europe" },
   { value: "Africa", label: "Africa" },
+  { value: "Oceania", label: "Oceania" },
 ];
 
 const STYLES: { value: StyleFilter; label: string }[] = [

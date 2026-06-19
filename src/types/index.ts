@@ -7,7 +7,8 @@ export type Continent =
   | "South America"
   | "North America"
   | "Europe"
-  | "Africa";
+  | "Africa"
+  | "Oceania";
 
 /** Crowd / price level — the "other half" of when to go. */
 export type CrowdLevel = "high" | "mid" | "low";

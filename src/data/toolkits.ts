@@ -69,4 +69,15 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "morocco-marrakech": { phrases: [{ en: "Hello", local: "Salam (السلام)" }, { en: "Thank you", local: "Shukran (شكراً)" }, { en: "How much?", local: "Bish-hal?" }, { en: "Help!", local: "'Awni! (عاوني)" }], emergency: "19 police · 15 ambulance · 112 (mobile)", tipping: "Small tips expected widely", water: "Not potable — drink bottled" },
   "tanzania-zanzibar": { phrases: [{ en: "Hello", local: "Jambo / Habari" }, { en: "Thank you", local: "Asante" }, { en: "How much?", local: "Bei gani?" }, { en: "Help!", local: "Saidia!" }], emergency: "112 · 999", tipping: "~10%; tip guides", water: "Not potable — drink bottled" },
   "south-africa-capetown": { phrases: [{ en: "Hello", local: "Hello / Sawubona" }, { en: "Thank you", local: "Thank you / Ngiyabonga" }, { en: "How much?", local: "How much?" }, { en: "Help!", local: "Help!" }], emergency: "112 (mobile) · 10111 police · 10177 ambulance", tipping: "~10–15%", water: "Tap water safe in cities" },
+  "egypt-cairo": { phrases: [{ en: "Hello", local: "Salām (سلام)" }, { en: "Thank you", local: "Shukran (شكراً)" }, { en: "How much?", local: "Bikam? (بكام)" }, { en: "Help!", local: "Musā'ada! (مساعدة)" }], emergency: "122 police · 123 ambulance · 126 tourist police", tipping: "Baksheesh customary; ~10%", water: "Not potable — drink bottled" },
+  // ── North America ──
+  "costa-rica-arenal": { phrases: es, emergency: "911", tipping: "~10% often included (servicio); round up", water: "Tap safe in towns; bottled in rural areas" },
+  // ── South Asia ──
+  "india-agra": { phrases: [{ en: "Hello", local: "Namaste (नमस्ते)" }, { en: "Thank you", local: "Dhanyavaad (धन्यवाद)" }, { en: "How much?", local: "Kitne ka hai?" }, { en: "Help!", local: "Madad!" }], emergency: "112 · 100 police · 102 ambulance", tipping: "~10%", water: "Not potable — drink bottled" },
+  // ── Europe ──
+  "france-paris": { phrases: [{ en: "Hello", local: "Bonjour" }, { en: "Thank you", local: "Merci" }, { en: "How much?", local: "Combien ?" }, { en: "Help!", local: "À l'aide !" }], emergency: "112 · 15 ambulance · 17 police", tipping: "Service included; round up / ~5%", water: "Tap water safe" },
+  "italy-rome": { phrases: [{ en: "Hello", local: "Ciao / Buongiorno" }, { en: "Thank you", local: "Grazie" }, { en: "How much?", local: "Quanto costa?" }, { en: "Help!", local: "Aiuto!" }], emergency: "112", tipping: "Service often included; round up", water: "Tap & street fountains (nasoni) safe" },
+  // ── Oceania ──
+  "australia-sydney": { phrases: [{ en: "Hello", local: "G'day" }, { en: "Thank you", local: "Thanks / Ta" }, { en: "How much?", local: "How much?" }, { en: "Help!", local: "Help!" }], emergency: "000", tipping: "Not expected; round up for great service", water: "Tap water safe" },
+  "newzealand-queenstown": { phrases: [{ en: "Hello", local: "Kia ora" }, { en: "Thank you", local: "Thanks / Ngā mihi" }, { en: "How much?", local: "How much?" }, { en: "Help!", local: "Help!" }], emergency: "111", tipping: "Not expected", water: "Tap water safe" },
 };

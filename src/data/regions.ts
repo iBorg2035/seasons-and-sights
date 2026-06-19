@@ -824,6 +824,181 @@ export const REGIONS: Region[] = [
       { name: "Boulders Beach", type: "wildlife", lat: -34.1976, lng: 18.451, blurb: "Beach colony of African penguins." },
     ],
   },
+
+  // ───────────────────────── North America ─────────────────────────
+  {
+    id: "costa-rica-arenal",
+    name: "Arenal & Monteverde",
+    country: "Costa Rica",
+    continent: "North America",
+    lat: 10.4633,
+    lng: -84.6531,
+    bookingDest: "La Fortuna, Costa Rica",
+    climateBlurb:
+      "Classic dry/green-season split: sunny, settled dry season December–April; the green (wet) season May–November brings afternoon downpours, lush jungle and a brief mid-year dry spell (veranillo) around July.",
+    months: climate("DDDDWWSWWWSD", {
+      1: "peak dry season — sunny",
+      4: "end of the dry season",
+      7: "brief mid-year dry spell (veranillo)",
+      9: "green season — heavy afternoon rain",
+      10: "wettest; some rural roads flood",
+    }),
+    sights: [
+      { name: "Arenal Volcano", type: "nature", lat: 10.463, lng: -84.703, blurb: "Near-perfect cone with hot springs at its base." },
+      { name: "Monteverde Cloud Forest", type: "nature", lat: 10.3009, lng: -84.8074, blurb: "Misty canopy reserve laced with hanging bridges." },
+      { name: "Manuel Antonio National Park", type: "wildlife", lat: 9.392, lng: -84.137, blurb: "Rainforest meets the Pacific; sloths and monkeys." },
+      { name: "La Fortuna Waterfall", type: "nature", lat: 10.449, lng: -84.668, blurb: "A 70m cascade into a jungle pool." },
+    ],
+  },
+
+  // ───────────────────────── Africa ─────────────────────────
+  {
+    id: "egypt-cairo",
+    name: "Cairo & Luxor",
+    country: "Egypt",
+    continent: "Africa",
+    lat: 30.0444,
+    lng: 31.2357,
+    bookingDest: "Cairo, Egypt",
+    climateBlurb:
+      "Desert-dry all year — the real variable is heat. Cool, comfortable November–March is peak season; spring and autumn are warm shoulders; May–September brings brutal heat, especially in Upper Egypt (Luxor/Aswan).",
+    months: climate("DDDSWWWWWSDD", {
+      1: "ideal — cool and dry",
+      4: "warm shoulder",
+      6: "extreme desert heat",
+      8: "extreme heat — tough in Luxor",
+      12: "peak season, cool and dry",
+    }),
+    sights: [
+      { name: "Pyramids of Giza & the Sphinx", type: "culture", lat: 29.9792, lng: 31.1342, blurb: "The last surviving ancient wonder, on Cairo's edge." },
+      { name: "Karnak Temple, Luxor", type: "culture", lat: 25.7188, lng: 32.6573, blurb: "Vast hall of towering columns by the Nile." },
+      { name: "Valley of the Kings", type: "culture", lat: 25.7402, lng: 32.6014, blurb: "Rock-cut royal tombs, incl. Tutankhamun's." },
+      { name: "The Egyptian Museum", type: "culture", lat: 30.0478, lng: 31.2336, blurb: "Pharaonic treasures in central Cairo." },
+    ],
+  },
+
+  // ───────────────────────── South Asia ─────────────────────────
+  {
+    id: "india-agra",
+    name: "Agra & Delhi",
+    country: "India",
+    continent: "South Asia",
+    lat: 27.1767,
+    lng: 78.0081,
+    bookingDest: "Agra, India",
+    climateBlurb:
+      "North India's Golden Triangle: cool, dry winters October–March are the sweet spot (with morning fog in Dec–Jan); April–June is searingly hot; the monsoon brings rain July–September.",
+    months: climate("DDSWWWWWWSDD", {
+      1: "cool and dry — ideal (some fog)",
+      5: "extreme pre-monsoon heat",
+      7: "monsoon rains",
+      11: "peak season — cool and clear",
+    }),
+    sights: [
+      { name: "Taj Mahal", type: "culture", lat: 27.1751, lng: 78.0421, blurb: "The marble mausoleum, unmissable at sunrise." },
+      { name: "Agra Fort", type: "culture", lat: 27.1795, lng: 78.0211, blurb: "Red-sandstone Mughal fortress city." },
+      { name: "Red Fort & Old Delhi", type: "culture", lat: 28.6562, lng: 77.241, blurb: "Mughal walled palace amid Delhi's bazaars." },
+      { name: "Fatehpur Sikri", type: "culture", lat: 27.094, lng: 77.661, blurb: "Abandoned red-sandstone Mughal capital." },
+    ],
+  },
+
+  // ───────────────────────── Europe ─────────────────────────
+  {
+    id: "france-paris",
+    name: "Paris",
+    country: "France",
+    continent: "Europe",
+    lat: 48.8566,
+    lng: 2.3522,
+    bookingDest: "Paris, France",
+    climateBlurb:
+      "Mild and temperate with rain spread across the year. Late spring (May–June) and early autumn (September) are loveliest; July–August is warm but busy; November–February is cold and grey (but festive).",
+    months: climate("WWSSDDSSDSWW", {
+      5: "mild and blooming — ideal",
+      6: "long, warm days — ideal",
+      8: "warm but crowded; locals away",
+      9: "warm, fewer crowds",
+      12: "cold and grey, but festive",
+    }),
+    sights: [
+      { name: "Eiffel Tower", type: "city", lat: 48.8584, lng: 2.2945, blurb: "The iron icon over the Champ de Mars." },
+      { name: "The Louvre", type: "culture", lat: 48.8606, lng: 2.3376, blurb: "The world's most-visited museum." },
+      { name: "Notre-Dame & Île de la Cité", type: "culture", lat: 48.853, lng: 2.3499, blurb: "Gothic cathedral on the Seine." },
+      { name: "Montmartre & Sacré-Cœur", type: "city", lat: 48.8867, lng: 2.3431, blurb: "Hilltop artists' quarter and white basilica." },
+    ],
+  },
+  {
+    id: "italy-rome",
+    name: "Rome",
+    country: "Italy",
+    continent: "Europe",
+    lat: 41.9028,
+    lng: 12.4964,
+    bookingDest: "Rome, Italy",
+    climateBlurb:
+      "Mediterranean: hot, dry summers and mild, rainy winters. Spring (April–May) and autumn (September–October) are the sweet spots; July–August is fierce and crowded; winters are cool and damp.",
+    months: climate("WWSDDSSSDDWW", {
+      4: "spring — ideal",
+      5: "warm and lovely — ideal",
+      8: "hot; many places shut for Ferragosto",
+      9: "warm, ideal",
+      1: "cool and rainy",
+    }),
+    sights: [
+      { name: "Colosseum", type: "culture", lat: 41.8902, lng: 12.4922, blurb: "The vast ancient amphitheatre." },
+      { name: "Vatican: St Peter's & Sistine Chapel", type: "culture", lat: 41.9022, lng: 12.4539, blurb: "Michelangelo's ceiling and the great basilica." },
+      { name: "Roman Forum & Palatine Hill", type: "culture", lat: 41.8925, lng: 12.4853, blurb: "The ruined heart of ancient Rome." },
+      { name: "Trevi Fountain & Pantheon", type: "culture", lat: 41.9009, lng: 12.4833, blurb: "Baroque fountain and the domed temple." },
+    ],
+  },
+
+  // ───────────────────────── Oceania ─────────────────────────
+  {
+    id: "australia-sydney",
+    name: "Sydney",
+    country: "Australia",
+    continent: "Oceania",
+    lat: -33.8688,
+    lng: 151.2093,
+    bookingDest: "Sydney, Australia",
+    climateBlurb:
+      "Southern-hemisphere temperate: warm summers December–February (beach peak, busy over the holidays), mild winters June–August, and gloriously mild spring and autumn shoulders.",
+    months: climate("DDSSSWWWSDDD", {
+      1: "summer — beaches and festivals",
+      6: "cool, mild winter",
+      10: "spring — warm and clear",
+      12: "summer peak (holiday crowds)",
+    }, { 1: "high", 12: "high" }),
+    sights: [
+      { name: "Sydney Opera House", type: "culture", lat: -33.8568, lng: 151.2153, blurb: "The sail-shelled icon on the harbour." },
+      { name: "Sydney Harbour Bridge", type: "city", lat: -33.8523, lng: 151.2108, blurb: "Walk or climb the 'Coathanger'." },
+      { name: "Bondi Beach & Coastal Walk", type: "beach", lat: -33.8908, lng: 151.2743, blurb: "Famous surf beach and clifftop path to Coogee." },
+      { name: "Blue Mountains", type: "nature", lat: -33.7, lng: 150.3, blurb: "Eucalyptus canyons and the Three Sisters (day trip)." },
+    ],
+  },
+  {
+    id: "newzealand-queenstown",
+    name: "Queenstown",
+    country: "New Zealand",
+    continent: "Oceania",
+    lat: -45.0312,
+    lng: 168.6626,
+    bookingDest: "Queenstown, New Zealand",
+    climateBlurb:
+      "Alpine four-season town: warm summers December–February for hiking and lakes, snowy winters June–August for skiing, and a spectacular golden autumn. A true year-round destination depending on what you're after.",
+    months: climate("DDSSSSSSSSDD", {
+      1: "summer — hiking and lakes",
+      4: "golden autumn colour",
+      7: "ski season — cold and snowy",
+      12: "summer peak",
+    }),
+    sights: [
+      { name: "Lake Wakatipu", type: "nature", lat: -45.03, lng: 168.66, blurb: "Z-shaped alpine lake ringed by peaks." },
+      { name: "The Remarkables", type: "nature", lat: -45.05, lng: 168.82, blurb: "Dramatic ski range above the town." },
+      { name: "Milford Sound", type: "nature", lat: -44.671, lng: 167.925, blurb: "Sheer fiord cliffs and waterfalls (day trip)." },
+      { name: "Skyline Gondola & Bob's Peak", type: "city", lat: -45.027, lng: 168.658, blurb: "Panoramic views and the luge above town." },
+    ],
+  },
 ];
 
 // Marquee festivals & events, keyed by region id and attached below. Kept
@@ -900,6 +1075,26 @@ const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
       { name: "Eisā drum festival", month: 8, blurb: "Thunderous Okinawan drum-and-dance celebrations." },
       { name: "Naha Great Tug-of-War", month: 10, blurb: "A giant rope and street festival in the capital." },
     ],
+    "india-agra": [
+      { name: "Taj Mahotsav", month: 2, blurb: "Ten-day arts, crafts and food festival near the Taj." },
+      { name: "Holi", month: 3, blurb: "The riotous festival of colours." },
+      { name: "Diwali", month: 11, blurb: "The festival of lights across North India." },
+    ],
+    "france-paris": [
+      { name: "Bastille Day", month: 7, blurb: "Parade on the Champs-Élysées and fireworks at the Eiffel Tower." },
+      { name: "Fête de la Musique", month: 6, blurb: "Free music fills the streets on the solstice." },
+    ],
+    "italy-rome": [
+      { name: "Holy Week & Easter", month: 4, blurb: "Papal Mass and processions at the Vatican." },
+      { name: "Natale di Roma", month: 4, blurb: "Rome's birthday — parades and re-enactments." },
+    ],
+    "australia-sydney": [
+      { name: "New Year's Eve fireworks", month: 12, blurb: "One of the world's first and biggest harbour fireworks." },
+      { name: "Vivid Sydney", month: 6, blurb: "Light, music and ideas festival across the harbour." },
+    ],
+    "newzealand-queenstown": [
+      { name: "Queenstown Winter Festival", month: 6, blurb: "Ski-town carnival kicking off the snow season." },
+    ],
   };
 
 // Rough mid-range cost per person per day (USD): lodging + food + activities +
@@ -938,6 +1133,13 @@ const DAILY_BUDGET: Record<string, number> = {
   "japan-tokyo": 130,
   "japan-hokkaido": 120,
   "japan-okinawa": 100,
+  "costa-rica-arenal": 80,
+  "egypt-cairo": 50,
+  "india-agra": 40,
+  "france-paris": 140,
+  "italy-rome": 120,
+  "australia-sydney": 130,
+  "newzealand-queenstown": 130,
 };
 
 // Wikipedia article titles for representative photos (fetched via /api/photo).
@@ -975,6 +1177,13 @@ const WIKI_TITLE: Record<string, string> = {
   "japan-tokyo": "Tokyo",
   "japan-hokkaido": "Sapporo",
   "japan-okinawa": "Shuri Castle",
+  "costa-rica-arenal": "Arenal Volcano",
+  "egypt-cairo": "Giza pyramid complex",
+  "india-agra": "Taj Mahal",
+  "france-paris": "Eiffel Tower",
+  "italy-rome": "Colosseum",
+  "australia-sydney": "Sydney Opera House",
+  "newzealand-queenstown": "Queenstown, New Zealand",
 };
 
 const PHOTOS = photos as Record<string, string>;
@@ -1015,6 +1224,13 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "japan-tokyo": { visa: "Visa-free ~90 days for many", currency: "Japanese yen (JPY)", language: "Japanese", plugs: "Types A/B · 100V", gettingThere: "Tokyo (HND/NRT) · ~12h from London", health: "Very safe; hot, humid summers" },
   "japan-hokkaido": { visa: "Visa-free ~90 days for many", currency: "Japanese yen (JPY)", language: "Japanese", plugs: "Types A/B · 100V", gettingThere: "Sapporo (CTS) via Tokyo · ~13h from London", health: "Very safe; severe cold & snow Dec–Mar — dress warm" },
   "japan-okinawa": { visa: "Visa-free ~90 days for many", currency: "Japanese yen (JPY)", language: "Japanese (Okinawan)", plugs: "Types A/B · 100V", gettingThere: "Naha (OKA) via Tokyo · ~15h from London", health: "Strong sun; typhoon awareness Aug–Sep" },
+  "costa-rica-arenal": { visa: "Visa-free 90 days for many", currency: "Costa Rican colón (CRC); USD common", language: "Spanish", plugs: "Types A/B · 120V", gettingThere: "San José (SJO) · ~11h from London (1 stop)", health: "Strong sun; dengue in the green season — repellent" },
+  "egypt-cairo": { visa: "Visa required (e-Visa / on arrival) for most", currency: "Egyptian pound (EGP)", language: "Arabic", plugs: "Types C/F · 220V", gettingThere: "Cairo (CAI) · ~5h from London", health: "Bottled water only; extreme summer heat; sun protection" },
+  "india-agra": { visa: "e-Visa required for most", currency: "Indian rupee (INR)", language: "Hindi & English", plugs: "Types C/D/M · 230V", gettingThere: "Delhi (DEL), ~3–4h by road/train to Agra · ~9h from London", health: "Bottled water; extreme heat Apr–Jun; winter fog Dec–Jan" },
+  "france-paris": { visa: "Visa-free 90 days (Schengen) for many", currency: "Euro (EUR)", language: "French", plugs: "Types C/E · 230V", gettingThere: "Paris (CDG/ORY) · ~1.5h flight or 2.5h by train from London", health: "Very safe; watch for pickpockets at busy sights" },
+  "italy-rome": { visa: "Visa-free 90 days (Schengen) for many", currency: "Euro (EUR)", language: "Italian", plugs: "Types C/F/L · 230V", gettingThere: "Rome (FCO/CIA) · ~2.5h from London", health: "Summer heat — carry water; pickpockets on transit" },
+  "australia-sydney": { visa: "ETA / eVisitor required for most", currency: "Australian dollar (AUD)", language: "English", plugs: "Type I · 230V", gettingThere: "Sydney (SYD) · ~22h from London (1 stop)", health: "Fierce UV — high SPF; swim between the flags" },
+  "newzealand-queenstown": { visa: "NZeTA required (visa-free entry) for many", currency: "New Zealand dollar (NZD)", language: "English & Māori", plugs: "Type I · 230V", gettingThere: "Queenstown (ZQN) via Auckland · ~26h from London", health: "Strong alpine UV & sandflies; changeable mountain weather" },
 };
 
 for (const region of REGIONS) {
