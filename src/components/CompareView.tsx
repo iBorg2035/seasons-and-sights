@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { Continent } from "@/types";
 import { REGIONS, getRegion } from "@/data/regions";
+import { CONTINENT_ORDER } from "@/lib/continents";
 import { SeasonStrip } from "@/components/SeasonStrip";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import {
@@ -15,17 +15,6 @@ import {
   crowdForMonth,
   formatUsd,
 } from "@/lib/season";
-
-const CONTINENT_ORDER: Continent[] = [
-  "Southeast Asia",
-  "South Asia",
-  "East Asia",
-  "South America",
-  "North America",
-  "Europe",
-  "Africa",
-  "Oceania",
-];
 
 const MAX = 3;
 

@@ -8,6 +8,7 @@ import type {
   TravelInfo,
 } from "@/types";
 import photos from "@/data/photos.json";
+import wikiTitles from "@/data/wiki-titles.json";
 import { TOOLKITS } from "@/data/toolkits";
 
 const SEASON_BY_CHAR: Record<string, Season> = {
@@ -1319,56 +1320,9 @@ const DAILY_BUDGET: Record<string, number> = {
   "philippines-dumaguete": 40,
 };
 
-// Wikipedia article titles for representative photos (fetched via /api/photo).
-const WIKI_TITLE: Record<string, string> = {
-  "thailand-chiangmai": "Chiang Mai",
-  "thailand-bangkok": "Bangkok",
-  "thailand-krabi": "Railay Beach",
-  "thailand-kohsamui": "Ko Samui",
-  "indonesia-bali": "Tanah Lot",
-  "vietnam-hoian": "Da Nang",
-  "vietnam-hanoi": "Hanoi",
-  "vietnam-hcmc": "Ho Chi Minh City",
-  "cambodia-siemreap": "Angkor Wat",
-  "philippines-palawan": "El Nido, Palawan",
-  "peru-cusco": "Machu Picchu",
-  "bolivia-uyuni": "Salar de Uyuni",
-  "patagonia-elcalafate": "Perito Moreno Glacier",
-  "brazil-rio": "Rio de Janeiro",
-  "brazil-amazon-manaus": "Amazon rainforest",
-  "colombia-cartagena": "Cartagena, Colombia",
-  "chile-atacama": "El Tatio",
-  "ecuador-galapagos": "Galápagos Islands",
-  "albania-riviera": "Ksamil",
-  "montenegro-kotor": "Kotor",
-  "sri-lanka-south": "Sigiriya",
-  "nepal-kathmandu": "Boudhanath",
-  "japan-kyoto": "Fushimi Inari-taisha",
-  "morocco-marrakech": "Marrakesh",
-  "tanzania-zanzibar": "Stone Town",
-  "mexico-yucatan": "Tulum",
-  "india-rajasthan": "Hawa Mahal",
-  "turkey-cappadocia": "Cappadocia",
-  "greece-santorini": "Oia, Greece",
-  "south-africa-capetown": "Cape Town",
-  "japan-tokyo": "Tokyo",
-  "japan-hokkaido": "Sapporo",
-  "japan-okinawa": "Shuri Castle",
-  "costa-rica-arenal": "Arenal Volcano",
-  "egypt-cairo": "Giza pyramid complex",
-  "india-agra": "Taj Mahal",
-  "france-paris": "Eiffel Tower",
-  "italy-rome": "Colosseum",
-  "australia-sydney": "Sydney Opera House",
-  "newzealand-queenstown": "Queenstown, New Zealand",
-  "philippines-manila": "Intramuros",
-  "philippines-cebu": "Kawasan Falls",
-  "philippines-boracay": "Boracay",
-  "philippines-bohol": "Chocolate Hills",
-  "philippines-siargao": "Siargao",
-  "philippines-banaue": "Banaue Rice Terraces",
-  "philippines-dumaguete": "Apo Island",
-};
+// Wikipedia article titles for representative photos. Single source of truth in
+// wiki-titles.json so scripts/fetch-photos.mjs and the app can't drift apart.
+const WIKI_TITLE = wikiTitles as Record<string, string>;
 
 const PHOTOS = photos as Record<string, string>;
 

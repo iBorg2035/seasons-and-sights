@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Continent, Season, SightType } from "@/types";
 import { REGIONS } from "@/data/regions";
+import { CONTINENT_ORDER, CONTINENT_LABEL } from "@/lib/continents";
 import { RegionCard } from "@/components/RegionCard";
 import { WorldMap } from "@/components/WorldMap";
 import {
@@ -18,14 +19,7 @@ type View = "grid" | "map";
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "Southeast Asia", label: "SE Asia" },
-  { value: "South Asia", label: "South Asia" },
-  { value: "East Asia", label: "East Asia" },
-  { value: "South America", label: "South America" },
-  { value: "North America", label: "N. America" },
-  { value: "Europe", label: "Europe" },
-  { value: "Africa", label: "Africa" },
-  { value: "Oceania", label: "Oceania" },
+  ...CONTINENT_ORDER.map((c) => ({ value: c, label: CONTINENT_LABEL[c] })),
 ];
 
 const STYLES: { value: StyleFilter; label: string }[] = [

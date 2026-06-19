@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Continent, Region } from "@/types";
 import { REGIONS } from "@/data/regions";
+import { CONTINENT_ORDER } from "@/lib/continents";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { buildFlightsUrl } from "@/lib/booking";
 import {
@@ -14,17 +15,7 @@ import {
   seasonFitScore,
 } from "@/lib/season";
 
-const CONTINENTS: (Continent | "any")[] = [
-  "any",
-  "Southeast Asia",
-  "South Asia",
-  "East Asia",
-  "South America",
-  "North America",
-  "Europe",
-  "Africa",
-  "Oceania",
-];
+const CONTINENTS: (Continent | "any")[] = ["any", ...CONTINENT_ORDER];
 
 export function SurpriseView({ initialMonth }: { initialMonth: number }) {
   const [month, setMonth] = useState(initialMonth);

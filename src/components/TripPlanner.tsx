@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Continent, Region } from "@/types";
+import type { Region } from "@/types";
 import { REGIONS, getRegion } from "@/data/regions";
+import { CONTINENT_ORDER } from "@/lib/continents";
 import { SeasonStrip } from "@/components/SeasonStrip";
 import { RouteMap } from "@/components/RouteMap";
 import { ShareTripButton } from "@/components/ShareTripButton";
@@ -32,17 +33,6 @@ import {
   planItinerary,
   type ItineraryLeg,
 } from "@/lib/season";
-
-const CONTINENT_ORDER: Continent[] = [
-  "Southeast Asia",
-  "South Asia",
-  "East Asia",
-  "South America",
-  "North America",
-  "Europe",
-  "Africa",
-  "Oceania",
-];
 
 const EXAMPLE_IDS = [
   "brazil-rio",
