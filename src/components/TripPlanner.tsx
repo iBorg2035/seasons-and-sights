@@ -447,7 +447,7 @@ export function TripPlanner({
                     : ""}{" "}
                   · est. {formatUsd(estimateTripCost(legs))}/person
                   {flightsTotal > 0
-                    ? ` + ~${formatUsd(flightsTotal)} flights`
+                    ? ` + ~${formatUsd(flightsTotal)} transport`
                     : ""}
                 </p>
               )}
@@ -508,10 +508,11 @@ export function TripPlanner({
                 <Fragment key={leg.region.id}>
                   {hop && (
                     <li className="flex items-center gap-2 pl-11 text-xs text-slate-400">
-                      <span aria-hidden>✈</span>
+                      <span aria-hidden>{hop.overland ? "🚆" : "✈"}</span>
                       <span>
-                        ~{hop.hours}h · ~{formatUsd(hop.usd)} ·{" "}
-                        {hop.km.toLocaleString()} km from {legs[i - 1].region.name}
+                        ~{hop.hours}h {hop.overland ? "overland" : "flight"} · ~
+                        {formatUsd(hop.usd)} · {hop.km.toLocaleString()} km from{" "}
+                        {legs[i - 1].region.name}
                       </span>
                     </li>
                   )}

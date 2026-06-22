@@ -11,7 +11,8 @@ function endpoint(): string | null {
     const u = new URL(DSN);
     const projectId = u.pathname.replace(/^\//, "");
     if (!u.username || !projectId) return null;
-    return `${u.protocol}//${u.host}/api/${projectId}/store/?sentry_key=${u.username}&sentry_version=7`;
+    // Modern envelope endpoint (the legacy /store/ one is deprecated).
+    return `${u.protocol}//${u.host}/api/${projectId}/envelope/?sentry_key=${u.username}&sentry_version=7`;
   } catch {
     return null;
   }
@@ -21,9 +22,10 @@ export function reportError(error: unknown, context?: Record<string, unknown>) {
   const url = endpoint();
   if (!url) return;
   const err = error instanceof Error ? error : new Error(String(error));
-  const body = {
-    event_id: (crypto.randomUUID?.() ?? `${Date.now()}`).replace(/-/g, ""),
-    timestamp: new Date().toISOString(),
+  const eventId = (crypto.randomUUID?.() ?? `${Date.now()}`).replace(/-/g, "");
+  const event = {
+    event_id: eventId,
+    timestamp: Date.now() / 1000,
     platform: "javascript",
     level: "error",
     exception: { values: [{ type: err.name, value: err.message }] },
@@ -31,11 +33,17 @@ export function reportError(error: unknown, context?: Record<string, unknown>) {
     request:
       typeof location !== "undefined" ? { url: location.href } : undefined,
   };
+  // Sentry envelope: header line, item header line, then the event payload.
+  const body = [
+    JSON.stringify({ event_id: eventId, sent_at: new Date().toISOString() }),
+    JSON.stringify({ type: "event" }),
+    JSON.stringify(event),
+  ].join("\n");
   try {
     void fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      headers: { "Content-Type": "application/x-sentry-envelope" },
+      body,
       keepalive: true,
     }).catch(() => {});
   } catch {

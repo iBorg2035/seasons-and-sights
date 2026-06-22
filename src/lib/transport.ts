@@ -18,21 +18,29 @@ export interface Hop {
   km: number;
   hours: number;
   usd: number;
+  /** Short enough to realistically go overland (drive/train) rather than fly. */
+  overland: boolean;
 }
 
 /**
- * Very rough flight estimate between two points — for ballpark budgeting only,
- * not a quote. Time = cruise (~750 km/h) + a 1.5h airport buffer; cost a simple
- * distance-based economy one-way.
+ * Very rough travel estimate between two points — for ballpark budgeting only,
+ * not a quote. Under ~350km it's treated as overland (slower, cheaper); beyond
+ * that, a flight (cruise ~750 km/h + a 1.5h airport buffer).
  */
 export function flightHop(
   a: { lat: number; lng: number },
   b: { lat: number; lng: number }
 ): Hop {
   const km = haversineKm(a, b);
+  const overland = km < 350;
   return {
     km: Math.round(km),
-    hours: Math.round((km / 750 + 1.5) * 10) / 10,
-    usd: Math.round((60 + 0.09 * km) / 10) * 10,
+    hours: overland
+      ? Math.round((km / 70 + 0.5) * 10) / 10 // ~70 km/h door-to-door
+      : Math.round((km / 750 + 1.5) * 10) / 10,
+    usd: overland
+      ? Math.round((10 + 0.04 * km) / 5) * 5
+      : Math.round((60 + 0.09 * km) / 10) * 10,
+    overland,
   };
 }

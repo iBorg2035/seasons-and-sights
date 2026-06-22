@@ -36,10 +36,12 @@ create table if not exists public.shared_trips (
 -- Bound the size of anonymous, unauthenticated inserts so the share endpoint
 -- can't be used to dump large payloads. Applied via ALTER so it also patches
 -- tables created before these limits existed.
+-- Note: CHECK expressions must be IMMUTABLE, so we measure size via the text
+-- representation (length(data::text)) rather than pg_column_size(), which is STABLE.
 alter table public.shared_trips drop constraint if exists shared_trips_name_len;
 alter table public.shared_trips add  constraint shared_trips_name_len  check (length(name) <= 200);
 alter table public.shared_trips drop constraint if exists shared_trips_data_size;
-alter table public.shared_trips add  constraint shared_trips_data_size check (pg_column_size(data) < 8192);
+alter table public.shared_trips add  constraint shared_trips_data_size check (length(data::text) < 8192);
 
 alter table public.shared_trips enable row level security;
 
@@ -52,6 +54,7 @@ create policy "Anyone can publish a share"
   to anon, authenticated
   with check (true);
 
+drop function if exists public.get_shared_trip(uuid);
 create or replace function public.get_shared_trip(p_token uuid)
 returns table (name text, data jsonb)
 language sql
