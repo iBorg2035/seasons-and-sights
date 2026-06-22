@@ -3,6 +3,27 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { AuthDialog } from "@/components/AuthDialog";
+import { deleteAccount } from "@/lib/supabase/trips";
+
+const SAVED_KEY = "seasons-saved-trips";
+
+/** Download the user's saved trips as a JSON file (their data, on demand). */
+function exportTrips() {
+  let data = "[]";
+  try {
+    data = localStorage.getItem(SAVED_KEY) || "[]";
+  } catch {
+    /* ignore */
+  }
+  const url = URL.createObjectURL(
+    new Blob([data], { type: "application/json" })
+  );
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "seasons-and-sights-trips.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 /** Nav account control. Renders nothing unless Supabase is configured. */
 export function AccountMenu() {
@@ -54,6 +75,15 @@ export function AccountMenu() {
             {user.email}
           </p>
           <button
+            onClick={() => {
+              setMenu(false);
+              exportTrips();
+            }}
+            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+          >
+            Export my trips
+          </button>
+          <button
             onClick={async () => {
               setMenu(false);
               await signOut();
@@ -61,6 +91,27 @@ export function AccountMenu() {
             className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
           >
             Sign out
+          </button>
+          <button
+            onClick={async () => {
+              if (
+                !confirm(
+                  "Delete your account and all saved trips? This can't be undone."
+                )
+              )
+                return;
+              setMenu(false);
+              await deleteAccount();
+              try {
+                localStorage.removeItem(SAVED_KEY);
+              } catch {
+                /* ignore */
+              }
+              await signOut();
+            }}
+            className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50"
+          >
+            Delete account
           </button>
         </div>
       )}

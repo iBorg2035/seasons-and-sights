@@ -12,6 +12,7 @@ import { TravelEssentials } from "@/components/TravelEssentials";
 import { TravelToolkit } from "@/components/TravelToolkit";
 import { AddToTripButton } from "@/components/AddToTripButton";
 import { getCurrentSeason, monthOf } from "@/lib/season";
+import { SITE_URL } from "@/lib/site";
 
 // Regenerate each page in the background ~daily so the "current season"
 // badge and "now" marker stay accurate as the calendar month rolls over.
@@ -52,8 +53,33 @@ export default async function RegionPage({
 
   const current = getCurrentSeason(region);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "TouristDestination",
+    name: `${region.name}, ${region.country}`,
+    description: region.climateBlurb,
+    url: `${SITE_URL}/regions/${region.id}`,
+    ...(region.photo
+      ? {
+          image: region.photo.startsWith("http")
+            ? region.photo
+            : `${SITE_URL}${region.photo}`,
+        }
+      : {}),
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: region.lat,
+      longitude: region.lng,
+    },
+    address: { "@type": "PostalAddress", addressCountry: region.country },
+  };
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Link
         href="/"
         className="mb-3 inline-block text-sm font-medium text-stone-500 hover:text-stone-900"

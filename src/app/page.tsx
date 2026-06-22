@@ -1,8 +1,24 @@
 import { ExploreGrid } from "@/components/ExploreGrid";
+import { OnboardingIntro } from "@/components/OnboardingIntro";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description:
+    "Travel-planning by season — find destinations in their dry or shoulder season and plan a route that chases good weather.",
+};
 
 export default function HomePage() {
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+      <OnboardingIntro />
       <section className="mb-10 border-b border-[var(--hairline)] pb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">
           Plan around the weather

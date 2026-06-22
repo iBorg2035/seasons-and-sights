@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { reportError } from "@/lib/report-error";
 
 /** Route-segment error boundary — keeps a render error from blanking the app. */
 export default function Error({
@@ -12,8 +13,8 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface for logs / any future error-reporting hook (e.g. Sentry).
     console.error(error);
+    reportError(error, { boundary: "route" });
   }, [error]);
 
   return (

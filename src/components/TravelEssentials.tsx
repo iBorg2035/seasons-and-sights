@@ -1,5 +1,6 @@
 import type { TravelInfo } from "@/types";
 import { VisaByNationality } from "@/components/VisaByNationality";
+import { DATA_REVIEWED } from "@/lib/site";
 
 const ITEMS: { key: keyof TravelInfo; icon: string; label: string }[] = [
   { key: "visa", icon: "🛂", label: "Visa" },
@@ -43,7 +44,7 @@ export function TravelEssentials({
       </dl>
       <p className="mt-4 text-xs text-slate-400">
         Indicative for many nationalities — verify visa, health, and entry rules
-        for your passport before booking.
+        for your passport before booking. Last reviewed {DATA_REVIEWED}.
       </p>
     </section>
   );

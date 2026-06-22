@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Fraunces, Inter } from "next/font/google";
 import { SiteNav } from "@/components/SiteNav";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { ErrorReporter } from "@/components/ErrorReporter";
 import { AuthProvider } from "@/lib/contexts/auth-context";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -67,6 +68,7 @@ export default function RootLayout({
       <body className="min-h-screen antialiased">
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <ServiceWorkerRegister />
+        <ErrorReporter />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[2000] focus:rounded-lg focus:bg-stone-900 focus:px-4 focus:py-2 focus:text-white"
@@ -94,9 +96,22 @@ export default function RootLayout({
           {children}
         </main>
         <footer className="mx-auto max-w-6xl px-4 py-10 text-xs text-stone-400">
-          Season data is curated climatology; live weather & historical normals
-          from Open-Meteo; photos via Wikipedia. Accommodation links open
-          Booking.com.
+          <p>
+            Season data is curated climatology; live weather & historical normals
+            from Open-Meteo; photos via Wikipedia. Accommodation links open
+            Booking.com.
+          </p>
+          <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+            <Link href="/about" className="hover:text-stone-600">
+              About the data
+            </Link>
+            <Link href="/privacy" className="hover:text-stone-600">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-stone-600">
+              Terms
+            </Link>
+          </nav>
         </footer>
         </AuthProvider>
         <Analytics />

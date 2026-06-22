@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Region } from "@/types";
@@ -10,6 +10,7 @@ import { SeasonStrip } from "@/components/SeasonStrip";
 import { RouteMap } from "@/components/RouteMap";
 import { ShareTripButton } from "@/components/ShareTripButton";
 import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
+import { flightHop } from "@/lib/transport";
 import { buildIcs } from "@/lib/ics";
 import { getDraft, saveDraft } from "@/lib/trip-draft";
 import { useAuth } from "@/lib/contexts/auth-context";
@@ -253,6 +254,15 @@ export function TripPlanner({
     };
   }, [legs, ranges]);
 
+  // Rough inter-stop flight cost (very approximate — see lib/transport).
+  const flightsTotal = useMemo(() => {
+    let usd = 0;
+    for (let i = 1; i < legs.length; i++) {
+      usd += flightHop(legs[i - 1].region, legs[i].region).usd;
+    }
+    return usd;
+  }, [legs]);
+
   const hasRisky = legs.some((l) => l.fit < 50);
 
   return (
@@ -436,6 +446,9 @@ export function TripPlanner({
                     ? ` (~${tripSpan.years.toFixed(1)} yrs)`
                     : ""}{" "}
                   · est. {formatUsd(estimateTripCost(legs))}/person
+                  {flightsTotal > 0
+                    ? ` + ~${formatUsd(flightsTotal)} flights`
+                    : ""}
                 </p>
               )}
               <button
@@ -479,7 +492,7 @@ export function TripPlanner({
           </div>
 
           <ol className="space-y-4">
-            {legs.map((leg) => {
+            {legs.map((leg, i) => {
               const quality = fitQuality(leg.fit);
               const meta = SEASON_META[quality.season];
               const { checkin, checkout } = datesForMonth(leg.months[0]);
@@ -490,9 +503,19 @@ export function TripPlanner({
                 lat: leg.region.lat,
                 lng: leg.region.lng,
               });
+              const hop = i > 0 ? flightHop(legs[i - 1].region, leg.region) : null;
               return (
+                <Fragment key={leg.region.id}>
+                  {hop && (
+                    <li className="flex items-center gap-2 pl-11 text-xs text-slate-400">
+                      <span aria-hidden>✈</span>
+                      <span>
+                        ~{hop.hours}h · ~{formatUsd(hop.usd)} ·{" "}
+                        {hop.km.toLocaleString()} km from {legs[i - 1].region.name}
+                      </span>
+                    </li>
+                  )}
                 <li
-                  key={leg.region.id}
                   className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
                 >
                   <div className="flex items-start gap-4">
@@ -555,6 +578,7 @@ export function TripPlanner({
                     </div>
                   </div>
                 </li>
+                </Fragment>
               );
             })}
           </ol>

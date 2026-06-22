@@ -80,6 +80,14 @@ export async function publishShare(trip: {
   return error ? null : token;
 }
 
+/** Delete the signed-in user's account and all their trips (cascades). */
+export async function deleteAccount(): Promise<boolean> {
+  const sb = getSupabase();
+  if (!sb) return false;
+  const { error } = await sb.rpc("delete_account");
+  return !error;
+}
+
 /** Read a shared trip by token (via the enumeration-safe RPC). */
 export async function fetchSharedTrip(
   token: string

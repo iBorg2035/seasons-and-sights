@@ -62,3 +62,17 @@ as $$
 $$;
 
 grant execute on function public.get_shared_trip(uuid) to anon, authenticated;
+
+-- ── Account deletion (GDPR) ──────────────────────────────────────────────────
+-- Lets a signed-in user delete their own account; their trips cascade away via
+-- the foreign key. Runs as definer so it can remove the auth.users row.
+create or replace function public.delete_account()
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from auth.users where id = auth.uid();
+$$;
+
+grant execute on function public.delete_account() to authenticated;
