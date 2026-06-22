@@ -111,4 +111,6 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "malaysia-langkawi": { phrases: ms, ...MAL },
   "malaysia-malacca": { phrases: ms, ...MAL },
   "malaysia-sabah": { phrases: ms, ...MAL },
+  "thailand-huahin": { phrases: th, ...THAI },
+  "mexico-playadelcarmen": { phrases: es, emergency: "911", tipping: "~10–15% (propina)", water: "Not potable — drink bottled" },
 };

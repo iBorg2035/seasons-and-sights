@@ -1337,6 +1337,52 @@ export const REGIONS: Region[] = [
       { name: "Valugan Boulder Beach", type: "nature", lat: 20.46, lng: 122.01, blurb: "A beach of smooth volcanic boulders." },
     ],
   },
+  {
+    id: "thailand-huahin",
+    name: "Hua Hin",
+    country: "Thailand",
+    continent: "Southeast Asia",
+    lat: 12.5684,
+    lng: 99.9577,
+    bookingDest: "Hua Hin, Thailand",
+    climateBlurb:
+      "A royal seaside resort town on the Gulf, and one of the drier corners of Thailand. Cool and dry December–February (peak), hot but still dry March–April; the rains build through the year to a wet October–November.",
+    months: climate("DDDDSSSSWWWD", {
+      1: "cool, dry — peak",
+      4: "hottest, still dry",
+      10: "wettest month",
+    }),
+    sights: [
+      { name: "Hua Hin Beach & Pier", type: "beach", lat: 12.5684, lng: 99.9612, blurb: "Long sandy resort beach with the old jetty." },
+      { name: "Hua Hin Railway Station", type: "culture", lat: 12.568, lng: 99.958, blurb: "Thailand's prettiest station, with a royal pavilion." },
+      { name: "Phraya Nakhon Cave", type: "nature", lat: 12.2, lng: 99.9667, blurb: "Cave pavilion lit by a dramatic sky hole." },
+      { name: "Cicada & night markets", type: "city", lat: 12.53, lng: 99.97, blurb: "Art-and-food night markets along the coast." },
+    ],
+  },
+
+  // ───────────────────── North America (more) ─────────────────────
+  {
+    id: "mexico-playadelcarmen",
+    name: "Playa del Carmen",
+    country: "Mexico",
+    continent: "North America",
+    lat: 20.6296,
+    lng: -87.0739,
+    bookingDest: "Playa del Carmen, Mexico",
+    climateBlurb:
+      "The Riviera Maya's lively beach hub for cenotes, reefs and Maya ruins. Dry and sunny December–April (peak); wetter May–October with hurricane risk peaking September–October, and sargassum seaweed possible May–August.",
+    months: climate("DDDDSWWWWWSD", {
+      3: "dry, sunny — peak",
+      6: "sargassum seaweed can wash up",
+      9: "peak hurricane season",
+    }),
+    sights: [
+      { name: "Quinta Avenida (5th Ave)", type: "city", lat: 20.6275, lng: -87.078, blurb: "Pedestrian avenue of shops, bars and restaurants." },
+      { name: "Cozumel reefs", type: "wildlife", lat: 20.423, lng: -86.9223, blurb: "World-class diving and snorkelling off the island." },
+      { name: "Cenotes (Dos Ojos)", type: "nature", lat: 20.32, lng: -87.39, blurb: "Crystal freshwater sinkholes to swim and dive." },
+      { name: "Tulum ruins", type: "culture", lat: 20.215, lng: -87.429, blurb: "Clifftop Maya ruins above a turquoise beach." },
+    ],
+  },
 ];
 
 // Marquee festivals & events, keyed by region id and attached below. Kept
@@ -1517,6 +1563,8 @@ const DAILY_BUDGET: Record<string, number> = {
   "philippines-coron": 55,
   "philippines-vigan": 35,
   "philippines-batanes": 70,
+  "thailand-huahin": 55,
+  "mexico-playadelcarmen": 75,
 };
 
 // Wikipedia article titles for representative photos. Single source of truth in
@@ -1583,6 +1631,8 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "philippines-coron": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Busuanga (USU) via Manila/Cebu · ~18h from London", health: "Strong sun & reef cuts; bring cash (few ATMs)" },
   "philippines-vigan": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino, Ilocano & English", plugs: "Types A/B/C · 220V", gettingThere: "~6–8h by bus from Manila (MNL) · ~14h from London", health: "Strong sun; the heritage core is walkable" },
   "philippines-batanes": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Ivatan, Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Basco (BSO) via Manila · ~16h from London", health: "Fierce wind & sun; flights cancel in bad weather — buffer days" },
+  "thailand-huahin": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "~3h by road from Bangkok (BKK) · ~11h from London", health: "Strong sun; jellyfish in season; drink bottled water" },
+  "mexico-playadelcarmen": { visa: "Visa-free up to 180 days for many", currency: "Mexican peso (MXN)", language: "Spanish", plugs: "Types A/B · 127V", gettingThere: "Cancún (CUN), ~1h by road · ~11h from London", health: "Bottled water; strong sun; hurricane season Aug–Oct; sargassum May–Aug" },
 };
 
 for (const region of REGIONS) {
