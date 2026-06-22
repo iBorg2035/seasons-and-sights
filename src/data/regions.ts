@@ -1158,6 +1158,185 @@ export const REGIONS: Region[] = [
       { name: "Twin Lakes (Balinsasayao)", type: "nature", lat: 9.3667, lng: 123.1667, blurb: "Two crater lakes ringed by rainforest." },
     ],
   },
+
+  // ───────────────────────── Malaysia ─────────────────────────
+  {
+    id: "malaysia-kualalumpur",
+    name: "Kuala Lumpur",
+    country: "Malaysia",
+    continent: "Southeast Asia",
+    lat: 3.139,
+    lng: 101.6869,
+    bookingDest: "Kuala Lumpur, Malaysia",
+    climateBlurb:
+      "Equatorial capital — warm and humid year-round with rain in every month. Slightly drier June–August and January–February; the inter-monsoon brings heavier thunderstorms around April and October–November.",
+    months: climate("DDSWSDDDSWWS", {
+      4: "thunderstorm peak",
+      6: "drier spell",
+      11: "wettest month",
+    }),
+    sights: [
+      { name: "Petronas Twin Towers", type: "city", lat: 3.1578, lng: 101.7117, blurb: "The iconic 452m steel-clad twin towers." },
+      { name: "Batu Caves", type: "culture", lat: 3.2379, lng: 101.684, blurb: "Limestone cave temples up 272 rainbow steps." },
+      { name: "Bukit Bintang & KL Tower", type: "city", lat: 3.1528, lng: 101.7039, blurb: "Observation tower above the buzzing food and shopping district." },
+      { name: "Merdeka Square & old quarter", type: "culture", lat: 3.1478, lng: 101.6953, blurb: "Colonial-era square where independence was declared." },
+    ],
+  },
+  {
+    id: "malaysia-penang",
+    name: "Penang",
+    country: "Malaysia",
+    continent: "Southeast Asia",
+    lat: 5.4141,
+    lng: 100.3288,
+    bookingDest: "Penang, Malaysia",
+    climateBlurb:
+      "The street-food and heritage capital. Warm and humid all year; driest December–February, with the wettest stretch during the inter-monsoon September–November.",
+    months: climate("DDSWSSSWWWSD", {
+      1: "drier, pleasant",
+      9: "wettest month",
+      10: "heavy inter-monsoon rain",
+    }),
+    sights: [
+      { name: "George Town heritage & street art", type: "culture", lat: 5.4145, lng: 100.338, blurb: "UNESCO old town of shophouses and murals." },
+      { name: "Kek Lok Si Temple", type: "culture", lat: 5.3997, lng: 100.273, blurb: "Hilltop temple with a giant Guanyin statue." },
+      { name: "Penang Hill", type: "nature", lat: 5.425, lng: 100.268, blurb: "Funicular to cool summit views over the strait." },
+      { name: "Gurney Drive hawker food", type: "city", lat: 5.438, lng: 100.309, blurb: "Seafront promenade and famous hawker stalls." },
+    ],
+  },
+  {
+    id: "malaysia-langkawi",
+    name: "Langkawi",
+    country: "Malaysia",
+    continent: "Southeast Asia",
+    lat: 6.35,
+    lng: 99.8,
+    bookingDest: "Langkawi, Malaysia",
+    climateBlurb:
+      "Duty-free island of beaches and rainforest. The dry season December–March is calmest and sunniest; the wetter southwest monsoon runs April–October.",
+    months: climate("DDDSWWWWWWSD", {
+      1: "dry, calm seas — peak",
+      4: "monsoon begins",
+      9: "wettest month",
+    }),
+    sights: [
+      { name: "Sky Bridge & Cable Car", type: "nature", lat: 6.385, lng: 99.67, blurb: "Curved bridge high over the rainforest canopy." },
+      { name: "Pantai Cenang", type: "beach", lat: 6.287, lng: 99.727, blurb: "The main beach strip for sunsets and watersports." },
+      { name: "Kilim Geoforest Park", type: "nature", lat: 6.42, lng: 99.86, blurb: "Mangrove cruises past eagles and limestone karsts." },
+      { name: "Pulau Payar Marine Park", type: "beach", lat: 6.05, lng: 100.04, blurb: "Snorkel and dive day-trip to the reef." },
+    ],
+  },
+  {
+    id: "malaysia-malacca",
+    name: "Malacca",
+    country: "Malaysia",
+    continent: "Southeast Asia",
+    lat: 2.1896,
+    lng: 102.2501,
+    bookingDest: "Malacca, Malaysia",
+    climateBlurb:
+      "A UNESCO trading city layering Malay, Portuguese, Dutch and Chinese history. Equatorial and humid year-round; wettest around the inter-monsoon (April and October–November), drier June–August.",
+    months: climate("DDSWSDDDSWWS", {
+      4: "thunderstorms",
+      11: "wettest month",
+    }),
+    sights: [
+      { name: "A Famosa & St Paul's Hill", type: "culture", lat: 2.1917, lng: 102.25, blurb: "Portuguese fort ruins above the old town." },
+      { name: "Jonker Street", type: "city", lat: 2.1955, lng: 102.247, blurb: "Chinatown's antique shops and weekend night market." },
+      { name: "Christ Church & Dutch Square", type: "culture", lat: 2.1944, lng: 102.2486, blurb: "The salmon-red Dutch colonial heart." },
+      { name: "Melaka River cruise", type: "nature", lat: 2.196, lng: 102.248, blurb: "Boat ride past muralled riverside houses." },
+    ],
+  },
+  {
+    id: "malaysia-sabah",
+    name: "Sabah (Kota Kinabalu)",
+    country: "Malaysia",
+    continent: "Southeast Asia",
+    lat: 5.9804,
+    lng: 116.0735,
+    bookingDest: "Kota Kinabalu, Malaysia",
+    climateBlurb:
+      "Borneo's gateway to Mount Kinabalu, islands and wildlife. Driest and best February–April; the northeast monsoon brings the heaviest rain October–January.",
+    months: climate("WSDDSSSSWWWW", {
+      3: "driest — best for climbing",
+      10: "monsoon rain builds",
+      12: "wettest month",
+    }),
+    sights: [
+      { name: "Mount Kinabalu", type: "nature", lat: 6.075, lng: 116.5583, blurb: "Southeast Asia's highest peak — a two-day climb." },
+      { name: "Sipadan & Mabul diving", type: "wildlife", lat: 4.115, lng: 118.628, blurb: "World-class diving with turtles and sharks (via Semporna)." },
+      { name: "Tunku Abdul Rahman Marine Park", type: "beach", lat: 5.97, lng: 116.005, blurb: "Island-hopping reefs just off the city." },
+      { name: "Kinabatangan River wildlife", type: "wildlife", lat: 5.415, lng: 118.0, blurb: "Orangutans and proboscis monkeys along the river." },
+    ],
+  },
+
+  // ───────────────────── Philippines (more) ─────────────────────
+  {
+    id: "philippines-coron",
+    name: "Coron",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 12.005,
+    lng: 120.204,
+    bookingDest: "Coron, Philippines",
+    climateBlurb:
+      "Northern Palawan's wreck-diving and lagoon paradise. Dry and calm December–May (best December–April); the wet season June–October brings rain and rougher seas, with typhoon risk.",
+    months: climate("DDDDSWWWWWSD", {
+      1: "dry, calm — peak",
+      4: "driest, hottest",
+      9: "wettest; typhoon risk",
+    }),
+    sights: [
+      { name: "Kayangan Lake", type: "nature", lat: 11.99, lng: 120.21, blurb: "The Philippines' cleanest lake, framed by karst." },
+      { name: "Twin Lagoon", type: "nature", lat: 12.015, lng: 120.23, blurb: "Swim between two lagoons through a limestone gap." },
+      { name: "WWII shipwreck dives", type: "wildlife", lat: 12.05, lng: 120.22, blurb: "Japanese wrecks now teeming with marine life." },
+      { name: "Barracuda Lake", type: "nature", lat: 11.995, lng: 120.225, blurb: "Eerie thermocline lake popular with divers." },
+    ],
+  },
+  {
+    id: "philippines-vigan",
+    name: "Vigan",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 17.5747,
+    lng: 120.3869,
+    bookingDest: "Vigan, Philippines",
+    climateBlurb:
+      "A UNESCO Spanish-colonial town in northern Luzon, with cobblestone streets and heritage houses. Dry and pleasant November–April; the southwest monsoon brings rain June–October.",
+    months: climate("DDDDSWWWWWSD", {
+      2: "cool, dry — ideal",
+      7: "monsoon rains",
+      12: "festive and dry",
+    }),
+    sights: [
+      { name: "Calle Crisologo", type: "culture", lat: 17.5747, lng: 120.3869, blurb: "Cobblestone street of preserved colonial houses." },
+      { name: "Vigan Cathedral & Plaza Salcedo", type: "culture", lat: 17.574, lng: 120.388, blurb: "Baroque cathedral on the historic plaza." },
+      { name: "Bantay Bell Tower", type: "culture", lat: 17.587, lng: 120.387, blurb: "Hilltop watchtower with views over the town." },
+      { name: "Burnay pottery & Hidden Garden", type: "city", lat: 17.58, lng: 120.4, blurb: "Traditional jar workshops and garden eateries." },
+    ],
+  },
+  {
+    id: "philippines-batanes",
+    name: "Batanes",
+    country: "Philippines",
+    continent: "Southeast Asia",
+    lat: 20.449,
+    lng: 121.971,
+    bookingDest: "Batanes, Philippines",
+    climateBlurb:
+      "The Philippines' remote northernmost islands — rolling green hills, stone houses and dramatic cliffs. Best March–June (dry, mild); typhoon-prone July–October; cool and windy in the December–February 'amihan'.",
+    months: climate("SSDDDSWWWWSS", {
+      4: "green hills, mild — ideal",
+      8: "typhoon season",
+      1: "cool, windy amihan",
+    }),
+    sights: [
+      { name: "Marlboro Hills (Racuh a Payaman)", type: "nature", lat: 20.4, lng: 121.95, blurb: "Rolling green pastures meeting the sea." },
+      { name: "Basco Lighthouse", type: "culture", lat: 20.456, lng: 121.969, blurb: "Clifftop lighthouse with sweeping island views." },
+      { name: "Sabtang Island stone houses", type: "culture", lat: 20.33, lng: 121.86, blurb: "Traditional Ivatan stone villages." },
+      { name: "Valugan Boulder Beach", type: "nature", lat: 20.46, lng: 122.01, blurb: "A beach of smooth volcanic boulders." },
+    ],
+  },
 ];
 
 // Marquee festivals & events, keyed by region id and attached below. Kept
@@ -1266,6 +1445,18 @@ const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
     "philippines-dumaguete": [
       { name: "Buglasan Festival", month: 10, blurb: "Negros Oriental's 'festival of festivals' with street dancing." },
     ],
+    "malaysia-kualalumpur": [
+      { name: "Thaipusam", month: 1, blurb: "Hindu pilgrimage with kavadi-bearers at Batu Caves (Jan/Feb)." },
+    ],
+    "malaysia-penang": [
+      { name: "George Town Festival", month: 8, blurb: "Month-long arts and heritage festival across the old town." },
+    ],
+    "malaysia-sabah": [
+      { name: "Kaamatan (Harvest Festival)", month: 5, blurb: "Kadazan-Dusun thanksgiving with dance, music and tapai." },
+    ],
+    "philippines-vigan": [
+      { name: "Binatbatan Festival of the Arts", month: 5, blurb: "Street dancing celebrating Vigan's weaving and crafts." },
+    ],
   };
 
 // Rough mid-range cost per person per day (USD): lodging + food + activities +
@@ -1318,6 +1509,14 @@ const DAILY_BUDGET: Record<string, number> = {
   "philippines-siargao": 50,
   "philippines-banaue": 35,
   "philippines-dumaguete": 40,
+  "malaysia-kualalumpur": 55,
+  "malaysia-penang": 45,
+  "malaysia-langkawi": 60,
+  "malaysia-malacca": 45,
+  "malaysia-sabah": 60,
+  "philippines-coron": 55,
+  "philippines-vigan": 35,
+  "philippines-batanes": 70,
 };
 
 // Wikipedia article titles for representative photos. Single source of truth in
@@ -1376,6 +1575,14 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "philippines-siargao": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Siargao (IAO) via Cebu/Manila · ~19h from London", health: "Strong sun & reef cuts; bring cash (few ATMs)" },
   "philippines-banaue": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "~9h by bus from Manila (MNL) · ~14h from London", health: "Cool mountain nights; landslide risk in the wet season" },
   "philippines-dumaguete": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English (Cebuano)", plugs: "Types A/B/C · 220V", gettingThere: "Dumaguete (DGT) via Manila/Cebu · ~18h from London", health: "Strong sun; dengue — repellent; reef-safe sunscreen" },
+  "malaysia-kualalumpur": { visa: "Visa-free 90 days for many", currency: "Malaysian ringgit (MYR)", language: "Malay (English widely spoken)", plugs: "Type G · 240V", gettingThere: "Kuala Lumpur (KUL) · ~13h from London", health: "Strong sun; dengue — repellent; tap water best boiled/bottled" },
+  "malaysia-penang": { visa: "Visa-free 90 days for many", currency: "Malaysian ringgit (MYR)", language: "Malay, Hokkien & English", plugs: "Type G · 240V", gettingThere: "Penang (PEN) via KL · ~15h from London", health: "Strong sun; dengue — repellent" },
+  "malaysia-langkawi": { visa: "Visa-free 90 days for many", currency: "Malaysian ringgit (MYR)", language: "Malay (English widely spoken)", plugs: "Type G · 240V", gettingThere: "Langkawi (LGK) via KL · ~16h from London", health: "Strong sun & currents; reef-safe sunscreen" },
+  "malaysia-malacca": { visa: "Visa-free 90 days for many", currency: "Malaysian ringgit (MYR)", language: "Malay & English", plugs: "Type G · 240V", gettingThere: "~2h by bus from KL (KUL) · ~13h from London", health: "Strong sun; dengue — repellent" },
+  "malaysia-sabah": { visa: "Visa-free 90 days for many", currency: "Malaysian ringgit (MYR)", language: "Malay & English", plugs: "Type G · 240V", gettingThere: "Kota Kinabalu (BKI) via KL/Singapore · ~16h from London", health: "Malaria in the rural interior — seek advice; leeches on treks; strong sun" },
+  "philippines-coron": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Busuanga (USU) via Manila/Cebu · ~18h from London", health: "Strong sun & reef cuts; bring cash (few ATMs)" },
+  "philippines-vigan": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Filipino, Ilocano & English", plugs: "Types A/B/C · 220V", gettingThere: "~6–8h by bus from Manila (MNL) · ~14h from London", health: "Strong sun; the heritage core is walkable" },
+  "philippines-batanes": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Ivatan, Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Basco (BSO) via Manila · ~16h from London", health: "Fierce wind & sun; flights cancel in bad weather — buffer days" },
 };
 
 for (const region of REGIONS) {

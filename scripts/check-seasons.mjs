@@ -38,8 +38,18 @@ const REGIONS = [
   ["philippines-siargao", 9.8482, 126.0458, "WWSDDDDDSSWW"],
   ["philippines-banaue", 16.9114, 121.0586, "DDDDSWWWWWSD"],
   ["philippines-dumaguete", 9.3103, 123.3081, "DDDDDWWWWWSD"],
+  ["malaysia-kualalumpur", 3.139, 101.6869, "DDSWSDDDSWWS"],
+  ["malaysia-penang", 5.4141, 100.3288, "DDSWSSSWWWSD"],
+  ["malaysia-langkawi", 6.35, 99.8, "DDDSWWWWWWSD"],
+  ["malaysia-malacca", 2.1896, 102.2501, "DDSWSDDDSWWS"],
+  ["malaysia-sabah", 5.9804, 116.0735, "WSDDSSSSWWWW"],
+  ["philippines-coron", 12.005, 120.204, "DDDDSWWWWWSD"],
+  ["philippines-vigan", 17.5747, 120.3869, "DDDDSWWWWWSD"],
+  ["philippines-batanes", 20.449, 121.971, "SSDDDSWWWWSS"],
 ];
 const M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function monthlyPrecip(lat, lng) {
   const u = new URL("https://archive-api.open-meteo.com/v1/archive");
@@ -49,21 +59,28 @@ async function monthlyPrecip(lat, lng) {
   u.searchParams.set("end_date", "2023-12-31");
   u.searchParams.set("daily", "precipitation_sum");
   u.searchParams.set("timezone", "auto");
-  const d = await (await fetch(u)).json();
-  const sum = Array(13).fill(0);
-  const years = new Set();
-  d.daily.time.forEach((t, i) => {
-    const m = Number(t.slice(5, 7));
-    years.add(t.slice(0, 4));
-    sum[m] += d.daily.precipitation_sum[i] ?? 0;
-  });
-  const n = years.size || 1;
-  return Array.from({ length: 12 }, (_, k) => sum[k + 1] / n);
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    const res = await fetch(u);
+    if (res.status === 429) { await sleep(3000 * attempt); continue; }
+    const d = await res.json();
+    if (!d.daily?.time) { await sleep(2000); continue; } // transient API hiccup
+    const sum = Array(13).fill(0);
+    const years = new Set();
+    d.daily.time.forEach((t, i) => {
+      const m = Number(t.slice(5, 7));
+      years.add(t.slice(0, 4));
+      sum[m] += d.daily.precipitation_sum[i] ?? 0;
+    });
+    const n = years.size || 1;
+    return Array.from({ length: 12 }, (_, k) => sum[k + 1] / n);
+  }
+  return null; // gave up — skip this region rather than crash
 }
 
 let flags = 0;
 for (const [id, lat, lng, pattern] of REGIONS) {
   const precip = await monthlyPrecip(lat, lng);
+  if (!precip) { console.log(`· ${id} (skipped — API unavailable)`); await sleep(500); continue; }
   const ranked = precip.map((v, i) => i).sort((a, b) => precip[a] - precip[b]); // driest→wettest
   const rank = {}; ranked.forEach((m, r) => (rank[m] = r));
   const issues = [];
@@ -80,5 +97,6 @@ for (const [id, lat, lng, pattern] of REGIONS) {
   } else {
     console.log(`✓ ${id}`);
   }
+  await sleep(400);
 }
 console.log(`\n${flags ? `${flags} potential mismatch(es) to review.` : "All regions consistent with Open-Meteo rainfall."}`);

@@ -44,6 +44,7 @@ const VISA_RULES: Record<string, Rule> = {
   Italy: { default: "Visa-free 90 days (Schengen)" },
   Australia: { default: "ETA / eVisitor required" },
   "New Zealand": { default: "NZeTA required (visa-free entry)" },
+  Malaysia: { default: "Visa-free 90 days" },
 };
 
 /** Coarse visa status for a passport + country, or null if uncurated. */

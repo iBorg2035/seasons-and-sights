@@ -31,9 +31,16 @@ const ph: Phrase[] = [
   { en: "How much?", local: "Magkano?" },
   { en: "Help!", local: "Tulong!" },
 ];
+const ms: Phrase[] = [
+  { en: "Hello", local: "Helo / Selamat" },
+  { en: "Thank you", local: "Terima kasih" },
+  { en: "How much?", local: "Berapa harga?" },
+  { en: "Help!", local: "Tolong!" },
+];
 const THAI = { emergency: "191 police · 1669 ambulance · 1155 tourist police", tipping: "Not expected; round up, ~10% at upscale spots", water: "Not potable — drink bottled" };
 const VIET = { emergency: "113 police · 115 ambulance · 114 fire", tipping: "Not customary; appreciated", water: "Not potable — drink bottled" };
 const PHIL = { emergency: "911", tipping: "~10% common", water: "Bottled safer; tap varies" };
+const MAL = { emergency: "999 · 112 (mobile)", tipping: "Not expected; round up", water: "Tap best boiled; bottled common" };
 
 export const TOOLKITS: Record<string, TravelToolkit> = {
   // ── Southeast Asia ──
@@ -95,4 +102,13 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "philippines-siargao": { phrases: ph, ...PHIL },
   "philippines-banaue": { phrases: ph, ...PHIL },
   "philippines-dumaguete": { phrases: ph, ...PHIL },
+  "philippines-coron": { phrases: ph, ...PHIL },
+  "philippines-vigan": { phrases: ph, ...PHIL },
+  "philippines-batanes": { phrases: ph, ...PHIL },
+  // ── Malaysia ──
+  "malaysia-kualalumpur": { phrases: ms, ...MAL },
+  "malaysia-penang": { phrases: ms, ...MAL },
+  "malaysia-langkawi": { phrases: ms, ...MAL },
+  "malaysia-malacca": { phrases: ms, ...MAL },
+  "malaysia-sabah": { phrases: ms, ...MAL },
 };
