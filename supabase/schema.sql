@@ -79,3 +79,80 @@ as $$
 $$;
 
 grant execute on function public.delete_account() to authenticated;
+
+-- ── Trip collaboration ───────────────────────────────────────────────────────
+-- Lets a trip owner invite a partner by email. The partner can view and edit
+-- the trip (add/remove stops, change duration). Cascade-deletes when the trip
+-- is removed.
+
+create table if not exists public.trip_editors (
+  trip_id    text not null,
+  owner_id   uuid not null,
+  editor_id  uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (owner_id, trip_id, editor_id),
+  foreign key (owner_id, trip_id) references public.trips (user_id, id) on delete cascade
+);
+
+alter table public.trip_editors enable row level security;
+
+-- The trip owner can manage editors.
+drop policy if exists "Owners manage editors" on public.trip_editors;
+create policy "Owners manage editors"
+  on public.trip_editors
+  for all
+  to authenticated
+  using (auth.uid() = owner_id)
+  with check (auth.uid() = owner_id);
+
+-- An editor can see their own row (so they know they're invited).
+drop policy if exists "Editors see their invites" on public.trip_editors;
+create policy "Editors see their invites"
+  on public.trip_editors
+  for select
+  to authenticated
+  using (auth.uid() = editor_id);
+
+-- Widen the trips RLS so editors can read AND update the owner's trip.
+drop policy if exists "Editors can read trips" on public.trips;
+create policy "Editors can read trips"
+  on public.trips
+  for select
+  to authenticated
+  using (
+    auth.uid() = user_id
+    or exists (
+      select 1 from public.trip_editors
+      where trip_editors.owner_id = trips.user_id
+        and trip_editors.trip_id = trips.id
+        and trip_editors.editor_id = auth.uid()
+    )
+  );
+
+drop policy if exists "Editors can update trips" on public.trips;
+create policy "Editors can update trips"
+  on public.trips
+  for update
+  to authenticated
+  using (
+    exists (
+      select 1 from public.trip_editors
+      where trip_editors.owner_id = trips.user_id
+        and trip_editors.trip_id = trips.id
+        and trip_editors.editor_id = auth.uid()
+    )
+  );
+
+-- Look up a user id by email (for invite-by-email). Security definer so the
+-- caller can't enumerate the full users table.
+drop function if exists public.get_user_id_by_email(text);
+create or replace function public.get_user_id_by_email(p_email text)
+returns uuid
+language sql
+security definer
+set search_path = public
+as $$
+  select id from auth.users where email = lower(p_email) limit 1;
+$$;
+
+grant execute on function public.get_user_id_by_email(text) to authenticated;

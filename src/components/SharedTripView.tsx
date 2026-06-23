@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { fetchSharedTrip } from "@/lib/supabase/trips";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
-import { getRegion } from "@/data/regions";
+import { getSlimRegion } from "@/data/regions-slim";
 import { planItinerary, legDateRanges, climateForMonth } from "@/lib/season";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { DestinationImage } from "@/components/DestinationImage";
@@ -53,7 +53,7 @@ export function SharedTripView({ token }: { token: string }) {
 
   const chosen = state.stops
     .map(([id, durationMonths]) => {
-      const region = getRegion(id);
+      const region = getSlimRegion(id);
       return region ? { region, durationMonths } : null;
     })
     .filter((s): s is NonNullable<typeof s> => s !== null);

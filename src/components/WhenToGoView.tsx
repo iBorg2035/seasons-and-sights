@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Season } from "@/types";
-import { REGIONS } from "@/data/regions";
+import { REGIONS_SLIM } from "@/data/regions-slim";
 import { RegionCard } from "@/components/RegionCard";
 import {
   MONTH_NAMES,
@@ -24,12 +24,12 @@ export function WhenToGoView() {
   const [month, setMonth] = useState(monthOf());
 
   const groups = useMemo(() => {
-    const out: Record<Season, typeof REGIONS> = {
+    const out: Record<Season, typeof REGIONS_SLIM> = {
       dry: [],
       shoulder: [],
       wet: [],
     };
-    for (const region of REGIONS) {
+    for (const region of REGIONS_SLIM) {
       out[climateForMonth(region, month).season].push(region);
     }
     return out;

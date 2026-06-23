@@ -14,6 +14,7 @@ const NAV = [
   { href: "/today", label: "Today" },
   { href: "/festivals", label: "Festivals" },
   { href: "/surprise", label: "Surprise" },
+  { href: "/where-can-i-go", label: "For me" },
 ];
 
 function TripChip() {

@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import type { Continent, Region } from "@/types";
-import { REGIONS } from "@/data/regions";
+import type { Continent } from "@/types";
+import { REGIONS_SLIM, type SlimRegion } from "@/data/regions-slim";
 import { CONTINENT_ORDER } from "@/lib/continents";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { buildFlightsUrl } from "@/lib/booking";
@@ -20,12 +20,12 @@ const CONTINENTS: (Continent | "any")[] = ["any", ...CONTINENT_ORDER];
 export function SurpriseView({ initialMonth }: { initialMonth: number }) {
   const [month, setMonth] = useState(initialMonth);
   const [continent, setContinent] = useState<Continent | "any">("any");
-  const [pick, setPick] = useState<Region | null>(null);
+  const [pick, setPick] = useState<SlimRegion | null>(null);
   const [rollCount, setRollCount] = useState(0);
 
   // Destinations in dry/shoulder season this month, best first.
   const candidates = useMemo(() => {
-    return REGIONS.filter(
+    return REGIONS_SLIM.filter(
       (r) => continent === "any" || r.continent === continent
     )
       .filter((r) => seasonFitScore(r, month) >= 60)
@@ -117,7 +117,7 @@ export function SurpriseView({ initialMonth }: { initialMonth: number }) {
           <p className="mt-3 text-slate-600">{pick.climateBlurb}</p>
           <p className="mt-2 text-sm text-slate-500">
             <span className="font-medium text-slate-700">Best time:</span>{" "}
-            {bestMonths(pick)} · {pick.sights.length} sights
+            {bestMonths(pick)} · {pick.sightCount} sights
           </p>
           <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
             <Link

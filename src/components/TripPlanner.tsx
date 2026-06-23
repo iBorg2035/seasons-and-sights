@@ -3,12 +3,13 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Region } from "@/types";
-import { REGIONS, getRegion } from "@/data/regions";
+import { REGIONS_SLIM, getSlimRegion } from "@/data/regions-slim";
 import { CONTINENT_ORDER } from "@/lib/continents";
 import { SeasonStrip } from "@/components/SeasonStrip";
 import { RouteMap } from "@/components/RouteMap";
 import { ShareTripButton } from "@/components/ShareTripButton";
+import { InviteEditorDialog } from "@/components/InviteEditorDialog";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
 import { flightHop } from "@/lib/transport";
 import { buildIcs } from "@/lib/ics";
@@ -87,6 +88,7 @@ export function TripPlanner({
   const [startMonth, setStartMonth] = useState(initialMonth);
   const [saved, setSaved] = useState<SavedTrip[]>([]);
   const [justSaved, setJustSaved] = useState(false);
+  const [invitingTrip, setInvitingTrip] = useState<string | null>(null);
 
   // Load saved trips from localStorage on mount.
   useEffect(() => {
@@ -211,10 +213,10 @@ export function TripPlanner({
   const legs = useMemo(() => {
     const chosen = Array.from(stops)
       .map(([id, durationMonths]) => {
-        const region = getRegion(id);
+        const region = getSlimRegion(id);
         return region ? { region, durationMonths } : null;
       })
-      .filter((s): s is { region: Region; durationMonths: number } => s !== null);
+      .filter((s): s is NonNullable<typeof s> => s !== null);
     return planItinerary(chosen, startMonth);
   }, [stops, startMonth]);
 
@@ -282,6 +284,16 @@ export function TripPlanner({
               >
                 {t.name}
               </button>
+              {isSupabaseConfigured && user && (
+                <button
+                  onClick={() => setInvitingTrip(t.id)}
+                  aria-label={`Invite editor to ${t.name}`}
+                  title="Invite a travel partner"
+                  className="rounded-full px-1 text-slate-400 transition hover:bg-slate-100 hover:text-amber-600"
+                >
+                  👥
+                </button>
+              )}
               <button
                 onClick={() => deleteTrip(t.id)}
                 aria-label={`Delete ${t.name}`}
@@ -327,7 +339,7 @@ export function TripPlanner({
                   {continent}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {REGIONS.filter((r) => r.continent === continent).map((r) => {
+                  {REGIONS_SLIM.filter((r) => r.continent === continent).map((r) => {
                     const on = stops.has(r.id);
                     return (
                       <button
@@ -379,7 +391,7 @@ export function TripPlanner({
             </h2>
             <ul className="space-y-2">
               {Array.from(stops).map(([id, duration]) => {
-                const region = getRegion(id);
+                const region = getSlimRegion(id);
                 if (!region) return null;
                 return (
                   <li
@@ -584,6 +596,14 @@ export function TripPlanner({
             })}
           </ol>
         </div>
+      )}
+
+      {invitingTrip && user && (
+        <InviteEditorDialog
+          tripId={invitingTrip}
+          ownerId={user.id}
+          onClose={() => setInvitingTrip(null)}
+        />
       )}
     </div>
   );

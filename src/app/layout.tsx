@@ -7,6 +7,7 @@ import { ErrorReporter } from "@/components/ErrorReporter";
 import { AuthProvider } from "@/lib/contexts/auth-context";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { REGIONS } from "@/data/regions";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -29,6 +30,8 @@ const inter = Inter({
 });
 
 const SITE_URL = "https://seasons-and-sights.vercel.app";
+const COUNT = REGIONS.length;
+const ogDesc = `Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across ${COUNT} destinations.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -40,8 +43,7 @@ export const metadata: Metadata = {
     "Know the dry and wet seasons (and the crowds) for destinations across Asia, South America, Europe, and Africa — find local sights and book your stay at the right time of year.",
   openGraph: {
     title: "Seasons & Sights — travel in the right season",
-    description:
-      "Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across 69 destinations.",
+    description: ogDesc,
     url: SITE_URL,
     siteName: "Seasons & Sights",
     type: "website",
@@ -49,8 +51,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Seasons & Sights — travel in the right season",
-    description:
-      "Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across 69 destinations.",
+    description: ogDesc,
   },
 };
 

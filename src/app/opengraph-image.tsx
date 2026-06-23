@@ -1,10 +1,12 @@
 import { ImageResponse } from "next/og";
+import { REGIONS } from "@/data/regions";
 
 export const alt = "Seasons & Sights — travel in the right season";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default function Image() {
+  const count = REGIONS.length;
   return new ImageResponse(
     (
       <div
@@ -34,7 +36,7 @@ export default function Image() {
           </div>
           <div style={{ fontSize: 30, color: "#57534e", maxWidth: 940 }}>
             Dry/wet seasons, crowds, festivals & a season-optimizing trip planner
-            across 69 destinations.
+            across {count} destinations.
           </div>
         </div>
 

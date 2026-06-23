@@ -1,4 +1,7 @@
-import type { Region, Season, MonthClimate, CrowdLevel } from "@/types";
+import type { Region, Season, MonthClimate, CrowdLevel, MonthlyClimate } from "@/types";
+
+/** Minimal region shape needed by the planner and season helpers. */
+export type ClimateRegion = { months: MonthlyClimate };
 
 /** Normalize any integer to a 1-12 month, wrapping across the year. */
 export function wrapMonth(month: number): number {
@@ -84,7 +87,7 @@ const CROWD_BY_SEASON: Record<Season, CrowdLevel> = {
  * Crowd/price level for a month: the region's explicit override if set,
  * otherwise derived from the season (dry→busy, shoulder→moderate, wet→quiet).
  */
-export function crowdForMonth(region: Region, month: number): CrowdLevel {
+export function crowdForMonth(region: ClimateRegion, month: number): CrowdLevel {
   const entry = region.months[month];
   return entry?.crowd ?? CROWD_BY_SEASON[entry?.season ?? "shoulder"];
 }
@@ -95,20 +98,20 @@ export function monthOf(date: Date = new Date()): number {
 }
 
 /** The climate entry for a given month (1-12). */
-export function climateForMonth(region: Region, month: number): MonthClimate {
+export function climateForMonth(region: ClimateRegion, month: number): MonthClimate {
   return region.months[month] ?? { season: "shoulder" };
 }
 
 /** The climate entry for the current month. */
 export function getCurrentSeason(
-  region: Region,
+  region: ClimateRegion,
   date: Date = new Date()
 ): MonthClimate {
   return climateForMonth(region, monthOf(date));
 }
 
 /** 0-100 desirability score for visiting a region in a given month. */
-export function seasonFitScore(region: Region, month: number): number {
+export function seasonFitScore(region: ClimateRegion, month: number): number {
   switch (climateForMonth(region, month).season) {
     case "dry":
       return 100;
@@ -124,7 +127,7 @@ export function seasonFitScore(region: Region, month: number): number {
  * circle so ranges like Nov-Apr are returned as one run. Each run is a list of
  * 1-based month numbers in order.
  */
-function contiguousRuns(region: Region, seasons: Season[]): number[][] {
+function contiguousRuns(region: ClimateRegion, seasons: Season[]): number[][] {
   const matches = (m: number) =>
     seasons.includes(climateForMonth(region, m).season);
 
@@ -169,7 +172,7 @@ function formatRun(run: number[]): string {
 }
 
 /** Human-readable best window(s) to visit, e.g. "Nov–Apr" or "May–Sep, Dec". */
-export function bestMonths(region: Region): string {
+export function bestMonths(region: ClimateRegion): string {
   const dryRuns = contiguousRuns(region, ["dry"]);
   const runs = dryRuns.length
     ? dryRuns
@@ -221,8 +224,8 @@ export function suggestTravelDates(
   return { checkin: toISODate(checkin), checkout: toISODate(checkout) };
 }
 
-export interface ItineraryLeg {
-  region: Region;
+export interface ItineraryLeg<R extends ClimateRegion = Region> {
+  region: R;
   /** 0-based order in the trip. */
   position: number;
   /** 1-based months of this stay (consecutive, may wrap the year). */
@@ -231,8 +234,8 @@ export interface ItineraryLeg {
   fit: number;
 }
 
-export interface PlannerStop {
-  region: Region;
+export interface PlannerStop<R extends ClimateRegion = Region> {
+  region: R;
   /** How many whole months to stay. */
   durationMonths: number;
 }
@@ -243,7 +246,7 @@ function stayMonths(start: number, duration: number): number[] {
 }
 
 /** Average season fit over a stay's months. */
-function stayFit(region: Region, start: number, duration: number): number {
+function stayFit(region: ClimateRegion, start: number, duration: number): number {
   const months = stayMonths(start, duration);
   return (
     months.reduce((sum, m) => sum + seasonFitScore(region, m), 0) /
@@ -272,17 +275,17 @@ function permutations(items: number[]): number[][] {
  * durations vary, a stop's months depend on the order, so this is a sequencing
  * problem: solved exactly for up to 8 stops, greedily beyond that.
  */
-export function planItinerary(
-  stops: PlannerStop[],
+export function planItinerary<R extends ClimateRegion>(
+  stops: PlannerStop<R>[],
   startMonth: number
-): ItineraryLeg[] {
+): ItineraryLeg<R>[] {
   const n = stops.length;
   if (n === 0) return [];
 
   const buildLegs = (
     order: number[]
-  ): { legs: ItineraryLeg[]; total: number } => {
-    const legs: ItineraryLeg[] = [];
+  ): { legs: ItineraryLeg<R>[]; total: number } => {
+    const legs: ItineraryLeg<R>[] = [];
     let cursor = startMonth;
     let total = 0;
     for (let pos = 0; pos < order.length; pos++) {
@@ -301,7 +304,7 @@ export function planItinerary(
   };
 
   if (n <= 8) {
-    let best: ItineraryLeg[] = [];
+    let best: ItineraryLeg<R>[] = [];
     let bestTotal = -Infinity;
     for (const order of permutations(range(n))) {
       const { legs, total } = buildLegs(order);
@@ -338,12 +341,12 @@ export function planItinerary(
 const DAYS_PER_MONTH = 30;
 
 /** Estimated cost of a single leg (daily budget × days). */
-export function estimateLegCost(leg: ItineraryLeg): number {
-  return (leg.region.dailyBudget ?? 0) * leg.months.length * DAYS_PER_MONTH;
+export function estimateLegCost(leg: ItineraryLeg<ClimateRegion>): number {
+  return ((leg.region as { dailyBudget?: number }).dailyBudget ?? 0) * leg.months.length * DAYS_PER_MONTH;
 }
 
 /** Estimated total cost across all legs of an itinerary. */
-export function estimateTripCost(legs: ItineraryLeg[]): number {
+export function estimateTripCost(legs: ItineraryLeg<ClimateRegion>[]): number {
   return legs.reduce((sum, leg) => sum + estimateLegCost(leg), 0);
 }
 
@@ -355,7 +358,7 @@ export function formatUsd(n: number): string {
 /** Concrete back-to-back date ranges for legs, anchored to the next startMonth. */
 export function legDateRanges(
   startMonth: number,
-  legs: ItineraryLeg[],
+  legs: ItineraryLeg<ClimateRegion>[],
   from = new Date()
 ): { start: Date; end: Date }[] {
   const year =

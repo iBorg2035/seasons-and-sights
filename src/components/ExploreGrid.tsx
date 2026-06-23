@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Continent, Season, SightType } from "@/types";
-import { REGIONS } from "@/data/regions";
+import { REGIONS_SLIM } from "@/data/regions-slim";
 import { CONTINENT_ORDER, CONTINENT_LABEL } from "@/lib/continents";
 import { RegionCard } from "@/components/RegionCard";
 import { WorldMap } from "@/components/WorldMap";
@@ -43,10 +43,10 @@ export function ExploreGrid() {
 
   const regions = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = REGIONS.filter(
+    let list = REGIONS_SLIM.filter(
       (r) => filter === "all" || r.continent === filter
     )
-      .filter((r) => style === "all" || r.sights.some((s) => s.type === style))
+      .filter((r) => style === "all" || r.sightTypes.includes(style))
       .filter(
         (r) =>
           !q ||

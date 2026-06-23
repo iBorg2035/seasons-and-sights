@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { getAllEvents } from "@/data/regions";
+import { getAllEventsSlim } from "@/data/regions-slim";
 import { MONTH_NAMES, MONTH_NAMES_LONG } from "@/lib/season";
 
 type MonthFilter = number | "all";
 
 export function FestivalsView({ initialMonth }: { initialMonth: number }) {
   const [month, setMonth] = useState<MonthFilter>("all");
-  const all = useMemo(() => getAllEvents(), []);
+  const all = useMemo(() => getAllEventsSlim(), []);
 
   const visible = month === "all" ? all : all.filter((e) => e.event.month === month);
 

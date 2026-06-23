@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { REGIONS, getRegion } from "@/data/regions";
+import { REGIONS_SLIM, getSlimRegion } from "@/data/regions-slim";
 import { CONTINENT_ORDER } from "@/lib/continents";
 import { SeasonStrip } from "@/components/SeasonStrip";
 import { SeasonBadge } from "@/components/SeasonBadge";
@@ -31,7 +31,7 @@ export function CompareView({ initialMonth }: { initialMonth: number }) {
           : prev
     );
 
-  const selected = ids.map((id) => getRegion(id)!).filter(Boolean);
+  const selected = ids.map((id) => getSlimRegion(id)!).filter(Boolean);
   const monthName = MONTH_NAMES_LONG[month - 1];
 
   return (
@@ -53,7 +53,7 @@ export function CompareView({ initialMonth }: { initialMonth: number }) {
                   {continent}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {REGIONS.filter((r) => r.continent === continent).map((r) => {
+                  {REGIONS_SLIM.filter((r) => r.continent === continent).map((r) => {
                     const on = ids.includes(r.id);
                     const full = ids.length >= MAX && !on;
                     return (
@@ -162,7 +162,7 @@ export function CompareView({ initialMonth }: { initialMonth: number }) {
                   <div className="flex justify-between">
                     <dt className="text-slate-500">Sights</dt>
                     <dd className="font-medium text-slate-800">
-                      {r.sights.length}
+                      {r.sightCount}
                     </dd>
                   </div>
                 </dl>
