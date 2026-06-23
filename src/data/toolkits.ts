@@ -37,7 +37,21 @@ const ms: Phrase[] = [
   { en: "How much?", local: "Berapa harga?" },
   { en: "Help!", local: "Tolong!" },
 ];
+const idn: Phrase[] = [
+  { en: "Hello", local: "Halo / Selamat" },
+  { en: "Thank you", local: "Terima kasih" },
+  { en: "How much?", local: "Berapa harganya?" },
+  { en: "Help!", local: "Tolong!" },
+];
+const khm: Phrase[] = [
+  { en: "Hello", local: "Suostei (សួស្ដី)" },
+  { en: "Thank you", local: "Arkun (អរគុណ)" },
+  { en: "How much?", local: "Tlay ponman?" },
+  { en: "Help!", local: "Chuoy phong!" },
+];
 const THAI = { emergency: "191 police · 1669 ambulance · 1155 tourist police", tipping: "Not expected; round up, ~10% at upscale spots", water: "Not potable — drink bottled" };
+const INDO = { emergency: "112 · 110 police · 118 ambulance", tipping: "Not expected; round up", water: "Not potable — drink bottled" };
+const KHM = { emergency: "117 police · 119 ambulance", tipping: "Not expected; small tips welcome", water: "Not potable — drink bottled" };
 const VIET = { emergency: "113 police · 115 ambulance · 114 fire", tipping: "Not customary; appreciated", water: "Not potable — drink bottled" };
 const PHIL = { emergency: "911", tipping: "~10% common", water: "Bottled safer; tap varies" };
 const MAL = { emergency: "999 · 112 (mobile)", tipping: "Not expected; round up", water: "Tap best boiled; bottled common" };
@@ -113,5 +127,16 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "malaysia-sabah": { phrases: ms, ...MAL },
   "thailand-huahin": { phrases: th, ...THAI },
   "thailand-kohphangan": { phrases: th, ...THAI },
+  "thailand-kohtao": { phrases: th, ...THAI },
+  "thailand-phuket": { phrases: th, ...THAI },
+  "indonesia-gili": { phrases: idn, ...INDO },
+  "indonesia-komodo": { phrases: idn, ...INDO },
+  "indonesia-nusapenida": { phrases: idn, ...INDO },
+  "cambodia-kohrong": { phrases: khm, ...KHM },
+  "vietnam-phuquoc": { phrases: vn, ...VIET },
+  "india-goa": { phrases: [{ en: "Hello", local: "Namaste (नमस्ते)" }, { en: "Thank you", local: "Dhanyavaad (धन्यवाद)" }, { en: "How much?", local: "Kitne ka hai?" }, { en: "Help!", local: "Madad!" }], emergency: "112 · 100 police · 108 ambulance", tipping: "~10%", water: "Not potable — drink bottled" },
+  "maldives-atolls": { phrases: [{ en: "Hello", local: "Assalaamu alaikum" }, { en: "Thank you", local: "Shukuriyyaa (ޝުކުރިއްޔާ)" }, { en: "How much?", local: "Kihaavarakah?" }, { en: "Help!", local: "Eheevaa!" }], emergency: "119 police · 102 ambulance", tipping: "~10% (often a service charge)", water: "Desalinated; bottled common", },
+  "frenchpolynesia-borabora": { phrases: [{ en: "Hello", local: "Ia ora na / Bonjour" }, { en: "Thank you", local: "Māuruuru / Merci" }, { en: "How much?", local: "Combien ?" }, { en: "Help!", local: "Au secours !" }], emergency: "112 · 15 ambulance · 17 police", tipping: "Not expected", water: "Tap generally safe on resort islands" },
+  "usa-maui": { phrases: [{ en: "Hello", local: "Aloha" }, { en: "Thank you", local: "Mahalo" }, { en: "How much?", local: "How much?" }, { en: "Help!", local: "Help!" }], emergency: "911", tipping: "15–20% expected", water: "Tap water safe" },
   "mexico-playadelcarmen": { phrases: es, emergency: "911", tipping: "~10–15% (propina)", water: "Not potable — drink bottled" },
 };

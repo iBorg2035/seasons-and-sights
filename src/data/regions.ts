@@ -1405,6 +1405,250 @@ export const REGIONS: Region[] = [
       { name: "Sail Rock (Hin Bai)", type: "wildlife", lat: 9.85, lng: 100.1, blurb: "Granite pinnacle dive site, occasional whale sharks." },
     ],
   },
+  {
+    id: "thailand-kohtao",
+    name: "Koh Tao",
+    country: "Thailand",
+    continent: "Southeast Asia",
+    lat: 10.0956,
+    lng: 99.8403,
+    bookingDest: "Koh Tao, Thailand",
+    climateBlurb:
+      "The Gulf's diving island — cheap courses, clear water and granite coves. Driest and calmest January–April (peak); the northeast monsoon brings the heaviest rain and swell October–December.",
+    months: climate("SDDDDDDDWWWW", {
+      3: "driest, best visibility — peak",
+      11: "wettest; diving may pause",
+      12: "rough seas",
+    }),
+    sights: [
+      { name: "Sairee Beach", type: "beach", lat: 10.097, lng: 99.835, blurb: "The main beach strip and dive-school hub." },
+      { name: "Koh Nang Yuan", type: "beach", lat: 10.115, lng: 99.815, blurb: "Triple islet joined by a sandbar viewpoint." },
+      { name: "Shark Bay (Aow Leuk)", type: "wildlife", lat: 10.06, lng: 99.845, blurb: "Snorkel with blacktip reef sharks." },
+      { name: "John-Suwan Viewpoint", type: "nature", lat: 10.058, lng: 99.84, blurb: "Boulder climb to twin-bay views." },
+    ],
+  },
+  {
+    id: "thailand-phuket",
+    name: "Phuket",
+    country: "Thailand",
+    continent: "Southeast Asia",
+    lat: 7.8804,
+    lng: 98.3923,
+    bookingDest: "Phuket, Thailand",
+    climateBlurb:
+      "Thailand's biggest island, on the Andaman coast — beaches, nightlife and a heritage old town. Dry, calm and clear November–April; the southwest monsoon brings rain and swell May–October.",
+    months: climate("DDDDWWWWWWSD", {
+      2: "driest, clearest seas",
+      9: "wettest month",
+      11: "monsoon easing, fewer crowds",
+    }),
+    sights: [
+      { name: "Patong Beach", type: "beach", lat: 7.896, lng: 98.296, blurb: "The liveliest beach and nightlife strip." },
+      { name: "Old Phuket Town", type: "culture", lat: 7.884, lng: 98.388, blurb: "Sino-Portuguese shophouses and cafés." },
+      { name: "Big Buddha", type: "culture", lat: 7.828, lng: 98.312, blurb: "A 45m marble Buddha over the island." },
+      { name: "Phi Phi Islands & Maya Bay", type: "nature", lat: 7.679, lng: 98.766, blurb: "Iconic limestone bays, a day-trip away." },
+    ],
+  },
+  {
+    id: "indonesia-gili",
+    name: "Gili Islands & Lombok",
+    country: "Indonesia",
+    continent: "Southeast Asia",
+    lat: -8.35,
+    lng: 116.05,
+    bookingDest: "Gili Trawangan, Indonesia",
+    climateBlurb:
+      "Bali's car-free island neighbours and the volcano island of Lombok. Dry, sunny April–October (peak); the wetter season November–March brings short, heavy downpours.",
+    months: climate("WWWSDDDDDSWW", {
+      7: "dry, calm seas — peak",
+      1: "wettest month",
+      10: "shoulder — quieter, still fine",
+    }),
+    sights: [
+      { name: "Gili Trawangan", type: "beach", lat: -8.35, lng: 116.04, blurb: "Car-free island of beaches and bars." },
+      { name: "Gili Meno & Air snorkeling", type: "wildlife", lat: -8.355, lng: 116.06, blurb: "Turtles and reefs off the quieter Gilis." },
+      { name: "Mount Rinjani", type: "nature", lat: -8.411, lng: 116.457, blurb: "Volcano trek to a crater lake (Lombok)." },
+      { name: "Kuta Lombok beaches", type: "beach", lat: -8.882, lng: 116.279, blurb: "Surf and white-sand bays in the south." },
+    ],
+  },
+  {
+    id: "cambodia-kohrong",
+    name: "Koh Rong",
+    country: "Cambodia",
+    continent: "Southeast Asia",
+    lat: 10.7,
+    lng: 103.25,
+    bookingDest: "Koh Rong, Cambodia",
+    climateBlurb:
+      "Cambodia's backpacker beach islands of white sand and bioluminescent water. Dry and sunny November–April; the southwest monsoon brings rain May–October, wettest September–October.",
+    months: climate("DDDDSWWWWWSD", {
+      1: "dry, calm — peak",
+      4: "driest, hottest",
+      10: "wettest; boats may pause",
+    }),
+    sights: [
+      { name: "Long Beach (Sok San)", type: "beach", lat: 10.66, lng: 103.2, blurb: "Seven kilometres of powder-white sand." },
+      { name: "Saracen Bay (Koh Rong Sanloem)", type: "beach", lat: 10.61, lng: 103.32, blurb: "Calm turquoise bay on the sister island." },
+      { name: "Bioluminescent plankton", type: "nature", lat: 10.66, lng: 103.23, blurb: "Glowing night swims in the sea." },
+      { name: "Coconut & Lonely Beach", type: "beach", lat: 10.7, lng: 103.21, blurb: "Quiet hammock-and-bungalow coves." },
+    ],
+  },
+  {
+    id: "vietnam-phuquoc",
+    name: "Phú Quốc",
+    country: "Vietnam",
+    continent: "Southeast Asia",
+    lat: 10.2899,
+    lng: 103.984,
+    bookingDest: "Phu Quoc, Vietnam",
+    climateBlurb:
+      "Vietnam's big tropical island in the Gulf of Thailand — beaches, pepper farms and a national park. Dry and sunny November–April (peak); the southwest monsoon brings rain May–October.",
+    months: climate("DDDDSWWWWWSD", {
+      1: "dry, sunny — peak",
+      4: "driest, hottest",
+      8: "wettest month",
+    }),
+    sights: [
+      { name: "Sao Beach (Bãi Sao)", type: "beach", lat: 10.05, lng: 104.03, blurb: "A crescent of white sand and clear water." },
+      { name: "Phú Quốc National Park", type: "nature", lat: 10.36, lng: 104.0, blurb: "Jungle, streams and pepper farms." },
+      { name: "Hòn Thơm cable car", type: "city", lat: 10.02, lng: 104.02, blurb: "The world's longest sea-crossing cable car." },
+      { name: "Dinh Cậu Night Market", type: "city", lat: 10.22, lng: 103.96, blurb: "Seafood and stalls in Dương Đông town." },
+    ],
+  },
+  {
+    id: "india-goa",
+    name: "Goa",
+    country: "India",
+    continent: "South Asia",
+    lat: 15.2993,
+    lng: 74.124,
+    bookingDest: "Goa, India",
+    climateBlurb:
+      "India's beach-and-party state — Portuguese churches, markets and wellness in the south. Dry and pleasant November–March (peak); April–May is hot; the monsoon is heavy June–September.",
+    months: climate("DDDSSWWWWSDD", {
+      1: "warm, dry — peak",
+      5: "hot, humid pre-monsoon",
+      7: "heavy monsoon rain",
+    }),
+    sights: [
+      { name: "Palolem Beach", type: "beach", lat: 15.01, lng: 74.023, blurb: "Palm-fringed crescent in the quieter south." },
+      { name: "Baga & Anjuna", type: "beach", lat: 15.56, lng: 73.75, blurb: "Lively north-Goa beaches and flea markets." },
+      { name: "Old Goa churches", type: "culture", lat: 15.5, lng: 73.912, blurb: "UNESCO Basilica of Bom Jesus." },
+      { name: "Dudhsagar Falls", type: "nature", lat: 15.314, lng: 74.314, blurb: "A four-tier jungle waterfall." },
+    ],
+  },
+  {
+    id: "maldives-atolls",
+    name: "Maldives",
+    country: "Maldives",
+    continent: "South Asia",
+    lat: 3.2028,
+    lng: 73.2207,
+    bookingDest: "Maldives",
+    climateBlurb:
+      "Coral atolls of overwater villas, house reefs and world-class diving. The dry northeast monsoon December–April is sunniest and calmest (peak); the wetter southwest monsoon runs May–November.",
+    months: climate("DDDDWWWWWWSS", {
+      2: "dry, calm, sunny — peak",
+      6: "wettest, choppier seas",
+      12: "high season begins (some rain)",
+    }),
+    sights: [
+      { name: "Overwater villas", type: "city", lat: 3.2, lng: 73.22, blurb: "The classic stilted bungalows over the lagoon." },
+      { name: "House-reef snorkeling", type: "wildlife", lat: 3.2, lng: 73.221, blurb: "Coral reefs right off the villa steps." },
+      { name: "Manta & whale-shark dives", type: "wildlife", lat: 3.61, lng: 72.93, blurb: "Baa Atoll's plankton-rich channels." },
+      { name: "Malé & local islands", type: "culture", lat: 4.175, lng: 73.509, blurb: "The capital and budget guesthouse islands." },
+    ],
+  },
+  {
+    id: "indonesia-komodo",
+    name: "Komodo & Labuan Bajo",
+    country: "Indonesia",
+    continent: "Southeast Asia",
+    lat: -8.4964,
+    lng: 119.8877,
+    bookingDest: "Labuan Bajo, Indonesia",
+    climateBlurb:
+      "The dragons, pink beaches and manta-filled channels of the Flores Sea. A long dry season April–November (peak, sun-baked savannah); short wet season December–March.",
+    months: climate("WWWSDDDDDDSW", {
+      7: "dry, calm — peak diving",
+      1: "wettest month",
+      4: "shoulder — greener hills",
+    }),
+    sights: [
+      { name: "Komodo dragons", type: "wildlife", lat: -8.55, lng: 119.45, blurb: "The world's largest lizards in the wild." },
+      { name: "Padar Island viewpoint", type: "nature", lat: -8.65, lng: 119.58, blurb: "The iconic three-bay panorama." },
+      { name: "Pink Beach", type: "beach", lat: -8.54, lng: 119.62, blurb: "Coral-tinted pink sand." },
+      { name: "Manta Point diving", type: "wildlife", lat: -8.6, lng: 119.65, blurb: "Drift dives among manta rays." },
+    ],
+  },
+  {
+    id: "indonesia-nusapenida",
+    name: "Nusa Penida",
+    country: "Indonesia",
+    continent: "Southeast Asia",
+    lat: -8.7278,
+    lng: 115.5444,
+    bookingDest: "Nusa Penida, Indonesia",
+    climateBlurb:
+      "The dramatic clifftop island off Bali — Kelingking's dinosaur ridge and manta dives. Dry, sunny April–October (peak); wetter, greener November–March.",
+    months: climate("WWWSDDDDDSWW", {
+      8: "dry, sunny — peak",
+      1: "wettest month",
+      9: "mola-mola dive season",
+    }),
+    sights: [
+      { name: "Kelingking Beach", type: "nature", lat: -8.752, lng: 115.47, blurb: "The T-Rex-shaped cliff over a hidden cove." },
+      { name: "Angel's Billabong & Broken Beach", type: "nature", lat: -8.728, lng: 115.456, blurb: "Natural infinity pool and sea arch." },
+      { name: "Crystal Bay", type: "beach", lat: -8.72, lng: 115.45, blurb: "Snorkel-and-sunset bay; mola-mola in season." },
+      { name: "Atuh Beach", type: "beach", lat: -8.745, lng: 115.62, blurb: "Cliff-ringed eastern cove." },
+    ],
+  },
+
+  // ───────────────────────── Oceania (more) ─────────────────────────
+  {
+    id: "frenchpolynesia-borabora",
+    name: "Bora Bora",
+    country: "French Polynesia",
+    continent: "Oceania",
+    lat: -16.5004,
+    lng: -151.7415,
+    bookingDest: "Bora Bora, French Polynesia",
+    climateBlurb:
+      "The South Pacific's turquoise-lagoon icon. The cooler, drier austral winter May–October is the sweet spot; the wetter, humid season November–April carries some cyclone risk.",
+    months: climate("WWWSDDDDDSWW", {
+      8: "dry, sunny — peak",
+      1: "wettest, humid",
+      6: "ideal lagoon weather",
+    }),
+    sights: [
+      { name: "Mount Otemanu", type: "nature", lat: -16.51, lng: -151.74, blurb: "Volcanic peak over the turquoise lagoon." },
+      { name: "Lagoon & coral gardens", type: "wildlife", lat: -16.5, lng: -151.74, blurb: "Snorkel with rays and reef sharks." },
+      { name: "Matira Beach", type: "beach", lat: -16.54, lng: -151.76, blurb: "The island's best public white-sand beach." },
+      { name: "Overwater bungalows", type: "city", lat: -16.5, lng: -151.73, blurb: "The classic Polynesian stilted villas." },
+    ],
+  },
+  {
+    id: "usa-maui",
+    name: "Maui (Hawaii)",
+    country: "United States",
+    continent: "Oceania",
+    lat: 20.7984,
+    lng: -156.3319,
+    bookingDest: "Maui, Hawaii",
+    climateBlurb:
+      "Volcanic beaches, the Road to Hāna and winter whales. Warm and drier on the leeward side April–October; wetter November–March (also peak humpback-whale season).",
+    months: climate("WWSSDDDDDSWW", {
+      8: "warm, dry leeward — peak",
+      2: "wetter, but whale season",
+      6: "fewer crowds, fine weather",
+    }),
+    sights: [
+      { name: "Road to Hāna", type: "nature", lat: 20.76, lng: -156.0, blurb: "Cliff-hugging drive past waterfalls." },
+      { name: "Haleakalā sunrise", type: "nature", lat: 20.71, lng: -156.25, blurb: "Sunrise above the clouds on the volcano." },
+      { name: "Wailea & Mākena beaches", type: "beach", lat: 20.65, lng: -156.44, blurb: "Golden leeward beaches and snorkeling." },
+      { name: "Whale watching (Maui Nui)", type: "wildlife", lat: 20.79, lng: -156.5, blurb: "Humpbacks close to shore in winter." },
+    ],
+  },
 ];
 
 // Marquee festivals & events, keyed by region id and attached below. Kept
@@ -1588,6 +1832,17 @@ const DAILY_BUDGET: Record<string, number> = {
   "thailand-huahin": 55,
   "mexico-playadelcarmen": 75,
   "thailand-kohphangan": 50,
+  "thailand-kohtao": 45,
+  "thailand-phuket": 60,
+  "indonesia-gili": 50,
+  "cambodia-kohrong": 45,
+  "vietnam-phuquoc": 50,
+  "india-goa": 40,
+  "maldives-atolls": 250,
+  "indonesia-komodo": 70,
+  "indonesia-nusapenida": 45,
+  "frenchpolynesia-borabora": 350,
+  "usa-maui": 200,
 };
 
 // Wikipedia article titles for representative photos. Single source of truth in
@@ -1657,6 +1912,17 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "thailand-huahin": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "~3h by road from Bangkok (BKK) · ~11h from London", health: "Strong sun; jellyfish in season; drink bottled water" },
   "mexico-playadelcarmen": { visa: "Visa-free up to 180 days for many", currency: "Mexican peso (MXN)", language: "Spanish", plugs: "Types A/B · 127V", gettingThere: "Cancún (CUN), ~1h by road · ~11h from London", health: "Bottled water; strong sun; hurricane season Aug–Oct; sargassum May–Aug" },
   "thailand-kohphangan": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "Ferry from Koh Samui (USM) or Surat Thani · ~14h from London", health: "Strong sun & sea; party & jellyfish awareness" },
+  "thailand-kohtao": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "Ferry from Koh Samui / Chumphon · ~14h from London", health: "Dive safety; strong sun; reef-safe sunscreen" },
+  "thailand-phuket": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "Phuket (HKT) · ~13h from London", health: "Strong sun & rip currents in monsoon season" },
+  "indonesia-gili": { visa: "Visa on arrival (30 days) for many", currency: "Indonesian rupiah (IDR)", language: "Indonesian (Sasak)", plugs: "Types C/F · 230V", gettingThere: "Fast boat from Bali (DPS) or Lombok (LOP) · ~17h from London", health: "Dengue — repellent; care on scooters; no island ATMs reliable" },
+  "cambodia-kohrong": { visa: "e-Visa / visa on arrival", currency: "Riel (KHR); USD widely used", language: "Khmer", plugs: "Types A/C/G · 230V", gettingThere: "Ferry from Sihanoukville (KOS) · ~16h from London", health: "Strong sun; limited medical care — bring basics" },
+  "vietnam-phuquoc": { visa: "e-Visa (most); Phú Quốc has visa-free entry", currency: "Vietnamese đồng (VND)", language: "Vietnamese", plugs: "Types A/C/F · 220V", gettingThere: "Phú Quốc (PQC) via Ho Chi Minh City · ~15h from London", health: "Strong sun; jellyfish in season; bottled water" },
+  "india-goa": { visa: "e-Visa required for most", currency: "Indian rupee (INR)", language: "Konkani, Hindi & English", plugs: "Types C/D/M · 230V", gettingThere: "Goa (GOI/GOX) via Delhi/Mumbai · ~11h from London", health: "Bottled water; strong sun; monsoon swells Jun–Sep" },
+  "maldives-atolls": { visa: "Free visa on arrival (30 days)", currency: "Maldivian rufiyaa (MVR); USD common", language: "Dhivehi (English widely spoken)", plugs: "Types D/G · 230V", gettingThere: "Malé (MLE) · ~10–11h from London", health: "Intense sun; alcohol only at resorts; reef-safe sunscreen" },
+  "indonesia-komodo": { visa: "Visa on arrival (30 days) for many", currency: "Indonesian rupiah (IDR)", language: "Indonesian", plugs: "Types C/F · 230V", gettingThere: "Labuan Bajo (LBJ) via Bali · ~19h from London", health: "Intense sun & heat; strong currents on dives; park fees" },
+  "indonesia-nusapenida": { visa: "Visa on arrival (30 days) for many", currency: "Indonesian rupiah (IDR)", language: "Indonesian (Balinese)", plugs: "Types C/F · 230V", gettingThere: "Fast boat from Bali (DPS) · ~17h from London", health: "Rough cliff roads & stairs; strong currents; dengue" },
+  "frenchpolynesia-borabora": { visa: "Visa-free 90 days for many", currency: "CFP franc (XPF)", language: "French & Tahitian", plugs: "Types A/B/E · 220V", gettingThere: "Bora Bora (BOB) via Tahiti (PPT) · ~22h from London", health: "Intense sun; very high prices — plan a budget" },
+  "usa-maui": { visa: "ESTA / visa waiver required for most", currency: "US dollar (USD)", language: "English & Hawaiian", plugs: "Types A/B · 120V", gettingThere: "Kahului (OGG) via US west coast · ~18h from London", health: "Strong sun & ocean currents; respect reef & sacred sites" },
 };
 
 for (const region of REGIONS) {

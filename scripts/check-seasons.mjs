@@ -49,6 +49,17 @@ const REGIONS = [
   ["thailand-huahin", 12.5684, 99.9577, "DDDDSSSSWWWD"],
   ["mexico-playadelcarmen", 20.6296, -87.0739, "DDDDSWWWWWSD"],
   ["thailand-kohphangan", 9.7333, 100.0333, "SDDDDDDDWWWW"],
+  ["thailand-kohtao", 10.0956, 99.8403, "SDDDDDDDWWWW"],
+  ["thailand-phuket", 7.8804, 98.3923, "DDDDWWWWWWSD"],
+  ["indonesia-gili", -8.35, 116.05, "WWWSDDDDDSWW"],
+  ["cambodia-kohrong", 10.7, 103.25, "DDDDSWWWWWSD"],
+  ["vietnam-phuquoc", 10.2899, 103.984, "DDDDSWWWWWSD"],
+  ["india-goa", 15.2993, 74.124, "DDDSSWWWWSDD"],
+  ["maldives-atolls", 3.2028, 73.2207, "DDDDWWWWWWSS"],
+  ["indonesia-komodo", -8.4964, 119.8877, "WWWSDDDDDDSW"],
+  ["indonesia-nusapenida", -8.7278, 115.5444, "WWWSDDDDDSWW"],
+  ["frenchpolynesia-borabora", -16.5004, -151.7415, "WWWSDDDDDSWW"],
+  ["usa-maui", 20.7984, -156.3319, "WWSSDDDDDSWW"],
 ];
 const M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
