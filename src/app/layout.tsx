@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Seasons & Sights — travel in the right season",
     description:
-      "Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across 57 destinations.",
+      "Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across 58 destinations.",
     url: SITE_URL,
     siteName: "Seasons & Sights",
     type: "website",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Seasons & Sights — travel in the right season",
     description:
-      "Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across 57 destinations.",
+      "Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across 58 destinations.",
   },
 };
 

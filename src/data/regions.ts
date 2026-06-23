@@ -1383,6 +1383,28 @@ export const REGIONS: Region[] = [
       { name: "Tulum ruins", type: "culture", lat: 20.215, lng: -87.429, blurb: "Clifftop Maya ruins above a turquoise beach." },
     ],
   },
+  {
+    id: "thailand-kohphangan",
+    name: "Koh Phangan",
+    country: "Thailand",
+    continent: "Southeast Asia",
+    lat: 9.7333,
+    lng: 100.0333,
+    bookingDest: "Koh Phangan, Thailand",
+    climateBlurb:
+      "A Gulf-of-Thailand island of beaches, jungle and the legendary Full Moon Party. Driest and sunniest January–April (peak); a mostly fine May–September; then the northeast monsoon brings heavy rain October–December.",
+    months: climate("SDDDDDDDWWWW", {
+      3: "driest, sunniest — peak",
+      11: "wettest month (NE monsoon)",
+      12: "heavy rain, rough seas",
+    }),
+    sights: [
+      { name: "Haad Rin (Full Moon Party)", type: "beach", lat: 9.676, lng: 100.068, blurb: "Beach famous for its monthly full-moon party." },
+      { name: "Bottle Beach (Haad Khuat)", type: "beach", lat: 9.79, lng: 100.03, blurb: "Secluded cove reached by boat or jungle trail." },
+      { name: "Than Sadet Waterfall", type: "nature", lat: 9.75, lng: 100.06, blurb: "Jungle falls with royal-inscription rocks." },
+      { name: "Sail Rock (Hin Bai)", type: "wildlife", lat: 9.85, lng: 100.1, blurb: "Granite pinnacle dive site, occasional whale sharks." },
+    ],
+  },
 ];
 
 // Marquee festivals & events, keyed by region id and attached below. Kept
@@ -1565,6 +1587,7 @@ const DAILY_BUDGET: Record<string, number> = {
   "philippines-batanes": 70,
   "thailand-huahin": 55,
   "mexico-playadelcarmen": 75,
+  "thailand-kohphangan": 50,
 };
 
 // Wikipedia article titles for representative photos. Single source of truth in
@@ -1633,6 +1656,7 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "philippines-batanes": { visa: "Visa-free ~30 days for many", currency: "Philippine peso (PHP)", language: "Ivatan, Filipino & English", plugs: "Types A/B/C · 220V", gettingThere: "Basco (BSO) via Manila · ~16h from London", health: "Fierce wind & sun; flights cancel in bad weather — buffer days" },
   "thailand-huahin": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "~3h by road from Bangkok (BKK) · ~11h from London", health: "Strong sun; jellyfish in season; drink bottled water" },
   "mexico-playadelcarmen": { visa: "Visa-free up to 180 days for many", currency: "Mexican peso (MXN)", language: "Spanish", plugs: "Types A/B · 127V", gettingThere: "Cancún (CUN), ~1h by road · ~11h from London", health: "Bottled water; strong sun; hurricane season Aug–Oct; sargassum May–Aug" },
+  "thailand-kohphangan": { visa: "Visa-free 30–60 days for many", currency: "Thai baht (THB)", language: "Thai", plugs: "Types A/B/C · 230V", gettingThere: "Ferry from Koh Samui (USM) or Surat Thani · ~14h from London", health: "Strong sun & sea; party & jellyfish awareness" },
 };
 
 for (const region of REGIONS) {

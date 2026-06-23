@@ -48,6 +48,7 @@ const REGIONS = [
   ["philippines-batanes", 20.449, 121.971, "SSDDDSWWWWSS"],
   ["thailand-huahin", 12.5684, 99.9577, "DDDDSSSSWWWD"],
   ["mexico-playadelcarmen", 20.6296, -87.0739, "DDDDSWWWWWSD"],
+  ["thailand-kohphangan", 9.7333, 100.0333, "SDDDDDDDWWWW"],
 ];
 const M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
