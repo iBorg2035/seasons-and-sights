@@ -1649,6 +1649,76 @@ export const REGIONS: Region[] = [
       { name: "Whale watching (Maui Nui)", type: "wildlife", lat: 20.79, lng: -156.5, blurb: "Humpbacks close to shore in winter." },
     ],
   },
+
+  // ───────────────────── North America (more) ─────────────────────
+  {
+    id: "puerto-rico-sanjuan",
+    name: "San Juan & Puerto Rico",
+    country: "Puerto Rico",
+    continent: "North America",
+    lat: 18.4655,
+    lng: -66.1057,
+    bookingDest: "San Juan, Puerto Rico",
+    climateBlurb:
+      "Caribbean island with a dry season December–April (peak, comfortable humidity) and a wetter, hotter June–November with hurricane risk peaking August–October. Year-round warmth, but the dry months are noticeably more pleasant.",
+    months: climate("DDDDSSWWWWSD", {
+      2: "dry, breezy — peak",
+      8: "peak hurricane season",
+      9: "wettest month + hurricane risk",
+    }),
+    sights: [
+      { name: "Old San Juan & El Morro", type: "culture", lat: 18.4707, lng: -66.1239, blurb: "Colorful colonial streets and a 16th-century clifftop fortress." },
+      { name: "El Yunque Rainforest", type: "nature", lat: 18.2955, lng: -65.7866, blurb: "The only tropical rainforest in the US National Forest System." },
+      { name: "Flamenco Beach, Culebra", type: "beach", lat: 18.327, lng: -65.572, blurb: "Consistently ranked among the world's best beaches." },
+      { name: "Bioluminescent Bay, Vieques", type: "nature", lat: 18.094, lng: -65.494, blurb: "Kayak through glowing microorganisms at night." },
+    ],
+  },
+
+  // ───────────────────── South America (more) ─────────────────────
+  {
+    id: "brazil-florianopolis",
+    name: "Florianópolis",
+    country: "Brazil",
+    continent: "South America",
+    lat: -27.5954,
+    lng: -48.548,
+    bookingDest: "Florianopolis, Brazil",
+    climateBlurb:
+      "Southern Brazil's island beach capital. Warm, sunny summers December–March (peak, with holiday crowds); mild, drier winters June–August; spring and autumn are pleasant shoulders. Less tropical than Rio — genuinely four-season.",
+    months: climate("DDDSSWWWSSDD", {
+      1: "summer peak — beaches and festivals",
+      6: "mild winter, drier",
+      12: "summer begins — holiday crowds",
+    }),
+    sights: [
+      { name: "Joaquina Beach & dunes", type: "beach", lat: -27.63, lng: -48.45, blurb: "Surf beach backed by giant sand dunes." },
+      { name: "Lagoinha do Leste", type: "beach", lat: -27.77, lng: -48.49, blurb: "Secluded beach reached by a jungle trail." },
+      { name: "Santo Antônio de Lisboa", type: "culture", lat: -27.51, lng: -48.52, blurb: "Azorean fishing village with seafood restaurants on the bay." },
+      { name: "Barra da Lagoa", type: "beach", lat: -27.57, lng: -48.42, blurb: "Laid-back village, canal swimming, and a coastal trail." },
+    ],
+  },
+  {
+    id: "brazil-curitiba",
+    name: "Curitiba",
+    country: "Brazil",
+    continent: "South America",
+    lat: -25.4284,
+    lng: -49.2733,
+    bookingDest: "Curitiba, Brazil",
+    climateBlurb:
+      "Southern Brazil's green, well-planned highland capital. Subtropical with cool, dry winters June–August and warm, wetter summers December–February. Known for unpredictable weather — 'four seasons in one day.' Gateway to the Serra do Mar train.",
+    months: climate("WWWSSDDDDSWW", {
+      1: "warm, wet summer",
+      7: "cool, dry — clearest weather",
+      10: "spring — wildflowers in the parks",
+    }),
+    sights: [
+      { name: "Jardim Botânico", type: "nature", lat: -25.4422, lng: -49.2387, blurb: "Art-nouveau greenhouse and manicured gardens." },
+      { name: "Serra do Mar scenic train", type: "nature", lat: -25.42, lng: -49.08, blurb: "Historic railway through Atlantic rainforest to the coast." },
+      { name: "Óscar Niemeyer Museum", type: "culture", lat: -25.41, lng: -49.267, blurb: "The 'Eye' — Niemeyer's striking modern art museum." },
+      { name: "Vila Velha State Park", type: "nature", lat: -25.25, lng: -50.08, blurb: "Sandstone pillars and a sinkhole crater, ~1.5h from the city." },
+    ],
+  },
 ];
 
 // Marquee festivals & events, keyed by region id and attached below. Kept
@@ -1769,6 +1839,12 @@ const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
     "philippines-vigan": [
       { name: "Binatbatan Festival of the Arts", month: 5, blurb: "Street dancing celebrating Vigan's weaving and crafts." },
     ],
+    "puerto-rico-sanjuan": [
+      { name: "Fiestas de la Calle San Sebastián", month: 1, blurb: "Old San Juan's biggest street festival — music, dance, food." },
+    ],
+    "brazil-florianopolis": [
+      { name: "Carnival", month: 2, blurb: "Southern Brazil's beach-party Carnival." },
+    ],
   };
 
 // Rough mid-range cost per person per day (USD): lodging + food + activities +
@@ -1843,6 +1919,9 @@ const DAILY_BUDGET: Record<string, number> = {
   "indonesia-nusapenida": 45,
   "frenchpolynesia-borabora": 350,
   "usa-maui": 200,
+  "puerto-rico-sanjuan": 85,
+  "brazil-florianopolis": 65,
+  "brazil-curitiba": 55,
 };
 
 // Wikipedia article titles for representative photos. Single source of truth in
@@ -1923,6 +2002,9 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "indonesia-nusapenida": { visa: "Visa on arrival (30 days) for many", currency: "Indonesian rupiah (IDR)", language: "Indonesian (Balinese)", plugs: "Types C/F · 230V", gettingThere: "Fast boat from Bali (DPS) · ~17h from London", health: "Rough cliff roads & stairs; strong currents; dengue" },
   "frenchpolynesia-borabora": { visa: "Visa-free 90 days for many", currency: "CFP franc (XPF)", language: "French & Tahitian", plugs: "Types A/B/E · 220V", gettingThere: "Bora Bora (BOB) via Tahiti (PPT) · ~22h from London", health: "Intense sun; very high prices — plan a budget" },
   "usa-maui": { visa: "ESTA / visa waiver required for most", currency: "US dollar (USD)", language: "English & Hawaiian", plugs: "Types A/B · 120V", gettingThere: "Kahului (OGG) via US west coast · ~18h from London", health: "Strong sun & ocean currents; respect reef & sacred sites" },
+  "puerto-rico-sanjuan": { visa: "No passport needed for US citizens; others need ESTA / visa", currency: "US dollar (USD)", language: "Spanish & English", plugs: "Types A/B · 120V", gettingThere: "San Juan (SJU) · ~4h from Miami, ~9h from London", health: "Strong sun; Zika/dengue — repellent; hurricane season Aug–Oct" },
+  "brazil-florianopolis": { visa: "Visa-free ~90 days for many", currency: "Brazilian real (BRL)", language: "Portuguese", plugs: "Types C/N · 127/220V", gettingThere: "Florianópolis (FLN) via São Paulo · ~15h from London", health: "Strong sun; undertow on the eastern beaches" },
+  "brazil-curitiba": { visa: "Visa-free ~90 days for many", currency: "Brazilian real (BRL)", language: "Portuguese", plugs: "Types C/N · 127/220V", gettingThere: "Curitiba (CWB) via São Paulo · ~14h from London", health: "Cool highland climate; unpredictable weather — layer up" },
 };
 
 for (const region of REGIONS) {

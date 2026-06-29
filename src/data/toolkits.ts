@@ -139,4 +139,7 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "frenchpolynesia-borabora": { phrases: [{ en: "Hello", local: "Ia ora na / Bonjour" }, { en: "Thank you", local: "Māuruuru / Merci" }, { en: "How much?", local: "Combien ?" }, { en: "Help!", local: "Au secours !" }], emergency: "112 · 15 ambulance · 17 police", tipping: "Not expected", water: "Tap generally safe on resort islands" },
   "usa-maui": { phrases: [{ en: "Hello", local: "Aloha" }, { en: "Thank you", local: "Mahalo" }, { en: "How much?", local: "How much?" }, { en: "Help!", local: "Help!" }], emergency: "911", tipping: "15–20% expected", water: "Tap water safe" },
   "mexico-playadelcarmen": { phrases: es, emergency: "911", tipping: "~10–15% (propina)", water: "Not potable — drink bottled" },
+  "puerto-rico-sanjuan": { phrases: es, emergency: "911", tipping: "15–20% (US-standard)", water: "Tap water safe" },
+  "brazil-florianopolis": { phrases: [{ en: "Hello", local: "Olá" }, { en: "Thank you", local: "Obrigado/a" }, { en: "How much?", local: "Quanto custa?" }, { en: "Help!", local: "Socorro!" }], emergency: "190 police · 192 ambulance · 193 fire", tipping: "~10%, often included", water: "Tap safe in cities" },
+  "brazil-curitiba": { phrases: [{ en: "Hello", local: "Olá" }, { en: "Thank you", local: "Obrigado/a" }, { en: "How much?", local: "Quanto custa?" }, { en: "Help!", local: "Socorro!" }], emergency: "190 police · 192 ambulance · 193 fire", tipping: "~10%, often included", water: "Tap safe" },
 };

@@ -48,6 +48,7 @@ const VISA_RULES: Record<string, Rule> = {
   Maldives: { default: "Free visa on arrival (30 days)" },
   "French Polynesia": { default: "Visa-free 90 days for many" },
   "United States": { default: "ESTA / visa waiver required", UK: "ESTA required", EU: "ESTA required", CA: "Visa-free (air: eTA)", AU: "ESTA required" },
+  "Puerto Rico": { default: "US territory — same as USA (ESTA / visa waiver)", US: "No passport needed" },
 };
 
 /** Coarse visa status for a passport + country, or null if uncurated. */
