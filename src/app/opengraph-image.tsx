@@ -34,9 +34,8 @@ export default function Image() {
             <span>Travel in the&nbsp;</span>
             <span style={{ color: "#f97316" }}>right season.</span>
           </div>
-          <div style={{ fontSize: 30, color: "#57534e", maxWidth: 940 }}>
-            Dry/wet seasons, crowds, festivals & a season-optimizing trip planner
-            across {count} destinations.
+          <div style={{ display: "flex", fontSize: 30, color: "#57534e", maxWidth: 940 }}>
+            {`Dry/wet seasons, crowds, festivals & a season-optimizing trip planner across ${count} destinations.`}
           </div>
         </div>
 
