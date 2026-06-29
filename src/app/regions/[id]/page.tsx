@@ -13,6 +13,7 @@ import { TravelToolkit } from "@/components/TravelToolkit";
 import { AddToTripButton } from "@/components/AddToTripButton";
 import { getCurrentSeason, monthOf } from "@/lib/season";
 import { SITE_URL } from "@/lib/site";
+import { TripadvisorRating } from "@/components/TripadvisorRating";
 
 // Regenerate each page in the background ~daily so the "current season"
 // badge and "now" marker stay accurate as the calendar month rolls over.
@@ -112,12 +113,13 @@ export default async function RegionPage({
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <p className="max-w-3xl text-stone-600">{region.climateBlurb}</p>
       </div>
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center gap-4">
         <AddToTripButton
           regionId={region.id}
           className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
         />
       </div>
+      <TripadvisorRating destination={`${region.name}, ${region.country}`} />
 
       <RegionPlanner
         region={region}
