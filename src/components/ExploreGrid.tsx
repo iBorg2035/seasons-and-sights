@@ -82,6 +82,7 @@ export function ExploreGrid() {
           <button
             key={s.value}
             onClick={() => setStyle(s.value)}
+            aria-pressed={style === s.value}
             className={`rounded-full border px-3 py-1 text-sm transition ${
               style === s.value
                 ? "border-slate-900 bg-slate-900 text-white"
@@ -99,6 +100,7 @@ export function ExploreGrid() {
             <button
               key={f.value}
               onClick={() => setFilter(f.value)}
+              aria-pressed={filter === f.value}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                 filter === f.value
                   ? "bg-slate-900 text-white"
@@ -112,6 +114,7 @@ export function ExploreGrid() {
 
         <button
           onClick={() => setGoodNow((v) => !v)}
+          aria-pressed={goodNow}
           className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition ${
             goodNow
               ? "border-amber-300 bg-amber-100 text-amber-800"
@@ -131,6 +134,7 @@ export function ExploreGrid() {
               <button
                 key={v}
                 onClick={() => setView(v)}
+                aria-pressed={view === v}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                   view === v
                     ? "bg-slate-900 text-white"

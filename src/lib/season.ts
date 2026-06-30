@@ -193,37 +193,6 @@ function toISODate(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-/**
- * Suggested check-in / check-out dates that land in the region's best season.
- * If already in a good season, suggests dates ~2 weeks out; otherwise the next
- * occurrence of the first dry month. Defaults to a 5-night stay.
- */
-export function suggestTravelDates(
-  region: Region,
-  from: Date = new Date(),
-  nights = 15
-): { checkin: string; checkout: string } {
-  const currentSeason = getCurrentSeason(region, from).season;
-  let checkin: Date;
-
-  if (currentSeason === "dry" || currentSeason === "shoulder") {
-    checkin = new Date(from);
-    checkin.setDate(checkin.getDate() + 14);
-  } else {
-    const runs = contiguousRuns(region, ["dry"]);
-    const startMonth = runs.length
-      ? runs.sort((a, b) => b.length - a.length)[0][0]
-      : monthOf(from);
-    const year =
-      startMonth > monthOf(from) ? from.getFullYear() : from.getFullYear() + 1;
-    checkin = new Date(year, startMonth - 1, 10);
-  }
-
-  const checkout = new Date(checkin);
-  checkout.setDate(checkout.getDate() + nights);
-  return { checkin: toISODate(checkin), checkout: toISODate(checkout) };
-}
-
 export interface ItineraryLeg<R extends ClimateRegion = Region> {
   region: R;
   /** 0-based order in the trip. */
