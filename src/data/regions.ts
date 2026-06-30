@@ -1936,8 +1936,8 @@ const EVENTS: Record<string, { name: string; month: number; blurb: string }[]> =
       { name: "Carnaval", month: 2, blurb: "Pre-Lenten parades along the Riviera Maya." },
     ],
     "thailand-kohphangan": [
-      { name: "Full Moon Party", month: 1, blurb: "Every full moon — the island's legendary all-night beach party at Haad Rin." },
       { name: "Songkran", month: 4, blurb: "Thai New Year water festival." },
+      { name: "Loy Krathong", month: 11, blurb: "Candle-lit offerings floated on the full moon — beyond the island's year-round Full Moon Parties." },
     ],
     "thailand-kohtao": [
       { name: "Songkran", month: 4, blurb: "Thai New Year water festival." },

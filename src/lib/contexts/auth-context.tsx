@@ -40,11 +40,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
         return;
       }
-      sb.auth.getSession().then(({ data }) => {
-        if (!active) return;
-        setUser(data.session?.user ?? null);
-        setLoading(false);
-      });
+      sb.auth
+        .getSession()
+        .then(({ data }) => {
+          if (!active) return;
+          setUser(data.session?.user ?? null);
+          setLoading(false);
+        })
+        .catch(() => {
+          // A failed session fetch must not strand the UI in "loading" — the
+          // account menu hides itself while loading, so leave it resolved.
+          if (active) setLoading(false);
+        });
       const { data: sub } = sb.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
       });
