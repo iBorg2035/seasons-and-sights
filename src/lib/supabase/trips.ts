@@ -28,7 +28,7 @@ function fromRow(row: TripRow): SavedTrip {
 
 /** All of the signed-in user's trips (RLS scopes this to them). */
 export async function fetchRemoteTrips(): Promise<SavedTrip[]> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return [];
   const { data, error } = await sb
     .from("trips")
@@ -39,7 +39,7 @@ export async function fetchRemoteTrips(): Promise<SavedTrip[]> {
 }
 
 export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise<void> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return;
   await sb.from("trips").upsert(
     {
@@ -55,7 +55,7 @@ export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise
 }
 
 export async function deleteRemoteTrip(id: string): Promise<void> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return;
   await sb.from("trips").delete().eq("id", id);
 }
@@ -69,7 +69,7 @@ export async function publishShare(trip: {
   start: number;
   stops: [string, number][];
 }): Promise<string | null> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return null;
   const token = crypto.randomUUID();
   const { error } = await sb.from("shared_trips").insert({
@@ -82,7 +82,7 @@ export async function publishShare(trip: {
 
 /** Delete the signed-in user's account and all their trips (cascades). */
 export async function deleteAccount(): Promise<boolean> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return false;
   const { error } = await sb.rpc("delete_account");
   return !error;
@@ -92,7 +92,7 @@ export async function deleteAccount(): Promise<boolean> {
 export async function fetchSharedTrip(
   token: string
 ): Promise<{ name: string; start: number; stops: [string, number][] } | null> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return null;
   const { data, error } = await sb.rpc("get_shared_trip", { p_token: token });
   const row = (data as { name: string; data: TripRow["data"] }[] | null)?.[0];

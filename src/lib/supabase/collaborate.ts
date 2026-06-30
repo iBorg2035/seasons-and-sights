@@ -11,7 +11,7 @@ export interface TripEditor {
 export async function getUserIdByEmail(
   email: string
 ): Promise<string | null> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return null;
   const { data, error } = await sb.rpc("get_user_id_by_email", {
     p_email: email,
@@ -26,7 +26,7 @@ export async function inviteEditor(
   ownerId: string,
   editorId: string
 ): Promise<{ error?: string }> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return { error: "Not configured" };
   if (editorId === ownerId) return { error: "You can't invite yourself" };
   const { error } = await sb.from("trip_editors").insert({
@@ -44,7 +44,7 @@ export async function removeEditor(
   ownerId: string,
   editorId: string
 ): Promise<void> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return;
   await sb
     .from("trip_editors")
@@ -59,7 +59,7 @@ export async function listEditors(
   tripId: string,
   ownerId: string
 ): Promise<TripEditor[]> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return [];
   const { data } = await sb
     .from("trip_editors")
@@ -77,7 +77,7 @@ export async function listEditors(
 export async function fetchSharedWithMe(): Promise<
   { tripId: string; ownerId: string }[]
 > {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return [];
   const { data } = await sb
     .from("trip_editors")

@@ -30,30 +30,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const sb = getSupabase();
-    if (!sb) {
-      setLoading(false);
-      return;
-    }
-    sb.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-      setLoading(false);
+    let active = true;
+    let unsub: (() => void) | undefined;
+    getSupabase().then((sb) => {
+      // The dynamic import may resolve after unmount, or with no client when
+      // accounts aren't configured — bail in both cases.
+      if (!active) return;
+      if (!sb) {
+        setLoading(false);
+        return;
+      }
+      sb.auth.getSession().then(({ data }) => {
+        if (!active) return;
+        setUser(data.session?.user ?? null);
+        setLoading(false);
+      });
+      const { data: sub } = sb.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+      unsub = () => sub.subscription.unsubscribe();
     });
-    const { data: sub } = sb.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      active = false;
+      unsub?.();
+    };
   }, []);
 
   const signIn: AuthState["signIn"] = async (email, password) => {
-    const sb = getSupabase();
+    const sb = await getSupabase();
     if (!sb) return { error: "Accounts aren't configured." };
     const { error } = await sb.auth.signInWithPassword({ email, password });
     return { error: error?.message };
   };
 
   const signUp: AuthState["signUp"] = async (email, password) => {
-    const sb = getSupabase();
+    const sb = await getSupabase();
     if (!sb) return { error: "Accounts aren't configured." };
     const { data, error } = await sb.auth.signUp({ email, password });
     if (error) return { error: error.message };
@@ -62,7 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut: AuthState["signOut"] = async () => {
-    await getSupabase()?.auth.signOut();
+    const sb = await getSupabase();
+    await sb?.auth.signOut();
   };
 
   return (

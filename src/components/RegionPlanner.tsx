@@ -91,11 +91,11 @@ export function RegionPlanner({
         </div>
       </section>
 
-      {sortedEvents.length > 0 && (
-        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 font-semibold text-slate-900">
-            Festivals &amp; events
-          </h2>
+      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-3 font-semibold text-slate-900">
+          Festivals &amp; events
+        </h2>
+        {sortedEvents.length > 0 ? (
           <ul className="divide-y divide-slate-100">
             {sortedEvents.map((e) => {
               const active = e.month === month;
@@ -120,8 +120,14 @@ export function RegionPlanner({
               );
             })}
           </ul>
-        </section>
-      )}
+        ) : (
+          <p className="text-sm text-slate-500">
+            No major festivals on the calendar here — this is a quieter
+            destination where the season itself, not events, drives the best
+            time to visit.
+          </p>
+        )}
+      </section>
 
       <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="mb-3 font-semibold text-slate-900">
