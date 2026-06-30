@@ -1,5 +1,6 @@
-import type { Event, Region, SightType } from "@/types";
-import { REGIONS } from "@/data/regions";
+import type { Region, SightType } from "@/types";
+import { REGIONS_CORE } from "@/data/regions-core";
+import sightSummary from "@/data/sight-summary.json";
 
 /**
  * Region with heavy fields stripped — structurally a valid Region (sights=[]),
@@ -10,28 +11,27 @@ export type SlimRegion = Region & {
   sightTypes: SightType[];
 };
 
+const SIGHT_SUMMARY = sightSummary as Record<
+  string,
+  { count: number; types: SightType[] }
+>;
+
 /**
- * Lightweight region list for client views. Strips the heavy fields that no
- * client view renders directly — `sights` (by far the largest), `toolkit`, and
- * `events` — while keeping the small, widely-displayed `climateBlurb` and the
- * `info` block the pre-departure checklist needs. This lives in one shared
- * chunk, so the kept fields are downloaded once and reused across every view.
+ * Lightweight region list for client views. Built from REGIONS_CORE — which
+ * never imports sights.ts, toolkits.ts, or events.ts — so none of that heavy
+ * per-destination data reaches client bundles that only need the small,
+ * widely-displayed fields (climateBlurb, info, etc.) plus a sight count/types
+ * summary precomputed in sight-summary.json (see scripts/build-sight-summary.mjs).
  */
-export const REGIONS_SLIM: SlimRegion[] = REGIONS.map((r) => ({
+export const REGIONS_SLIM: SlimRegion[] = REGIONS_CORE.map((r) => ({
   ...r,
   sights: [],
   toolkit: undefined,
   events: undefined,
-  sightCount: r.sights.length,
-  sightTypes: [...new Set(r.sights.map((s) => s.type))],
+  sightCount: SIGHT_SUMMARY[r.id]?.count ?? 0,
+  sightTypes: SIGHT_SUMMARY[r.id]?.types ?? [],
 }));
 
 export function getSlimRegion(id: string): SlimRegion | undefined {
   return REGIONS_SLIM.find((r) => r.id === id);
-}
-
-export function getAllEventsSlim(): { event: Event; region: { id: string; name: string; country: string } }[] {
-  return REGIONS.flatMap((r) =>
-    (r.events ?? []).map((event) => ({ event, region: { id: r.id, name: r.name, country: r.country } }))
-  ).sort((a, b) => a.event.month - b.event.month);
 }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { getAllEventsSlim } from "@/data/regions-slim";
+import { getAllEventsSlim } from "@/data/events-slim";
 import { MONTH_NAMES, MONTH_NAMES_LONG } from "@/lib/season";
 
 type MonthFilter = number | "all";
