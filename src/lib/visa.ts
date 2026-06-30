@@ -33,6 +33,7 @@ const VISA_RULES: Record<string, Rule> = {
   Nepal: { default: "Visa on arrival" },
   Japan: { default: "Visa-free 90 days" },
   Morocco: { default: "Visa-free 90 days" },
+  Egypt: { default: "Visa required (e-Visa / visa on arrival)" },
   Tanzania: { default: "Visa required (eVisa / on arrival)" },
   Mexico: { default: "Visa-free up to 180 days" },
   India: { default: "eVisa required" },

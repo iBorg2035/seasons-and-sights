@@ -10,12 +10,16 @@ export type SlimRegion = Region & {
   sightTypes: SightType[];
 };
 
-/** Lightweight region list for client views — strips sights, blurbs, info, toolkit. */
+/**
+ * Lightweight region list for client views. Strips the heavy fields that no
+ * client view renders directly — `sights` (by far the largest), `toolkit`, and
+ * `events` — while keeping the small, widely-displayed `climateBlurb` and the
+ * `info` block the pre-departure checklist needs. This lives in one shared
+ * chunk, so the kept fields are downloaded once and reused across every view.
+ */
 export const REGIONS_SLIM: SlimRegion[] = REGIONS.map((r) => ({
   ...r,
   sights: [],
-  climateBlurb: "",
-  info: undefined,
   toolkit: undefined,
   events: undefined,
   sightCount: r.sights.length,

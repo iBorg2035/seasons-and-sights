@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getDraft, DRAFT_EVENT, type TripDraft } from "@/lib/trip-draft";
-import { getRegion } from "@/data/regions";
+import { getSlimRegion } from "@/data/regions-slim";
 import {
   planItinerary,
   legDateRanges,
@@ -52,7 +52,7 @@ export function TodayView({ initialMonth }: { initialMonth: number }) {
 
   const chosen = draft.stops
     .map((s) => {
-      const region = getRegion(s.id);
+      const region = getSlimRegion(s.id);
       return region ? { region, durationMonths: s.duration } : null;
     })
     .filter((s): s is NonNullable<typeof s> => s !== null);
