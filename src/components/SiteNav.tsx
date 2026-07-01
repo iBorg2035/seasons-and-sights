@@ -13,6 +13,7 @@ const NAV = [
   { href: "/planner", label: "Planner" },
   { href: "/compare", label: "Compare" },
   { href: "/today", label: "Today" },
+  { href: "/calendar", label: "Calendar" },
   { href: "/festivals", label: "Festivals" },
   { href: "/surprise", label: "Surprise" },
   { href: "/where-can-i-go", label: "For me" },
