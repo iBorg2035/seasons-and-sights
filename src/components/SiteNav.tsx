@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AccountMenu } from "@/components/AccountMenu";
 import { getDraft, DRAFT_EVENT } from "@/lib/trip-draft";
+import { getSavedTrips, SAVED_TRIPS_EVENT } from "@/lib/saved-trips";
 
 const NAV = [
   { href: "/", label: "Explore" },
@@ -41,6 +42,30 @@ function TripChip() {
   );
 }
 
+function SavedTripsChip() {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const sync = () => setCount(getSavedTrips().length);
+    sync();
+    window.addEventListener(SAVED_TRIPS_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(SAVED_TRIPS_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  if (count === 0) return null;
+  return (
+    <Link
+      href="/planner"
+      className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-white px-2.5 py-1 text-xs font-semibold text-amber-700 transition hover:bg-amber-50"
+      title={`${count} saved ${count === 1 ? "trip" : "trips"}`}
+    >
+      🔖 {count}
+    </Link>
+  );
+}
+
 export function SiteNav() {
   const [open, setOpen] = useState(false);
 
@@ -57,6 +82,7 @@ export function SiteNav() {
             {item.label}
           </Link>
         ))}
+        <SavedTripsChip />
         <TripChip />
         <ThemeToggle />
         <AccountMenu />
@@ -64,6 +90,7 @@ export function SiteNav() {
 
       {/* Mobile controls */}
       <div className="flex items-center gap-1 sm:hidden">
+        <SavedTripsChip />
         <TripChip />
         <ThemeToggle />
         <AccountMenu />

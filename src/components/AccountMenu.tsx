@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { AuthDialog } from "@/components/AuthDialog";
 import { deleteAccount } from "@/lib/supabase/trips";
-
-const SAVED_KEY = "seasons-saved-trips";
+import {
+  SAVED_TRIPS_KEY as SAVED_KEY,
+  notifySavedTripsChanged,
+} from "@/lib/saved-trips";
 
 /** Download the user's saved trips as a JSON file (their data, on demand). */
 function exportTrips() {
@@ -104,6 +106,7 @@ export function AccountMenu() {
               await deleteAccount();
               try {
                 localStorage.removeItem(SAVED_KEY);
+                notifySavedTripsChanged();
               } catch {
                 /* ignore */
               }

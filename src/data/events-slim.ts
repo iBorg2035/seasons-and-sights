@@ -7,14 +7,33 @@ import { EVENTS } from "@/data/events";
  * only client view that needs event text, so keeping this import of events.ts
  * out of regions-slim.ts means the other 8 slim views never bundle it either.
  */
-export function getAllEventsSlim(): {
+export interface EventWithRegion {
   event: Event;
   region: { id: string; name: string; country: string };
-}[] {
+}
+
+export function getAllEventsSlim(): EventWithRegion[] {
   return REGIONS_CORE.flatMap((r) =>
     (EVENTS[r.id] ?? []).map((event) => ({
       event,
       region: { id: r.id, name: r.name, country: r.country },
     }))
   ).sort((a, b) => a.event.month - b.event.month);
+}
+
+/** Festivals in a given 1-based month, limited to the supplied region ids —
+ *  powers the Today dashboard's "festivals this month at your destinations". */
+export function eventsInMonthForRegions(
+  regionIds: string[],
+  month: number
+): EventWithRegion[] {
+  const ids = new Set(regionIds);
+  return REGIONS_CORE.filter((r) => ids.has(r.id)).flatMap((r) =>
+    (EVENTS[r.id] ?? [])
+      .filter((event) => event.month === month)
+      .map((event) => ({
+        event,
+        region: { id: r.id, name: r.name, country: r.country },
+      }))
+  );
 }

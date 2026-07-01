@@ -3,16 +3,68 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getDraft, DRAFT_EVENT, type TripDraft } from "@/lib/trip-draft";
+import {
+  getSavedTrips,
+  loadSavedTripToDraft,
+  SAVED_TRIPS_EVENT,
+  type SavedTripLite,
+} from "@/lib/saved-trips";
 import { getSlimRegion } from "@/data/regions-slim";
+import { eventsInMonthForRegions } from "@/data/events-slim";
 import {
   planItinerary,
   legDateRanges,
   climateForMonth,
+  MONTH_NAMES_LONG,
 } from "@/lib/season";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { WeatherNow } from "@/components/WeatherNow";
 import { DestinationImage } from "@/components/DestinationImage";
 import { PreDepartureChecklist } from "@/components/PreDepartureChecklist";
+
+function SavedTripsPanel() {
+  const [trips, setTrips] = useState<SavedTripLite[]>([]);
+  useEffect(() => {
+    const sync = () => setTrips(getSavedTrips());
+    sync();
+    window.addEventListener(SAVED_TRIPS_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(SAVED_TRIPS_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  if (trips.length === 0) return null;
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 font-semibold text-slate-900">Your saved trips</h3>
+      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {trips.map((t) => (
+          <li key={t.id}>
+            <button
+              onClick={() => loadSavedTripToDraft(t)}
+              className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left transition hover:border-amber-300 hover:bg-amber-50"
+            >
+              <span className="min-w-0">
+                <span className="block truncate font-medium text-slate-900">
+                  {t.name}
+                </span>
+                <span className="text-xs text-slate-500">
+                  {t.stops.length}{" "}
+                  {t.stops.length === 1 ? "destination" : "destinations"}
+                </span>
+              </span>
+              <span className="shrink-0 text-xs font-semibold text-amber-600">
+                Load →
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 function fmtDate(d: Date): string {
   return d.toLocaleDateString("en-US", {
@@ -59,14 +111,18 @@ export function TodayView({ initialMonth }: { initialMonth: number }) {
 
   if (chosen.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center">
-        <p className="text-slate-600">You don&apos;t have a trip yet.</p>
-        <Link
-          href="/planner"
-          className="mt-4 inline-block rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
-        >
-          Plan a trip →
-        </Link>
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center">
+          <p className="text-slate-600">You don&apos;t have an active trip.</p>
+          <Link
+            href="/planner"
+            className="mt-4 inline-block rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+          >
+            Plan a trip →
+          </Link>
+        </div>
+        {/* Loading a saved trip seeds the draft, so this view fills in. */}
+        <SavedTripsPanel />
       </div>
     );
   }
@@ -99,6 +155,13 @@ export function TodayView({ initialMonth }: { initialMonth: number }) {
       : status === "after"
         ? "Your trip is complete — plan the next one"
         : `You're in ${focus.region.name}`;
+
+  // Festivals happening this calendar month at any of the trip's destinations.
+  const nowMonth = today.getMonth() + 1;
+  const festivalsThisMonth = eventsInMonthForRegions(
+    legs.map((l) => l.region.id),
+    nowMonth
+  );
 
   return (
     <div className="space-y-6">
@@ -157,6 +220,35 @@ export function TodayView({ initialMonth }: { initialMonth: number }) {
         </p>
       )}
 
+      {festivalsThisMonth.length > 0 && (
+        <section className="rounded-2xl border border-fuchsia-200 bg-fuchsia-50/60 p-5">
+          <h3 className="mb-3 font-semibold text-slate-900">
+            Festivals in {MONTH_NAMES_LONG[nowMonth - 1]}
+          </h3>
+          <ul className="space-y-3">
+            {festivalsThisMonth.map((f) => (
+              <li key={`${f.region.id}-${f.event.name}`} className="flex gap-3">
+                <span aria-hidden className="text-fuchsia-600">
+                  🎉
+                </span>
+                <div>
+                  <p className="font-medium text-slate-900">
+                    {f.event.name}{" "}
+                    <Link
+                      href={`/regions/${f.region.id}`}
+                      className="text-sm font-normal text-slate-500 hover:text-fuchsia-600"
+                    >
+                      · {f.region.name}
+                    </Link>
+                  </p>
+                  <p className="text-sm text-slate-600">{f.event.blurb}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <div>
         <h3 className="mb-3 font-semibold text-slate-900">Your itinerary</h3>
         <ol className="space-y-2">
@@ -186,6 +278,8 @@ export function TodayView({ initialMonth }: { initialMonth: number }) {
       {status !== "after" && (
         <PreDepartureChecklist regions={legs.map((l) => l.region)} />
       )}
+
+      <SavedTripsPanel />
     </div>
   );
 }

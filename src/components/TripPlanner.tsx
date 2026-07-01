@@ -14,6 +14,10 @@ import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
 import { flightHop } from "@/lib/transport";
 import { buildIcs } from "@/lib/ics";
 import { getDraft, saveDraft } from "@/lib/trip-draft";
+import {
+  SAVED_TRIPS_KEY as SAVED_KEY,
+  notifySavedTripsChanged,
+} from "@/lib/saved-trips";
 import { useAuth } from "@/lib/contexts/auth-context";
 import {
   fetchRemoteTrips,
@@ -64,8 +68,6 @@ function fmtMonthYear(d: Date): string {
   return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-const SAVED_KEY = "seasons-saved-trips";
-
 function tripName(legs: ItineraryLeg[]): string {
   if (legs.length === 0) return "Trip";
   if (legs.length === 1) return legs[0].region.name;
@@ -106,6 +108,7 @@ export function TripPlanner({
   const writeSaved = (next: SavedTrip[]): boolean => {
     try {
       localStorage.setItem(SAVED_KEY, JSON.stringify(next));
+      notifySavedTripsChanged();
       return true;
     } catch {
       return false;
@@ -149,6 +152,7 @@ export function TripPlanner({
       const { merged, toPush } = mergeTrips(local, remote);
       try {
         localStorage.setItem(SAVED_KEY, JSON.stringify(merged));
+        notifySavedTripsChanged();
       } catch {
         // ignore
       }
@@ -297,39 +301,58 @@ export function TripPlanner({
     <div className="space-y-8">
       {/* ── Saved trips ── */}
       {saved.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-slate-700">Saved trips:</span>
-          {saved.map((t) => (
-            <span
-              key={t.id}
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white py-1 pl-3 pr-1.5 text-sm shadow-sm"
-            >
-              <button
-                onClick={() => loadTrip(t)}
-                className="font-medium text-slate-700 hover:text-amber-600"
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="font-semibold text-slate-900">Saved trips</h2>
+          <p className="mb-4 mt-1 text-sm text-slate-500">
+            Pick up where you left off — load one back into the planner.
+          </p>
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {saved.map((t) => (
+              <li
+                key={t.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
               >
-                {t.name}
-              </button>
-              {isSupabaseConfigured && user && (
                 <button
-                  onClick={() => setInvitingTrip(t.id)}
-                  aria-label={`Invite editor to ${t.name}`}
-                  title="Invite a travel partner"
-                  className="rounded-full px-1 text-slate-400 transition hover:bg-slate-100 hover:text-amber-600"
+                  onClick={() => loadTrip(t)}
+                  className="min-w-0 flex-1 text-left"
                 >
-                  👥
+                  <span className="block truncate font-medium text-slate-900 transition hover:text-amber-600">
+                    {t.name}
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    {t.stops.length}{" "}
+                    {t.stops.length === 1 ? "destination" : "destinations"}
+                  </span>
                 </button>
-              )}
-              <button
-                onClick={() => deleteTrip(t.id)}
-                aria-label={`Delete ${t.name}`}
-                className="rounded-full px-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-              >
-                ✕
-              </button>
-            </span>
-          ))}
-        </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    onClick={() => loadTrip(t)}
+                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-amber-600 transition hover:bg-amber-50"
+                  >
+                    Load
+                  </button>
+                  {isSupabaseConfigured && user && (
+                    <button
+                      onClick={() => setInvitingTrip(t.id)}
+                      aria-label={`Invite editor to ${t.name}`}
+                      title="Invite a travel partner"
+                      className="rounded-lg px-1.5 py-1 text-slate-400 transition hover:bg-slate-100 hover:text-amber-600"
+                    >
+                      👥
+                    </button>
+                  )}
+                  <button
+                    onClick={() => deleteTrip(t.id)}
+                    aria-label={`Delete ${t.name}`}
+                    className="rounded-lg px-1.5 py-1 text-slate-400 transition hover:bg-slate-100 hover:text-rose-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {/* ── Controls ── */}
