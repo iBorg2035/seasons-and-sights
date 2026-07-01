@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildChecklistItems } from "@/lib/checklist";
+import { buildChecklistItems, checklistStorageKey } from "@/lib/checklist";
 import type { Region } from "@/types";
 
 // Minimal stubs — buildChecklistItems only reads country + info fields.
@@ -70,5 +70,23 @@ describe("buildChecklistItems", () => {
     const health = items.find((i) => i.key === "health")!;
     expect(health.label).toMatch(/routine/i);
     expect(items.some((i) => i.key === "visas")).toBe(false);
+  });
+});
+
+describe("checklistStorageKey (per-trip isolation)", () => {
+  it("gives different trips different keys", () => {
+    // The bug: two trips shared one key, so ticking an item on one showed
+    // checked on the other. Distinct destinations must yield distinct keys.
+    expect(checklistStorageKey(["vietnam-hoian"])).not.toBe(
+      checklistStorageKey(["philippines-cebu"])
+    );
+  });
+
+  it("is order-independent for the same destinations", () => {
+    expect(checklistStorageKey(["a", "b"])).toBe(checklistStorageKey(["b", "a"]));
+  });
+
+  it("namespaces under the checklist prefix", () => {
+    expect(checklistStorageKey(["a"])).toMatch(/^seasons-checklist:/);
   });
 });

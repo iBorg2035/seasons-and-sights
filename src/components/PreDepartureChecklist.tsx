@@ -2,34 +2,46 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Region } from "@/types";
-import { buildChecklistItems } from "@/lib/checklist";
-
-const KEY = "seasons-checklist";
+import { buildChecklistItems, checklistStorageKey } from "@/lib/checklist";
 
 export function PreDepartureChecklist({ regions }: { regions: Region[] }) {
   const items = useMemo(() => buildChecklistItems(regions), [regions]);
+  // Progress is scoped to this trip's destinations, so ticking an item on one
+  // trip doesn't show up checked on another.
+  const storageKey = useMemo(
+    () => checklistStorageKey(regions.map((r) => r.id)),
+    [regions]
+  );
   const [done, setDone] = useState<Set<string>>(new Set());
   const [ready, setReady] = useState(false);
 
+  // (Re)load this trip's checked state whenever the trip changes.
   useEffect(() => {
+    setReady(false);
+    let loaded = new Set<string>();
     try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setDone(new Set(JSON.parse(raw) as string[]));
+      const raw = localStorage.getItem(storageKey);
+      if (raw) loaded = new Set(JSON.parse(raw) as string[]);
     } catch {
       /* ignore */
     }
+    setDone(loaded);
     setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (ready) localStorage.setItem(KEY, JSON.stringify([...done]));
-  }, [done, ready]);
+  }, [storageKey]);
 
   function toggle(key: string) {
     setDone((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
+      // Persist on toggle (keyed to the current trip) rather than in an effect,
+      // so switching trips reloads state without ever writing one trip's ticks
+      // under another's key. localStorage writes are idempotent → StrictMode-safe.
+      try {
+        localStorage.setItem(storageKey, JSON.stringify([...next]));
+      } catch {
+        /* ignore */
+      }
       return next;
     });
   }

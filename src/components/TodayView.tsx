@@ -276,7 +276,10 @@ export function TodayView({ initialMonth }: { initialMonth: number }) {
       </div>
 
       {status !== "after" && (
-        <PreDepartureChecklist regions={legs.map((l) => l.region)} />
+        <PreDepartureChecklist
+          key={legs.map((l) => l.region.id).join("|")}
+          regions={legs.map((l) => l.region)}
+        />
       )}
 
       <SavedTripsPanel />
