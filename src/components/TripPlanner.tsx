@@ -88,6 +88,7 @@ export function TripPlanner({
   const [startMonth, setStartMonth] = useState(initialMonth);
   const [saved, setSaved] = useState<SavedTrip[]>([]);
   const [justSaved, setJustSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [invitingTrip, setInvitingTrip] = useState<string | null>(null);
 
   // Load saved trips from localStorage on mount.
@@ -100,13 +101,23 @@ export function TripPlanner({
     }
   }, []);
 
-  const persistSaved = (next: SavedTrip[]) => {
-    setSaved(next);
+  // Writes the saved-trips list to localStorage. Returns false if the browser
+  // blocks it (private mode, full quota) so callers don't claim a phantom save.
+  const writeSaved = (next: SavedTrip[]): boolean => {
     try {
       localStorage.setItem(SAVED_KEY, JSON.stringify(next));
+      return true;
     } catch {
-      // ignore
+      return false;
     }
+  };
+
+  // Reflect the list on screen and persist it. Used where the in-memory update
+  // should happen regardless (e.g. delete); saveCurrent commits to the UI only
+  // after confirming the trip actually persisted somewhere.
+  const persistSaved = (next: SavedTrip[]): boolean => {
+    setSaved(next);
+    return writeSaved(next);
   };
 
   const loadTrip = (t: SavedTrip) => {
@@ -222,7 +233,7 @@ export function TripPlanner({
 
   const ranges = useMemo(() => legDateRanges(startMonth, legs), [startMonth, legs]);
 
-  const saveCurrent = () => {
+  const saveCurrent = async () => {
     if (!stops.size) return;
     const trip: SavedTrip = {
       id: `${Date.now()}`,
@@ -234,13 +245,28 @@ export function TripPlanner({
     // Saving replaces any same-name trip locally; mirror that remotely by
     // deleting the old rows so the cloud doesn't accumulate duplicates.
     const replaced = saved.filter((t) => t.name === trip.name);
-    persistSaved([trip, ...saved.filter((t) => t.name !== trip.name)]);
+    const next = [trip, ...saved.filter((t) => t.name !== trip.name)];
+    // Persist first; only reflect the save in the UI once it actually stuck
+    // somewhere (local or cloud), so a blocked write can't show a phantom chip.
+    const localOk = writeSaved(next);
+    let cloudOk = false;
     if (user) {
       for (const t of replaced) void deleteRemoteTrip(t.id);
-      void upsertRemoteTrip(user.id, trip);
+      cloudOk = await upsertRemoteTrip(user.id, trip);
     }
-    setJustSaved(true);
-    setTimeout(() => setJustSaved(false), 1500);
+    if (localOk || cloudOk) {
+      setSaved(next);
+      setSaveError(null);
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 1500);
+    } else {
+      setJustSaved(false);
+      setSaveError(
+        user
+          ? "Couldn't save this trip — we couldn't reach your account and this browser is blocking saved data (private/incognito mode can do that). Check your connection or allow site data, then try again."
+          : "Couldn't save this trip — this browser is blocking saved data. Turn off private/incognito mode or allow site data for this site, then try again."
+      );
+    }
   };
 
   const tripSpan = useMemo(() => {
@@ -483,6 +509,14 @@ export function TripPlanner({
                 }}
               />
             </div>
+            {saveError && (
+              <p
+                role="alert"
+                className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
+              >
+                {saveError}
+              </p>
+            )}
           </div>
 
           {hasRisky && (

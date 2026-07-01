@@ -38,10 +38,12 @@ export async function fetchRemoteTrips(): Promise<SavedTrip[]> {
   return (data as TripRow[]).map(fromRow);
 }
 
-export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise<void> {
+/** Persist a trip to the signed-in user's cloud. Returns true only if it
+ *  actually landed — callers use this to confirm a save instead of assuming it. */
+export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise<boolean> {
   const sb = await getSupabase();
-  if (!sb) return;
-  await sb.from("trips").upsert(
+  if (!sb) return false;
+  const { error } = await sb.from("trips").upsert(
     {
       id: trip.id,
       user_id: userId,
@@ -52,6 +54,8 @@ export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise
     },
     { onConflict: "user_id,id" }
   );
+  if (error) console.warn("[trips] cloud save failed:", error.message);
+  return !error;
 }
 
 export async function deleteRemoteTrip(id: string): Promise<void> {
