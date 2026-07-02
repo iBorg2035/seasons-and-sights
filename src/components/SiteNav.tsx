@@ -34,7 +34,7 @@ function TripChip() {
   if (count === 0) return null;
   return (
     <Link
-      href="/today"
+      href="/calendar"
       className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-amber-600"
       title={`Your current trip — ${count} ${count === 1 ? "stop" : "stops"}`}
     >

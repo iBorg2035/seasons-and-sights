@@ -29,6 +29,7 @@ export function FestivalsView({ initialMonth }: { initialMonth: number }) {
       <div className="mb-8 flex flex-wrap gap-1.5">
         <button
           onClick={() => setMonth("all")}
+          aria-pressed={month === "all"}
           className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
             month === "all"
               ? "bg-slate-900 text-white"
@@ -44,6 +45,7 @@ export function FestivalsView({ initialMonth }: { initialMonth: number }) {
             <button
               key={label}
               onClick={() => setMonth(value)}
+              aria-pressed={month === value}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                 month === value
                   ? "bg-slate-900 text-white"

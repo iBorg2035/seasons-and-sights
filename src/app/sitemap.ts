@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/festivals",
     "/surprise",
     "/today",
+    "/calendar",
     "/about",
     "/privacy",
     "/terms",

@@ -394,6 +394,7 @@ export function TripPlanner({
                       <button
                         key={r.id}
                         onClick={() => toggle(r.id)}
+                        aria-pressed={on}
                         className={`rounded-full border px-3 py-1 text-sm transition ${
                           on
                             ? "border-slate-900 bg-slate-900 text-white"
@@ -420,6 +421,7 @@ export function TripPlanner({
                 <button
                   key={label}
                   onClick={() => setStartMonth(value)}
+                  aria-pressed={active}
                   className={`rounded-lg py-1.5 text-sm font-medium transition ${
                     active
                       ? "bg-slate-900 text-white"
@@ -460,6 +462,7 @@ export function TripPlanner({
                           <button
                             key={m}
                             onClick={() => setDuration(id, m)}
+                            aria-pressed={duration === m}
                             className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
                               duration === m
                                 ? "bg-slate-900 text-white"
