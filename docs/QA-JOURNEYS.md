@@ -16,43 +16,46 @@ the draft, the checklist, auth, or the nav badges.
 
 ## Critical journeys
 
-### 1. Save and come back to a trip
-Plan a trip → **Save trip** → reload the page. The trip must still be in
-"Saved trips" (planner) and load back correctly. If signed in, it must also
-appear on a second browser/device (cloud sync).
+### 1. Create, edit, and come back to a trip
+`/trips` → create a trip → add stops on `/trips/[id]` → reload. The trip and
+its stops must survive, appear as a card on `/trips` and a bar on `/calendar`,
+and reopen correctly. If signed in, it must also appear on a second
+browser/device (cloud sync — `/debug-sync` diagnoses failures).
 
 ### 2. Multi-trip isolation ← the one that keeps biting us
 Do a **per-trip** action on trip A, switch to trip B, and confirm B is
 independent; switch back and confirm A persisted. Concretely:
-- On `/today` with trip A, tick some **Before you go** checklist items.
-- Load a *different* saved trip (B). B's checklist must be **clean**.
-- Load A again. A's ticks must **still be there**.
+- On trip A's page (Prep section), tick some **Before you go** checklist items.
+- Open a *different* trip (B). B's checklist must be **clean**.
+- Open A again. A's ticks must **still be there**.
 Repeat the same "do X on A → switch to B → assert B clean → back → assert A
-kept" shape for any state that is stored per trip.
+kept" shape for any state that is stored per trip (checklist, stops, name).
 
 ### 3. Blocked / full storage (private mode)
 With `localStorage.setItem` throwing (private mode, blocked site data, full
-quota), saving must show an honest error and **not** claim "Saved!" or leave a
-phantom saved-trip chip.
+quota), trip changes must fail honestly — no phantom trips or "Saved!" claims.
 
-### 4. Nav badges
-- 🧳 (current trip) → **Today** (its trip is the hero, not the planner picker).
-- 🔖 (saved trips) → **Planner** (the Saved trips section).
-- Counts update live: save → 🔖 +1; load a saved trip → 🧳 reflects its stops;
-  delete → 🔖 −1.
+### 4. Nav badge + legacy redirects
+- 🧳 (active trip) → **/trips**; count reflects the trips list and updates
+  live on create/delete.
+- Old URLs `/planner` and `/today` must redirect to the active trip page (or
+  `/trips` when none) — including for a first-time visitor with legacy
+  `seasons-draft` data, which must migrate into a trip exactly once
+  (`seasons-migrated-v2` flag).
 
-### 5. Festivals on Today
-A trip with a destination that has an event **this calendar month** shows a
-"Festivals in <month>" card; a trip with none hides the card entirely.
+### 5. Festivals
+A trip whose stop has an event that month shows it (trip page Prep + white
+dots on `/calendar` bars); a trip with none shows no festival UI.
 
 ### 6. Signed-in vs anonymous
-Both must save locally. Signed-in additionally persists to the account (survives
-a different device); anonymous is local-only. Neither should hang on load if the
-network/Supabase is unreachable.
+Both must persist locally. Signed-in additionally syncs trips to the account
+(survives a different device); anonymous is local-only. Neither should hang on
+load if the network/Supabase is unreachable.
 
 ### 7. Empty states
-No draft → `/today` shows "plan a trip" **and** any saved trips (so you can load
-one). No saved trips → the badges/sections simply don't render.
+No trips → `/trips` and `/calendar` show a friendly "plan a trip" state; the
+🧳 badge doesn't render; `/trips/<unknown-id>` shows "trip couldn't be found"
+with a way back.
 
 ## Pre-ship static audit
 
@@ -61,7 +64,9 @@ one). No saved trips → the badges/sections simply don't render.
   A bare global key for per-trip data is the checklist-isolation bug.
   `grep -rhoE 'localStorage\.[a-z]+Item\([^,)]+' src`
   Correctly-global keys: `theme`, `seasons-onboarded`, `seasons-passport`
-  (per-device/user), `seasons-draft`, `seasons-saved-trips` (single instances).
+  (per-device/user), `seasons-saved-trips`, `seasons-active-trip-id`,
+  `seasons-migrated-v2` (single instances); `seasons-draft` is legacy, read
+  only by the one-time migration.
 - **Regression tests:** every fixed bug leaves a test behind (see
   `checklistStorageKey` tests for the isolation bug).
 - `npx tsc --noEmit`, `npx vitest run`, `npm run build` all green.

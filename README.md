@@ -81,14 +81,15 @@ env (see [`.env.example`](.env.example)). No code change needed.
   "good to visit now", with a map view.
 - `/when-to-go` — **Season planner**: pick a month, see where it's dry vs. wet
   across all regions.
-- `/planner` — **Trip planner**: pick destinations + a start month + a duration
-  per stop; it sequences the stops so each lands in its dry/shoulder window
-  (`planItinerary`). Plans are encoded in the URL, so they're shareable, and can
-  be saved (locally, or to an account when Supabase is configured).
-- `/calendar` — **Trip calendar**: every saved trip as a bar across a Jan–Dec
-  timeline, coloured by each stop's season.
-- `/today` — **Dashboard**: where you are (or what's next) on the current trip,
-  live weather, this month's festivals, and a pre-departure checklist.
+- `/trips` — **My trips**: home base listing every trip as a card; create,
+  open, or delete from here. Trips live in `localStorage` and sync to an
+  account when Supabase is configured.
+- `/trips/[id]` — **Trip page**: the unified builder — Route (stops sequenced
+  so each lands in its dry/shoulder window via `planItinerary`), Stops editor,
+  Prep (checklist, festivals, weather), and Map — plus rename and share.
+  (`/planner` and `/today` are legacy redirects into the active trip.)
+- `/calendar` — **Trip calendar**: every trip as a bar across a Jan–Dec
+  timeline, coloured by each stop's season, with festival markers.
 - `/compare` — side-by-side destination comparison for a chosen month.
 - `/festivals` — month-by-month festival calendar across all destinations.
 - `/surprise` — random destination picker with month/region filters.

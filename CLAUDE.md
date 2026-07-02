@@ -27,7 +27,14 @@ the lines a diff changed. So:
 - Client views import the slim data modules (`@/data/regions-slim`,
   `@/data/events-slim`), never the heavy `@/data/regions` (server-only). Adding
   rows to `regions.ts`/`sights.ts` must not grow client-route bundles.
-- Saved trips: `src/lib/saved-trips.ts` (key + `SAVED_TRIPS_EVENT` + load helper)
-  is the single source; planner, Today, nav badge, and account menu all use it.
+- Trips model: named trips in `src/lib/saved-trips.ts` (key +
+  `SAVED_TRIPS_EVENT` + create/update/delete helpers) are the single source;
+  `src/lib/active-trip.ts` holds the "currently editing" pointer (self-repairs
+  if it points at a deleted trip). `/trips` is the home base, `/trips/[id]`
+  the unified trip page (TripView); the calendar, nav badge, and account menu
+  all read the same store. `/planner` and `/today` are legacy client-side
+  redirects, and `src/lib/trip-migrate.ts` one-time-migrates the old
+  anonymous draft (flag `seasons-migrated-v2`).
 - Auth/Supabase is lazy-loaded (`getSupabase()` dynamic-imports `@supabase/ssr`)
-  and must degrade gracefully when env vars are absent.
+  and must degrade gracefully when env vars are absent. `/debug-sync` is a
+  read-only cloud-sync diagnostic page (intentionally deployed, not in nav).
