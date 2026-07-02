@@ -1,7 +1,7 @@
 import { CalendarView } from "@/components/CalendarView";
 
 export const metadata = {
-  title: "Trip calendar — Seasons & Sights",
+  title: "Trip calendar",
   description:
     "Your saved trips laid out across the year — see when each one runs and how its stops line up with the dry, shoulder, and wet seasons.",
 };

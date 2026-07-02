@@ -2,7 +2,7 @@ import { SurpriseView } from "@/components/SurpriseView";
 import { monthOf } from "@/lib/season";
 
 export const metadata = {
-  title: "Surprise me — Seasons & Sights",
+  title: "Surprise me",
   description:
     "Tell us when you're free and we'll pick a destination that's in its best season right then.",
 };

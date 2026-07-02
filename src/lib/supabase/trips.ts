@@ -119,7 +119,11 @@ export function mergeTrips(
   const toPush: SavedTrip[] = [];
   for (const l of local) {
     const r = byId.get(l.id);
-    if (!r || (l.updatedAt ?? 0) > (r.updatedAt ?? 0)) {
+    // `>=` (not `>`): on a timestamp tie, keep the local copy and push it. This
+    // matters for the degenerate updatedAt: 0 case (a malformed/legacy row),
+    // where strict `>` would silently drop the local trip from the merge and
+    // the push list. Local is also the user's freshest intent on a true tie.
+    if (!r || (l.updatedAt ?? 0) >= (r.updatedAt ?? 0)) {
       byId.set(l.id, l);
       toPush.push(l);
     }

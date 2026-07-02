@@ -1,6 +1,6 @@
 # Seasons & Sights
 
-A travel app for **70+ destinations across Southeast Asia, South America,
+A travel app for **72 destinations across Southeast Asia, South America,
 Europe, Africa, North America, and Oceania**, built around the one question
 that makes or breaks a trip: *is it the dry or wet season here, right now — and
 is it worth the crowds?* Each destination shows a 12-month dry/wet calendar, a
@@ -50,9 +50,10 @@ so it deploys to Vercel as-is.
 **Environment variables:** none required. Optionally set `NEXT_PUBLIC_BOOKING_AID`
 in the Vercel project settings for affiliate attribution.
 
-**Before real traffic:** the map defaults to OpenStreetMap's public tiles, which
-are fine for development but not meant for production load. Point it at a keyed
-provider (MapTiler / Stadia / Carto — all have free tiers) by setting
+**Before real traffic:** the map defaults to Carto's Voyager basemap, a
+production-safe CDN that needs no key (attribution required) and is fine for
+moderate traffic. Point it at a keyed provider (MapTiler / Stadia — both have
+free tiers) only if you outgrow Carto's fair-use tier, by setting
 `NEXT_PUBLIC_MAP_TILE_URL` and `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION` in your Vercel
 env (see [`.env.example`](.env.example)). No code change needed.
 

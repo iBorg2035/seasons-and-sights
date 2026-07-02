@@ -1,8 +1,9 @@
+import Link from "next/link";
 import { TodayView } from "@/components/TodayView";
 import { monthOf } from "@/lib/season";
 
 export const metadata = {
-  title: "Today — Seasons & Sights",
+  title: "Today",
   description:
     "Your current trip at a glance: where you are now, today's weather and daylight, and your next stop.",
 };
@@ -19,9 +20,12 @@ export default function TodayPage() {
         <p className="mt-3 max-w-2xl text-slate-600">
           Your current trip at a glance — where you are now, today&apos;s weather
           and daylight, and what&apos;s next. Build it on the{" "}
-          <a href="/planner" className="font-medium text-amber-600 hover:underline">
+          <Link
+            href="/planner"
+            className="font-medium text-amber-600 hover:underline"
+          >
             planner
-          </a>{" "}
+          </Link>{" "}
           or add destinations as you browse.
         </p>
       </section>

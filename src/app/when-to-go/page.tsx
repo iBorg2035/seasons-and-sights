@@ -1,9 +1,9 @@
 import { WhenToGoView } from "@/components/WhenToGoView";
 
 export const metadata = {
-  title: "When to go — Seasons & Sights",
+  title: "When to go",
   description:
-    "Pick a month and see which destinations across Asia, South America, Europe, and Africa are in dry, shoulder, or wet season.",
+    "Pick a month and see which destinations across Asia, the Americas, Europe, Africa, and Oceania are in dry, shoulder, or wet season.",
 };
 
 export default function WhenToGoPage() {

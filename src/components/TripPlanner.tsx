@@ -240,7 +240,10 @@ export function TripPlanner({
   const saveCurrent = async () => {
     if (!stops.size) return;
     const trip: SavedTrip = {
-      id: `${Date.now()}`,
+      // UUID rather than Date.now() so two rapid saves can't collide on the
+      // same millisecond and overwrite each other (local dedupe + cloud
+      // upsert onConflict both key on id).
+      id: crypto.randomUUID(),
       name: tripName(legs),
       start: startMonth,
       stops: Array.from(stops),

@@ -2,7 +2,7 @@ import { CompareView } from "@/components/CompareView";
 import { monthOf } from "@/lib/season";
 
 export const metadata = {
-  title: "Compare destinations — Seasons & Sights",
+  title: "Compare destinations",
   description:
     "Put two or three destinations side by side — season, crowds, best time, and budget — for any month.",
 };

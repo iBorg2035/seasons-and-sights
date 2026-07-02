@@ -2,9 +2,9 @@ import { FestivalsView } from "@/components/FestivalsView";
 import { monthOf } from "@/lib/season";
 
 export const metadata = {
-  title: "Festivals & events — Seasons & Sights",
+  title: "Festivals & events",
   description:
-    "A month-by-month calendar of marquee festivals across Asia, South America, Europe, and Africa — from Carnival to cherry blossom to Diwali.",
+    "A month-by-month calendar of marquee festivals across Asia, the Americas, Europe, Africa, and Oceania — from Carnival to cherry blossom to Diwali.",
 };
 
 // Regenerate daily so the "this month" highlight stays current.

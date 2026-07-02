@@ -156,3 +156,19 @@ as $$
 $$;
 
 grant execute on function public.get_user_id_by_email(text) to authenticated;
+
+-- Resolve a set of user ids to their emails, for displaying invited editors by
+-- email instead of an opaque UUID. Security definer so the caller can't read
+-- auth.users directly (RLS would otherwise block it); returns only the ids
+-- passed in, so it can't be used to enumerate users.
+drop function if exists public.get_user_emails(uuid[]);
+create or replace function public.get_user_emails(p_ids uuid[])
+returns table (id uuid, email text)
+language sql
+security definer
+set search_path = public
+as $$
+  select id, email from auth.users where id = any(p_ids);
+$$;
+
+grant execute on function public.get_user_emails(uuid[]) to authenticated;

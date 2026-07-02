@@ -54,7 +54,10 @@ export async function removeEditor(
     .eq("editor_id", editorId);
 }
 
-/** List editors for a trip the current user owns. */
+/** List editors for a trip the current user owns. Resolves editor emails via
+ *  the get_user_emails RPC so the UI can show a recognizable address instead of
+ *  an opaque UUID; degrades gracefully to the UUID if the RPC is absent or
+ *  fails (e.g. the migration hasn't been applied yet, or Supabase is unset). */
 export async function listEditors(
   tripId: string,
   ownerId: string
@@ -66,11 +69,24 @@ export async function listEditors(
     .select("trip_id, owner_id, editor_id")
     .eq("trip_id", tripId)
     .eq("owner_id", ownerId);
-  return (data ?? []).map((r) => ({
+  const editors = (data ?? []).map((r) => ({
     tripId: r.trip_id,
     ownerId: r.owner_id,
     editorId: r.editor_id,
   }));
+
+  // Best-effort email resolution. Anything going wrong (RPC missing, RLS,
+  // network) leaves editorEmail undefined and the caller falls back to the id.
+  try {
+    const ids = editors.map((e) => e.editorId);
+    const { data: rows } = await sb.rpc("get_user_emails", { p_ids: ids });
+    const byId = new Map(
+      ((rows ?? []) as { id: string; email: string }[]).map((r) => [r.id, r.email])
+    );
+    return editors.map((e) => ({ ...e, editorEmail: byId.get(e.editorId) }));
+  } catch {
+    return editors;
+  }
 }
 
 /** Fetch trips shared with the current user (as an editor). */

@@ -3,7 +3,7 @@ import { getRegion } from "@/data/regions";
 import { monthOf } from "@/lib/season";
 
 export const metadata = {
-  title: "Trip planner — Seasons & Sights",
+  title: "Trip planner",
   description:
     "Pick destinations and a start month; get a route that sequences each stop into its dry or shoulder season.",
 };

@@ -92,6 +92,7 @@ export function InviteEditorDialog({
             <input
               type="email"
               required
+              aria-label="Partner email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="partner@example.com"
@@ -125,7 +126,7 @@ export function InviteEditorDialog({
                     key={ed.editorId}
                     className="flex items-center justify-between text-sm text-slate-700"
                   >
-                    <span className="truncate">{ed.editorId}</span>
+                    <span className="truncate">{ed.editorEmail ?? ed.editorId}</span>
                     <button
                       onClick={async () => {
                         await removeEditor(tripId, ownerId, ed.editorId);
