@@ -39,3 +39,36 @@ export function loadSavedTripToDraft(t: SavedTripLite) {
     stops: t.stops.map(([id, duration]) => ({ id, duration })),
   });
 }
+
+function writeSavedTrips(next: SavedTripLite[]): boolean {
+  try {
+    localStorage.setItem(SAVED_TRIPS_KEY, JSON.stringify(next));
+    notifySavedTripsChanged();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Remove a saved trip locally. Callers handle any cloud-side delete. */
+export function deleteSavedTrip(id: string): boolean {
+  return writeSavedTrips(getSavedTrips().filter((t) => t.id !== id));
+}
+
+/** Rename a saved trip locally (bumps updatedAt so cloud last-write-wins picks
+ *  it up). Returns the updated trip for callers that mirror it to the cloud. */
+export function renameSavedTrip(
+  id: string,
+  name: string
+): SavedTripLite | null {
+  const trimmed = name.trim();
+  if (!trimmed) return null;
+  let renamed: SavedTripLite | null = null;
+  const next = getSavedTrips().map((t) => {
+    if (t.id !== id) return t;
+    renamed = { ...t, name: trimmed, updatedAt: Date.now() };
+    return renamed;
+  });
+  if (!renamed || !writeSavedTrips(next)) return null;
+  return renamed;
+}
