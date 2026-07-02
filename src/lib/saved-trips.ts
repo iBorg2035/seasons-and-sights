@@ -72,3 +72,39 @@ export function renameSavedTrip(
   if (!renamed || !writeSavedTrips(next)) return null;
   return renamed;
 }
+
+/** Create a fresh empty trip, persist it, and return it. */
+export function createTrip(name = "Untitled trip"): SavedTripLite {
+  const trip: SavedTripLite = {
+    id: crypto.randomUUID(),
+    name,
+    start: 0, // 0 = unset; the trip page falls back to the current month
+    stops: [],
+    updatedAt: Date.now(),
+  };
+  const next = [trip, ...getSavedTrips()];
+  writeSavedTrips(next);
+  return trip;
+}
+
+/** Fetch a single trip by id (undefined if missing). */
+export function getTrip(id: string): SavedTripLite | undefined {
+  return getSavedTrips().find((t) => t.id === id);
+}
+
+/**
+ * Apply a mutation to a trip in place. Bumps `updatedAt` so cloud
+ * last-write-wins picks up the edit. No-op (returns false) if the id is gone.
+ * Does NOT auto-sync to the cloud — callers mirror remote if signed in.
+ */
+export function updateTrip(
+  id: string,
+  mutate: (trip: SavedTripLite) => void
+): boolean {
+  const trips = getSavedTrips();
+  const i = trips.findIndex((t) => t.id === id);
+  if (i === -1) return false;
+  mutate(trips[i]);
+  trips[i].updatedAt = Date.now();
+  return writeSavedTrips(trips);
+}
