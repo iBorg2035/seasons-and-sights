@@ -11,12 +11,12 @@ function uniq<T>(arr: T[]): T[] {
 }
 
 /**
- * localStorage key for a trip's checklist progress, scoped to its set of
- * destinations so ticking an item on one trip never carries over to another.
- * Sorted so the same destinations in any itinerary order share one key.
+ * localStorage key for a trip's checklist progress, scoped to the trip id so
+ * ticking an item on one trip never carries over to another (even two trips
+ * with identical destinations).
  */
-export function checklistStorageKey(regionIds: string[]): string {
-  return `seasons-checklist:${[...regionIds].sort().join("|")}`;
+export function checklistStorageKey(tripId: string): string {
+  return `seasons-checklist:${tripId}`;
 }
 
 /** Build a trip-specific pre-departure prep list from the destinations' data. */
