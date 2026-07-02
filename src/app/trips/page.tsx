@@ -22,7 +22,7 @@ import {
 } from "@/lib/saved-trips";
 import {
   ACTIVE_TRIP_EVENT,
-  getActiveTripId,
+  ensureActiveTripId,
 } from "@/lib/active-trip";
 import { TripCard } from "@/components/TripCard";
 import { useRouter } from "next/navigation";
@@ -33,9 +33,11 @@ export default function TripsPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // Re-read both stores; gated on `window` so SSR never touches localStorage.
+  // ensureActiveTripId (not getActiveTripId) repairs the pointer if the active
+  // trip was deleted, so the "Active" tag tracks the newest remaining trip.
   const sync = useCallback(() => {
     setTrips(getSavedTrips());
-    setActiveId(getActiveTripId());
+    setActiveId(ensureActiveTripId());
   }, []);
 
   useEffect(() => {

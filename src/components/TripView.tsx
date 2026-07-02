@@ -7,7 +7,9 @@ import {
   getTrip,
   updateTrip,
   deleteSavedTrip,
+  SAVED_TRIPS_KEY,
   SAVED_TRIPS_EVENT,
+  notifySavedTripsChanged,
   type SavedTripLite,
 } from "@/lib/saved-trips";
 import {
@@ -15,6 +17,13 @@ import {
   ACTIVE_TRIP_EVENT,
 } from "@/lib/active-trip";
 import { useAuth } from "@/lib/contexts/auth-context";
+import {
+  fetchRemoteTrips,
+  upsertRemoteTrip,
+  deleteRemoteTrip,
+  mergeTrips,
+  type SavedTrip,
+} from "@/lib/supabase/trips";
 import { SyncBadge } from "@/components/SyncBadge";
 import { ShareTripButton } from "@/components/ShareTripButton";
 import { InviteEditorDialog } from "@/components/InviteEditorDialog";
@@ -80,9 +89,54 @@ export function TripView({
         t.stops.push([addRegionId, 2]);
       });
       refresh();
+      mirrorToCloud(tripId);
     }
     router.replace(`/trips/${tripId}`);
   }, [addRegionId, trip, tripId, router, refresh]);
+
+  // On sign-in, pull the user's cloud trips, merge with what's local
+  // (last-write-wins), and push any local-only trips up. Keyed on user.id so
+  // it doesn't re-run on every token refresh (which swaps the user object).
+  // This is the sync that makes sign-in actually do something — it was lost
+  // when TripPlanner was retired and is re-homed here.
+  useEffect(() => {
+    if (!user) return;
+    const userId = user.id;
+    let cancelled = false;
+    (async () => {
+      const remote = await fetchRemoteTrips();
+      if (cancelled) return;
+      let local: SavedTrip[] = [];
+      try {
+        local = JSON.parse(
+          localStorage.getItem(SAVED_TRIPS_KEY) || "[]"
+        );
+      } catch {
+        // ignore
+      }
+      const { merged, toPush } = mergeTrips(local, remote);
+      try {
+        localStorage.setItem(SAVED_TRIPS_KEY, JSON.stringify(merged));
+        notifySavedTripsChanged();
+      } catch {
+        // ignore
+      }
+      refresh();
+      // Side-effects outside setState so React's StrictMode double-invoke can't
+      // double-upload.
+      for (const t of toPush) void upsertRemoteTrip(userId, t);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, refresh]);
+
+  /** Mirror a local trip edit to the cloud when signed in. No-op signed-out. */
+  function mirrorToCloud(id: string) {
+    if (!user) return;
+    const t = getTrip(id);
+    if (t) void upsertRemoteTrip(user.id, t as SavedTrip);
+  }
 
   // Scroll-spy: highlight the section currently in view.
   useEffect(() => {
@@ -140,6 +194,7 @@ export function TripView({
         t.name = trimmed;
       });
       refresh();
+      mirrorToCloud(tripId);
     }
   }
 
@@ -148,6 +203,10 @@ export function TripView({
     const ok = window.confirm(`Delete "${trip.name}"? This can't be undone.`);
     if (!ok) return;
     deleteSavedTrip(trip.id);
+    if (user) void deleteRemoteTrip(trip.id);
+    // Clear the now-stale active pointer; /trips will repair it on arrival
+    // via ensureActiveTripId if other trips remain.
+    setActiveTripId(null);
     router.push("/trips");
   }
 
@@ -307,7 +366,13 @@ export function TripView({
               ({trip.stops.length})
             </span>
           </h2>
-          <StopsSection trip={trip} onChange={refresh} />
+          <StopsSection
+            trip={trip}
+            onChange={() => {
+              refresh();
+              mirrorToCloud(trip.id);
+            }}
+          />
         </section>
 
         <section id="prep" className="scroll-mt-32">
