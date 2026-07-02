@@ -1,36 +1,19 @@
-import Link from "next/link";
-import { TodayView } from "@/components/TodayView";
-import { monthOf } from "@/lib/season";
+"use client";
 
-export const metadata = {
-  title: "Today",
-  description:
-    "Your current trip at a glance: where you are now, today's weather and daylight, and your next stop.",
-};
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ensureActiveTripId } from "@/lib/active-trip";
 
-export const revalidate = 86400;
-
+/**
+ * The Today dashboard is now the Prep + Route sections of the unified trip
+ * page. Redirect to the active trip (or the trips home base if there isn't
+ * one). Client-side because the active-trip pointer lives in localStorage.
+ */
 export default function TodayPage() {
-  return (
-    <div>
-      <section className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-          Today
-        </h1>
-        <p className="mt-3 max-w-2xl text-slate-600">
-          Your current trip at a glance — where you are now, today&apos;s weather
-          and daylight, and what&apos;s next. Build it on the{" "}
-          <Link
-            href="/planner"
-            className="font-medium text-amber-600 hover:underline"
-          >
-            planner
-          </Link>{" "}
-          or add destinations as you browse.
-        </p>
-      </section>
-
-      <TodayView initialMonth={monthOf()} />
-    </div>
-  );
+  const router = useRouter();
+  useEffect(() => {
+    const id = ensureActiveTripId();
+    router.replace(id ? `/trips/${id}` : "/trips");
+  }, [router]);
+  return null;
 }
