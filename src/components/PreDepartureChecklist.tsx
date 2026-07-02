@@ -4,14 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import type { Region } from "@/types";
 import { buildChecklistItems, checklistStorageKey } from "@/lib/checklist";
 
-export function PreDepartureChecklist({ regions }: { regions: Region[] }) {
+export function PreDepartureChecklist({
+  tripId,
+  regions,
+}: {
+  tripId: string;
+  regions: Region[];
+}) {
   const items = useMemo(() => buildChecklistItems(regions), [regions]);
-  // Progress is scoped to this trip's destinations, so ticking an item on one
-  // trip doesn't show up checked on another.
-  const storageKey = useMemo(
-    () => checklistStorageKey(regions.map((r) => r.id)),
-    [regions]
-  );
+  // Progress is scoped to this trip (by id), so ticking an item on one trip
+  // doesn't show up checked on another — even two trips with identical stops.
+  const storageKey = useMemo(() => checklistStorageKey(tripId), [tripId]);
   const [done, setDone] = useState<Set<string>>(new Set());
   const [ready, setReady] = useState(false);
 
