@@ -12,6 +12,7 @@ import {
   type PlannerStop,
   type ItineraryLeg,
 } from "@/lib/season";
+import { AddStopsDialog } from "@/components/AddStopsDialog";
 
 const DURATIONS = [1, 2, 3] as const;
 
@@ -24,6 +25,7 @@ export function StopsSection({
   onChange: () => void;
 }) {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const [adding, setAdding] = useState(false);
 
   // Resolve stops to slim regions + planner stops, planning so we know each
   // leg's start month for the season-fit label.
@@ -43,9 +45,31 @@ export function StopsSection({
 
   if (resolved.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
-        No stops yet. Add destinations from any region page.
-      </div>
+      <>
+        <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center">
+          <p className="mb-4 text-slate-500">No stops yet.</p>
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+          >
+            + Add a destination
+          </button>
+        </div>
+        {adding && (
+          <AddStopsDialog
+            existingIds={trip.stops.map(([id]) => id)}
+            onClose={() => setAdding(false)}
+            onAdd={(ids) => {
+              if (ids.length) {
+                mutate((t) => {
+                  for (const id of ids) t.stops.push([id, 2]);
+                });
+              }
+            }}
+          />
+        )}
+      </>
     );
   }
 
@@ -55,6 +79,7 @@ export function StopsSection({
   }
 
   return (
+    <>
     <ul className="space-y-2">
       {resolved.map((s, i) => {
         const { region } = s;
@@ -227,5 +252,28 @@ export function StopsSection({
         );
       })}
     </ul>
+
+    <button
+      type="button"
+      onClick={() => setAdding(true)}
+      className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 py-3 text-sm font-medium text-slate-500 transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
+    >
+      + Add destination
+    </button>
+
+    {adding && (
+      <AddStopsDialog
+        existingIds={trip.stops.map(([id]) => id)}
+        onClose={() => setAdding(false)}
+        onAdd={(ids) => {
+          if (ids.length) {
+            mutate((t) => {
+              for (const id of ids) t.stops.push([id, 2]);
+            });
+          }
+        }}
+      />
+    )}
+  </>
   );
 }

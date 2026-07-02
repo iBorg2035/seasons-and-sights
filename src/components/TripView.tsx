@@ -57,6 +57,15 @@ export function TripView({
   const [inviteOpen, setInviteOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("route");
 
+  // Snapshot of the trip as it was when the page loaded, for the "reset to
+  // last saved" escape hatch. In-memory only (per page session); reloading
+  // makes the last auto-saved state the new baseline, which is correct.
+  const snapshotRef = useRef<string | null>(null);
+  const dirty =
+    !!trip &&
+    !!snapshotRef.current &&
+    JSON.stringify(trip) !== snapshotRef.current;
+
   const refresh = useCallback(() => {
     setTrip(getTrip(tripId));
   }, [tripId]);
@@ -64,7 +73,10 @@ export function TripView({
   // Load + mark this trip active + subscribe to change events.
   useEffect(() => {
     setActiveTripId(tripId);
-    refresh();
+    const initial = getTrip(tripId);
+    setTrip(initial);
+    // Snapshot the loaded state once for the "reset to last saved" affordance.
+    if (initial) snapshotRef.current = JSON.stringify(initial);
     setLoaded(true);
 
     const onSaved = () => refresh();
@@ -138,6 +150,16 @@ export function TripView({
     if (t) void upsertRemoteTrip(user.id, t as SavedTrip);
   }
 
+  // If the trip still has the default name, invite a rename on first load —
+  // the user almost certainly wants to name a fresh trip.
+  useEffect(() => {
+    if (loaded && trip && trip.name === "Untitled trip" && !renaming) {
+      setNameDraft("");
+      setRenaming(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, trip?.name]);
+
   // Scroll-spy: highlight the section currently in view.
   useEffect(() => {
     const sections = SECTIONS.map((s) => document.getElementById(s.id)).filter(
@@ -196,6 +218,19 @@ export function TripView({
       refresh();
       mirrorToCloud(tripId);
     }
+  }
+
+  function handleReset() {
+    if (!snapshotRef.current) return;
+    const saved = JSON.parse(snapshotRef.current) as SavedTripLite;
+    updateTrip(tripId, (t) => {
+      t.name = saved.name;
+      t.start = saved.start;
+      t.stops = saved.stops.map((s) => [s[0], s[1]] as [string, number]);
+    });
+    refresh();
+    mirrorToCloud(tripId);
+    setMenuOpen(false);
   }
 
   function handleDelete() {
@@ -272,6 +307,7 @@ export function TripView({
                 if (e.key === "Escape") setRenaming(false);
               }}
               aria-label="Trip name"
+              placeholder="Name this trip…"
               className="min-w-0 flex-1 rounded-lg border border-amber-300 px-2 py-1 text-sm font-semibold text-slate-900 outline-none focus:border-amber-400"
             />
           ) : (
@@ -333,6 +369,15 @@ export function TripView({
                       Invite partner
                     </button>
                   )}
+                  {dirty && (
+                    <button
+                      type="button"
+                      onClick={handleReset}
+                      className="block w-full px-4 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Reset to last saved
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={handleDelete}
@@ -356,7 +401,16 @@ export function TripView({
       <main className="mx-auto max-w-5xl space-y-12 px-4 py-8">
         <section id="route" className="scroll-mt-32">
           <h2 className="mb-4 text-lg font-semibold text-slate-900">Route</h2>
-          <RouteSection trip={trip} />
+          <RouteSection
+            trip={trip}
+            onStartChange={(month) => {
+              updateTrip(trip.id, (t) => {
+                t.start = month;
+              });
+              refresh();
+              mirrorToCloud(trip.id);
+            }}
+          />
         </section>
 
         <section id="stops" className="scroll-mt-32">
