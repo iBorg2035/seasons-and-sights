@@ -73,20 +73,15 @@ describe("buildChecklistItems", () => {
   });
 });
 
-describe("checklistStorageKey (per-trip isolation)", () => {
-  it("gives different trips different keys", () => {
-    // The bug: two trips shared one key, so ticking an item on one showed
-    // checked on the other. Distinct destinations must yield distinct keys.
-    expect(checklistStorageKey(["vietnam-hoian"])).not.toBe(
-      checklistStorageKey(["philippines-cebu"])
+describe("checklistStorageKey (per-trip)", () => {
+  it("keys by trip id, not destination set", () => {
+    // Two trips with identical stops must NOT share checklist progress.
+    expect(checklistStorageKey("trip-a")).not.toBe(
+      checklistStorageKey("trip-b")
     );
   });
 
-  it("is order-independent for the same destinations", () => {
-    expect(checklistStorageKey(["a", "b"])).toBe(checklistStorageKey(["b", "a"]));
-  });
-
   it("namespaces under the checklist prefix", () => {
-    expect(checklistStorageKey(["a"])).toMatch(/^seasons-checklist:/);
+    expect(checklistStorageKey("trip-a")).toBe("seasons-checklist:trip-a");
   });
 });

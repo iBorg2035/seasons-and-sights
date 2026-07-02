@@ -1,4 +1,5 @@
 import { getSupabase } from "@/lib/supabase/client";
+import { recordSyncResult } from "@/lib/sync-status";
 
 export interface SavedTrip {
   id: string;
@@ -34,7 +35,11 @@ export async function fetchRemoteTrips(): Promise<SavedTrip[]> {
     .from("trips")
     .select("id, name, data, updated_at")
     .order("updated_at", { ascending: false });
-  if (error || !data) return [];
+  if (error || !data) {
+    if (error) recordSyncResult({ kind: "read", ok: false, message: error.message });
+    return [];
+  }
+  recordSyncResult({ kind: "read", ok: true });
   return (data as TripRow[]).map(fromRow);
 }
 
@@ -54,8 +59,13 @@ export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise
     },
     { onConflict: "user_id,id" }
   );
-  if (error) console.warn("[trips] cloud save failed:", error.message);
-  return !error;
+  if (error) {
+    recordSyncResult({ kind: "write", ok: false, message: error.message });
+    console.warn("[trips] cloud save failed:", error.message);
+    return false;
+  }
+  recordSyncResult({ kind: "write", ok: true });
+  return true;
 }
 
 export async function deleteRemoteTrip(id: string): Promise<void> {

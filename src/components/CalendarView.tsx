@@ -5,14 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   getSavedTrips,
-  loadSavedTripToDraft,
   deleteSavedTrip,
-  renameSavedTrip,
   SAVED_TRIPS_EVENT,
 } from "@/lib/saved-trips";
-import { getDraft, DRAFT_EVENT } from "@/lib/trip-draft";
 import { useAuth } from "@/lib/contexts/auth-context";
-import { deleteRemoteTrip, upsertRemoteTrip } from "@/lib/supabase/trips";
+import { deleteRemoteTrip } from "@/lib/supabase/trips";
 import { getSlimRegion } from "@/data/regions-slim";
 import { eventsInMonthForRegions } from "@/data/events-slim";
 import {
@@ -41,7 +38,6 @@ interface MonthCell {
 interface Row {
   id: string;
   name: string;
-  isDraft: boolean;
   start: number;
   totalMonths: number;
   stopCount: number;
@@ -75,7 +71,6 @@ function buildRow(
   name: string,
   start: number,
   stops: [string, number][],
-  isDraft: boolean,
   trip: Row["trip"]
 ): Row | null {
   const chosen = stops
@@ -104,7 +99,6 @@ function buildRow(
   return {
     id,
     name,
-    isDraft,
     start: effectiveStart,
     totalMonths: chosen.reduce((n, s) => n + s.durationMonths, 0),
     stopCount: chosen.length,
@@ -118,30 +112,18 @@ function useRows(): Row[] {
   useEffect(() => {
     const sync = () => {
       const out: Row[] = [];
-      const draft = getDraft();
-      if (draft.stops.length > 0) {
-        const draftRow = buildRow(
-          "__draft__",
-          "Current trip",
-          draft.start,
-          draft.stops.map((s) => [s.id, s.duration]),
-          true,
-          null
-        );
-        if (draftRow) out.push(draftRow);
-      }
       for (const t of getSavedTrips()) {
-        const row = buildRow(t.id, t.name, t.start, t.stops, false, { ...t });
+        const row = buildRow(t.id, t.name, t.start, t.stops, { ...t });
         if (row) out.push(row);
       }
       setRows(out);
     };
     sync();
-    for (const evt of [SAVED_TRIPS_EVENT, DRAFT_EVENT, "storage"]) {
+    for (const evt of [SAVED_TRIPS_EVENT, "storage"]) {
       window.addEventListener(evt, sync);
     }
     return () => {
-      for (const evt of [SAVED_TRIPS_EVENT, DRAFT_EVENT, "storage"]) {
+      for (const evt of [SAVED_TRIPS_EVENT, "storage"]) {
         window.removeEventListener(evt, sync);
       }
     };
@@ -154,12 +136,9 @@ export function CalendarView() {
   const router = useRouter();
   const { user } = useAuth();
   const nowMonth = useMemo(() => monthOf(), []);
-  const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState("");
 
   function open(row: Row) {
-    if (row.trip) loadSavedTripToDraft(row.trip);
-    router.push("/planner");
+    router.push(`/trips/${row.id}`);
   }
 
   function remove(row: Row) {
@@ -168,19 +147,12 @@ export function CalendarView() {
     if (user) void deleteRemoteTrip(row.trip.id);
   }
 
-  function commitRename(row: Row) {
-    setRenamingId(null);
-    if (!row.trip) return;
-    const renamed = renameSavedTrip(row.trip.id, renameValue);
-    if (renamed && user) void upsertRemoteTrip(user.id, renamed);
-  }
-
   if (rows.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center">
         <p className="text-slate-600">No trips to show on the calendar yet.</p>
         <Link
-          href="/planner"
+          href="/trips"
           className="mt-4 inline-block rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
         >
           Plan a trip →
@@ -211,56 +183,23 @@ export function CalendarView() {
             <div className="h-6" />
             {rows.map((row) => (
               <div key={row.id} className="group flex h-9 items-center gap-1">
-                {renamingId === row.id ? (
-                  <input
-                    autoFocus
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    onBlur={() => commitRename(row)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") commitRename(row);
-                      if (e.key === "Escape") setRenamingId(null);
-                    }}
-                    aria-label="Trip name"
-                    className="w-full rounded-md border border-amber-300 bg-white px-1.5 py-0.5 text-sm text-slate-900 outline-none"
-                  />
-                ) : (
-                  <>
-                    <button
-                      onClick={() => open(row)}
-                      title={`${row.name}: ${MONTH_NAMES[row.start - 1]} start · ${row.totalMonths} months · ${row.stopCount} ${row.stopCount === 1 ? "stop" : "stops"}. Open in planner.`}
-                      className="min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-800 transition hover:text-amber-600"
-                    >
-                      {row.isDraft && (
-                        <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-amber-500 align-middle" />
-                      )}
-                      {row.name}
-                    </button>
-                    {!row.isDraft && (
-                      <span className="flex flex-none opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
-                        <button
-                          onClick={() => {
-                            setRenamingId(row.id);
-                            setRenameValue(row.name);
-                          }}
-                          aria-label={`Rename ${row.name}`}
-                          title="Rename"
-                          className="rounded px-1 text-xs text-slate-400 hover:text-amber-600"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => remove(row)}
-                          aria-label={`Delete ${row.name}`}
-                          title="Delete"
-                          className="rounded px-1 text-xs text-slate-400 hover:text-rose-600"
-                        >
-                          ✕
-                        </button>
-                      </span>
-                    )}
-                  </>
-                )}
+                <button
+                  onClick={() => open(row)}
+                  title={`${row.name}: ${MONTH_NAMES[row.start - 1]} start · ${row.totalMonths} months · ${row.stopCount} ${row.stopCount === 1 ? "stop" : "stops"}. Open trip.`}
+                  className="min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-800 transition hover:text-amber-600"
+                >
+                  {row.name}
+                </button>
+                <span className="flex flex-none opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
+                  <button
+                    onClick={() => remove(row)}
+                    aria-label={`Delete ${row.name}`}
+                    title="Delete"
+                    className="rounded px-1 text-xs text-slate-400 hover:text-rose-600"
+                  >
+                    ✕
+                  </button>
+                </span>
               </div>
             ))}
           </div>
@@ -293,7 +232,7 @@ export function CalendarView() {
               <div key={row.id} className="relative h-9">
                 <button
                   onClick={() => open(row)}
-                  aria-label={`Open ${row.name} in the planner`}
+                  aria-label={`Open ${row.name}`}
                   className="absolute inset-y-2 left-0 right-0 rounded-full bg-slate-400/10 transition hover:bg-slate-400/20"
                 />
                 {coveredRuns(row.cells).map(([a, b]) => (
@@ -335,9 +274,8 @@ export function CalendarView() {
       </div>
 
       <p className="text-xs text-slate-400">
-        Click a trip or its bar to open it in the planner · hover a bar for the
-        stop and season that month · white dots mark festivals · ✏️ rename, ✕
-        delete.
+        Click a trip or its bar to open it · hover a bar for the stop and season
+        that month · white dots mark festivals · ✕ delete.
       </p>
     </div>
   );

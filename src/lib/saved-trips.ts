@@ -1,8 +1,6 @@
-import { saveDraft } from "@/lib/trip-draft";
-
-// Named trips the user has explicitly saved (distinct from the working draft).
-// Kept here so the planner, the Today dashboard, and the nav badge read/write
-// one source of truth and stay in sync via SAVED_TRIPS_EVENT.
+// Named trips the user has saved. The single source of truth for a user's
+// trips, read/written by the trips list, trip page, calendar, and nav badge,
+// kept in sync across views via SAVED_TRIPS_EVENT.
 export const SAVED_TRIPS_KEY = "seasons-saved-trips";
 export const SAVED_TRIPS_EVENT = "seasons-saved-trips-change";
 
@@ -24,20 +22,11 @@ export function getSavedTrips(): SavedTripLite[] {
 }
 
 /** Broadcast that the saved-trips list changed, so open views (nav badge,
- *  dashboard) refresh without a reload — same pattern as the draft's event. */
+ *  trips list, trip page) refresh without a reload. */
 export function notifySavedTripsChanged() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event(SAVED_TRIPS_EVENT));
   }
-}
-
-/** Load a saved trip into the working draft so the planner and Today view
- *  reflect it immediately (both read the draft). */
-export function loadSavedTripToDraft(t: SavedTripLite) {
-  saveDraft({
-    start: t.start,
-    stops: t.stops.map(([id, duration]) => ({ id, duration })),
-  });
 }
 
 function writeSavedTrips(next: SavedTripLite[]): boolean {
@@ -71,4 +60,40 @@ export function renameSavedTrip(
   });
   if (!renamed || !writeSavedTrips(next)) return null;
   return renamed;
+}
+
+/** Create a fresh empty trip, persist it, and return it. */
+export function createTrip(name = "Untitled trip"): SavedTripLite {
+  const trip: SavedTripLite = {
+    id: crypto.randomUUID(),
+    name,
+    start: 0, // 0 = unset; the trip page falls back to the current month
+    stops: [],
+    updatedAt: Date.now(),
+  };
+  const next = [trip, ...getSavedTrips()];
+  writeSavedTrips(next);
+  return trip;
+}
+
+/** Fetch a single trip by id (undefined if missing). */
+export function getTrip(id: string): SavedTripLite | undefined {
+  return getSavedTrips().find((t) => t.id === id);
+}
+
+/**
+ * Apply a mutation to a trip in place. Bumps `updatedAt` so cloud
+ * last-write-wins picks up the edit. No-op (returns false) if the id is gone.
+ * Does NOT auto-sync to the cloud — callers mirror remote if signed in.
+ */
+export function updateTrip(
+  id: string,
+  mutate: (trip: SavedTripLite) => void
+): boolean {
+  const trips = getSavedTrips();
+  const i = trips.findIndex((t) => t.id === id);
+  if (i === -1) return false;
+  mutate(trips[i]);
+  trips[i].updatedAt = Date.now();
+  return writeSavedTrips(trips);
 }
