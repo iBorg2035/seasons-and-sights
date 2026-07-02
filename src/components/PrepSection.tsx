@@ -10,8 +10,7 @@ import type { SavedTripLite } from "@/lib/saved-trips";
  * hands them to <PreDepartureChecklist>, which builds items from
  * region.info.visa / region.info.health etc. and manages its own per-trip done
  * state. SlimRegion carries the `info` fields REGIONS_CORE provides, so this is
- * client-safe (no heavy sights/toolkit/events data). Mirrors TodayView's
- * approach.
+ * client-safe (no heavy sights/toolkit/events data).
  *
  * Note: the section nav's pending-count badge is intentionally omitted for v1 —
  * the checklist self-reports "X of Y done" and lifting its internal done-state
