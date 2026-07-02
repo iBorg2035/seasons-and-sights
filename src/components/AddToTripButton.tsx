@@ -1,9 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { addToDraft, getDraft, DRAFT_EVENT } from "@/lib/trip-draft";
-import { monthOf } from "@/lib/season";
+import { useRouter } from "next/navigation";
+import {
+  ensureActiveTripId,
+  setActiveTripId,
+  ACTIVE_TRIP_EVENT,
+} from "@/lib/active-trip";
+import { getTrip, createTrip, SAVED_TRIPS_EVENT } from "@/lib/saved-trips";
 
+/**
+ * Adds a destination to the active trip and jumps into the trip page with it
+ * staged for confirmation. Ensures there's an active trip (creating one if the
+ * user has none), so "Add to trip" always has a concrete target — no more
+ * silent appends to invisible draft state.
+ */
 export function AddToTripButton({
   regionId,
   className = "",
@@ -11,24 +22,39 @@ export function AddToTripButton({
   regionId: string;
   className?: string;
 }) {
+  const router = useRouter();
   const [added, setAdded] = useState(false);
 
+  // Reflect whether this destination is already in the active trip, so the
+  // button can show "✓ In your trip" without a page navigation.
   useEffect(() => {
-    const sync = () => setAdded(getDraft().stops.some((s) => s.id === regionId));
+    const sync = () => {
+      const id = ensureActiveTripId();
+      setAdded(
+        !!id && getTrip(id)?.stops.some(([sid]) => sid === regionId) === true
+      );
+    };
     sync();
-    window.addEventListener(DRAFT_EVENT, sync);
+    window.addEventListener(ACTIVE_TRIP_EVENT, sync);
+    window.addEventListener(SAVED_TRIPS_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => {
-      window.removeEventListener(DRAFT_EVENT, sync);
+      window.removeEventListener(ACTIVE_TRIP_EVENT, sync);
+      window.removeEventListener(SAVED_TRIPS_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
   }, [regionId]);
 
   const onClick = (e: React.MouseEvent) => {
-    // The card is a link; don't navigate when adding.
     e.preventDefault();
     e.stopPropagation();
-    addToDraft(regionId, monthOf());
+    let id = ensureActiveTripId();
+    if (!id) {
+      const t = createTrip();
+      id = t.id;
+    }
+    setActiveTripId(id);
+    router.push(`/trips/${id}?add=${regionId}`);
   };
 
   return (
