@@ -5,6 +5,7 @@ import {
   legDateRanges,
   fitQuality,
   climateForMonth,
+  MONTH_NAMES,
   MONTH_NAMES_LONG,
   SEASON_META,
   type ItineraryLeg,
@@ -41,9 +42,19 @@ function fmtDate(d: Date): string {
   });
 }
 
-export function RouteSection({ trip }: { trip: SavedTripLite }) {
+export function RouteSection({
+  trip,
+  onStartChange,
+}: {
+  trip: SavedTripLite;
+  /** Called when the user picks a new start month (1–12). */
+  onStartChange?: (month: number) => void;
+}) {
   const stops = tripToStops(trip);
-  const start = trip.start || new Date().getMonth() + 1;
+  // `start` is 1-based; 0/unset falls back to the current month for display.
+  const currentMonth = new Date().getMonth() + 1;
+  const start = trip.start || currentMonth;
+  const isFlexible = trip.start === 0;
 
   if (stops.length === 0) {
     return (
@@ -121,12 +132,61 @@ export function RouteSection({ trip }: { trip: SavedTripLite }) {
         </div>
       </div>
 
-      {/* Meta line */}
-      <p className="text-sm text-slate-600">
-        <span className="font-medium text-slate-800">Start:</span>{" "}
-        {MONTH_NAMES_LONG[start - 1]} · {totalMonths} month
-        {totalMonths === 1 ? "" : "s"} total · {fitSummary}
-      </p>
+      {/* Start month + meta */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-slate-800">
+            Start month:
+          </span>
+          {onStartChange ? (
+            <>
+              {MONTH_NAMES.map((label, i) => {
+                const m = i + 1;
+                const isActive = !isFlexible && start === m;
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => onStartChange(m)}
+                    aria-pressed={isActive}
+                    className={`rounded-md border px-2 py-0.5 text-xs font-medium transition ${
+                      isActive
+                        ? "border-amber-300 bg-amber-100 text-amber-800"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => onStartChange(0)}
+                aria-pressed={isFlexible}
+                className={`rounded-md border px-2 py-0.5 text-xs font-medium transition ${
+                  isFlexible
+                    ? "border-amber-300 bg-amber-100 text-amber-800"
+                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
+                }`}
+                title="Let the season planner pick the best month"
+              >
+                Flexible
+              </button>
+            </>
+          ) : (
+            <span className="text-sm text-slate-600">
+              {isFlexible ? "Flexible" : MONTH_NAMES_LONG[start - 1]}
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-slate-600">
+          <span className="font-medium text-slate-800">
+            {isFlexible ? "Flexible start" : `Starting ${MONTH_NAMES_LONG[start - 1]}`}
+          </span>{" "}
+          · {totalMonths} month{totalMonths === 1 ? "" : "s"} total ·{" "}
+          {fitSummary}
+        </p>
+      </div>
 
       {/* Per-leg detail rows */}
       <ul className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white">
