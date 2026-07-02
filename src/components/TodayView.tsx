@@ -278,6 +278,10 @@ export function TodayView({ initialMonth }: { initialMonth: number }) {
       {status !== "after" && (
         <PreDepartureChecklist
           key={legs.map((l) => l.region.id).join("|")}
+          // TodayView reflects the working draft, not a saved trip, so use a
+          // stable synthetic id. (This view is being retired in favor of the
+          // unified /trips/[id] page, which passes the real saved-trip id.)
+          tripId="draft"
           regions={legs.map((l) => l.region)}
         />
       )}
