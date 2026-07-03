@@ -76,6 +76,25 @@ h3 {
   }
 }
 
+/* ───────── Light mode: lift secondary text to readable contrast ─────────
+   The warm off-white background (#F8FAF7) is pale, so the mid-gray text
+   utilities that components lean on (slate-400/500) read as washed out.
+   Step them down one shade so body copy, meta, and labels stay crisp. The
+   already-dark tones (700/800/900) are untouched. Scoped to :root:not(.dark)
+   so the dark-mode remaps below always win regardless of source order. */
+:root:not(.dark) .text-slate-500 {
+  color: #475569; /* slate-600 — was slate-500 (#64748b) */
+}
+:root:not(.dark) .text-slate-400 {
+  color: #64748b; /* slate-500 — was slate-400 (#94a3b8) */
+}
+:root:not(.dark) .text-slate-300 {
+  color: #94a3b8; /* slate-400 — was slate-300 (#cbd5e1), rarely used but kept proportional */
+}
+:root:not(.dark) .text-stone-600 {
+  color: #44403c; /* stone-700 — was stone-600 (#78716c) */
+}
+
 /* ───────── Dark mode: remap the common light-mode utilities ─────────
    Components use literal Tailwind slate/stone colors; these scoped overrides
    flip surfaces, text, and borders to navy-tinted equivalents without editing
