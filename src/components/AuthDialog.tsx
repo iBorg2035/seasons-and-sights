@@ -76,7 +76,7 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
             </p>
             <button
               onClick={onClose}
-              className="mt-5 w-full rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+              className="mt-5 w-full rounded-xl bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
             >
               Done
             </button>
@@ -105,7 +105,7 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
               />
               <input
                 type="password"
@@ -115,13 +115,13 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password (6+ characters)"
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
               />
               {error && <p className="text-sm text-rose-600">{error}</p>}
               <button
                 type="submit"
                 disabled={busy}
-                className="w-full rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+                className="w-full rounded-xl bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900 disabled:opacity-60"
               >
                 {busy ? "…" : mode === "in" ? "Sign in" : "Create account"}
               </button>
@@ -131,7 +131,7 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
                 setMode((m) => (m === "in" ? "up" : "in"));
                 setError(null);
               }}
-              className="mt-4 w-full text-center text-sm text-slate-500 hover:text-amber-600"
+              className="mt-4 w-full text-center text-sm text-slate-500 hover:text-teal-700"
             >
               {mode === "in"
                 ? "Need an account? Sign up"

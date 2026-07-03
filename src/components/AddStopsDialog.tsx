@@ -120,7 +120,7 @@ export function AddStopsDialog({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search a place, country, or region…"
               aria-label="Search destinations"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
             />
           </div>
 
@@ -150,8 +150,8 @@ export function AddStopsDialog({
                             isExisting
                               ? "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300"
                               : isPicked
-                                ? "border-amber-300 bg-amber-100 text-amber-800"
-                                : "border-slate-200 bg-white text-slate-700 hover:border-amber-200 hover:bg-amber-50"
+                                ? "border-teal-400 bg-teal-100 text-teal-800"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-teal-300 hover:bg-teal-50"
                           }`}
                           title={
                             isExisting ? "Already in your trip" : r.country
@@ -186,7 +186,7 @@ export function AddStopsDialog({
                 type="button"
                 onClick={confirm}
                 disabled={picked.size === 0}
-                className="rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-40"
+                className="rounded-lg bg-sky-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-sky-900 disabled:opacity-40"
               >
                 Add {picked.size > 0 ? picked.size : ""}
               </button>

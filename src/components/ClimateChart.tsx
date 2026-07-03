@@ -133,7 +133,7 @@ export function ClimateChart({ lat, lng }: { lat: number; lng: number }) {
 
       <p className="mt-1 text-xs text-slate-400">
         <span className="font-medium text-sky-600">Rainfall (bars)</span> &amp;{" "}
-        <span className="font-medium text-amber-600">avg temp (line)</span> ·
+        <span className="font-medium text-teal-700">avg temp (line)</span> ·
         2019–2023 normals · Open-Meteo
       </p>
     </div>

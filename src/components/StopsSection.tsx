@@ -55,7 +55,7 @@ export function StopsSection({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+            className="rounded-xl bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
           >
             + Add a destination
           </button>
@@ -227,7 +227,7 @@ export function StopsSection({
     <button
       type="button"
       onClick={() => setAdding(true)}
-      className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 py-3 text-sm font-medium text-slate-500 transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
+      className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 py-3 text-sm font-medium text-slate-500 transition hover:border-teal-400 hover:bg-teal-50 hover:text-teal-700"
     >
       + Add destination
     </button>

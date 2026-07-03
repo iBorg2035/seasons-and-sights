@@ -77,7 +77,7 @@ export function VisaByNationality({
           href={visaCheckUrl(country, passport)}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-1 inline-block text-[11px] font-medium text-amber-600 hover:underline"
+          className="mt-1 inline-block text-[11px] font-medium text-teal-700 hover:underline"
         >
           Check official requirements ↗
         </a>

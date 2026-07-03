@@ -89,7 +89,7 @@ export function SeasonStrip({
               >
                 {label}
               </div>
-              <div className="h-3 text-center text-[9px] font-semibold text-amber-600">
+              <div className="h-3 text-center text-[9px] font-semibold text-teal-700">
                 {isNow ? "now" : eventSet?.has(month) ? "🎉" : ""}
               </div>
             </div>
