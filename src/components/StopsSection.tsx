@@ -131,6 +131,7 @@ export function StopsSection({
               <StopDetail
                 region={region}
                 prevStop={i > 0 ? resolved[i - 1]?.region : undefined}
+                stayMonth={leg?.months[0]}
               />
             )}
 

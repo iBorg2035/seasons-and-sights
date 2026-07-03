@@ -49,12 +49,15 @@ describe("<StopDetail>", () => {
     expect(screen.queryByLabelText("Sights")).toBeNull();
   });
 
-  it("renders the fetched detail (sights, festivals, advisory)", async () => {
+  it("renders the fetched detail (sights, festivals, advisory, packing)", async () => {
     mockFetch(async () => new Response(JSON.stringify(okPayload), { status: 200 }));
-    render(<StopDetail region={kyoto} />);
+    render(<StopDetail region={kyoto} stayMonth={4} />);
     await waitFor(() => expect(screen.getByText("Fushimi Inari")).toBeTruthy());
     expect(screen.getByText(/Gion Matsuri/)).toBeTruthy();
     expect(screen.getByText(/Very safe/)).toBeTruthy();
+    // Packing list, tailored to the stay month, built from the fetched sights.
+    expect(screen.getByText(/Pack for April/)).toBeTruthy();
+    expect(screen.getByText(/Reusable water bottle/)).toBeTruthy();
   });
 
   it("serves a re-expand from the session cache without refetching", async () => {

@@ -12,6 +12,7 @@ import { CrowdStrip } from "@/components/CrowdStrip";
 import { SafetyNote } from "@/components/SafetyNote";
 import { ArrivePrepared } from "@/components/ArrivePrepared";
 import { GettingThere } from "@/components/GettingThere";
+import { PackingList } from "@/components/PackingList";
 import { monthOf, MONTH_NAMES } from "@/lib/season";
 import type { Sight, TravelToolkit } from "@/types";
 
@@ -40,10 +41,13 @@ const detailCache = new Map<string, RegionDetail>();
 export function StopDetail({
   region,
   prevStop,
+  stayMonth,
 }: {
   region: SlimRegion;
   /** The previous stop's region (for the getting-there line), or undefined. */
   prevStop?: SlimRegion;
+  /** 1-based month this stay starts (from the planned leg); defaults to now. */
+  stayMonth?: number;
 }) {
   const [detail, setDetail] = useState<RegionDetail | null>(null);
   // A failed fetch must surface (retryable), never leave skeletons spinning —
@@ -209,6 +213,18 @@ export function StopDetail({
           )}
         </div>
       )}
+
+      {/* Packing — tailored by the fetched sights (beach/wildlife/culture) */}
+      {(detail || pending) &&
+        (detail ? (
+          <PackingList
+            compact
+            region={{ ...region, sights: detail.sights }}
+            month={stayMonth ?? now}
+          />
+        ) : (
+          <Skeleton label="Packing" />
+        ))}
 
       {/* Arrive prepared */}
       {detail ? (
