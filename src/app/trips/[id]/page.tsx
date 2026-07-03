@@ -14,5 +14,7 @@ export default async function TripPage({
 }) {
   const { id } = await params;
   const { add } = await searchParams;
-  return <TripView tripId={id} addRegionId={add} />;
+  // key: remount per trip so accordion/scroll-spy state can never carry over
+  // if a direct trip→trip navigation is ever added.
+  return <TripView key={id} tripId={id} addRegionId={add} />;
 }
