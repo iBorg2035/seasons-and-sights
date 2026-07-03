@@ -28,6 +28,10 @@ function Skeleton({ label }: { label: string }) {
   );
 }
 
+// Session-lived cache: collapsing a stop unmounts this component, so without
+// it every re-expand refetches. Curated data — safe to keep for the session.
+const detailCache = new Map<string, RegionDetail>();
+
 /**
  * Everything an expanded stop shows. Client-safe fields come from the slim
  * region; the heavy server-only data (sights, toolkit, events, advisory)
@@ -42,22 +46,37 @@ export function StopDetail({
   prevStop?: SlimRegion;
 }) {
   const [detail, setDetail] = useState<RegionDetail | null>(null);
+  // A failed fetch must surface (retryable), never leave skeletons spinning —
+  // the infinite-skeleton bug class this codebase has shipped before.
+  const [failed, setFailed] = useState(false);
+  const [retryTick, setRetryTick] = useState(0);
   const now = monthOf();
   const destination = `${region.name}, ${region.country}`;
 
   useEffect(() => {
     let active = true;
+    setFailed(false);
+    const cached = detailCache.get(region.id);
+    if (cached) {
+      setDetail(cached);
+      return;
+    }
     setDetail(null);
     fetch(`/api/region-detail?id=${encodeURIComponent(region.id)}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: RegionDetail | null) => {
-        if (active && d) setDetail(d);
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((d: RegionDetail) => {
+        detailCache.set(region.id, d);
+        if (active) setDetail(d);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (active) setFailed(true);
+      });
     return () => {
       active = false;
     };
-  }, [region.id]);
+  }, [region.id, retryTick]);
+
+  const pending = !detail && !failed;
 
   return (
     <div className="space-y-5 border-t border-slate-100 bg-slate-50/40 px-4 py-4 text-sm text-slate-700">
@@ -83,10 +102,23 @@ export function StopDetail({
         )}
         {detail ? (
           <SafetyNote advisory={detail.advisory} />
-        ) : (
+        ) : pending ? (
           <Skeleton label="Safety" />
-        )}
+        ) : null}
       </div>
+
+      {failed && (
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">
+          Couldn&apos;t load the full destination details.{" "}
+          <button
+            type="button"
+            onClick={() => setRetryTick((n) => n + 1)}
+            className="font-semibold underline"
+          >
+            Retry
+          </button>
+        </p>
+      )}
 
       {/* Getting there */}
       <GettingThere
@@ -130,56 +162,60 @@ export function StopDetail({
       </div>
 
       {/* Sights */}
-      <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-          See
-        </h4>
-        {detail ? (
-          detail.sights.length > 0 ? (
-            <SightsList sights={detail.sights} />
+      {(detail || pending) && (
+        <div>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            See
+          </h4>
+          {detail ? (
+            detail.sights.length > 0 ? (
+              <SightsList sights={detail.sights} />
+            ) : (
+              <p className="text-slate-500">
+                No curated sights for this destination yet.
+              </p>
+            )
           ) : (
-            <p className="text-slate-500">
-              No curated sights for this destination yet.
-            </p>
-          )
-        ) : (
-          <Skeleton label="Sights" />
-        )}
-      </div>
+            <Skeleton label="Sights" />
+          )}
+        </div>
+      )}
 
       {/* Festivals */}
-      <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Festivals
-        </h4>
-        {detail ? (
-          detail.events.length > 0 ? (
-            <ul className="space-y-1">
-              {detail.events.map((e) => (
-                <li key={e.name}>
-                  <span className="font-medium">{e.name}</span>{" "}
-                  <span className="text-slate-400">
-                    ({MONTH_NAMES[e.month - 1]})
-                  </span>
-                  <br />
-                  <span className="text-slate-500">{e.blurb}</span>
-                </li>
-              ))}
-            </ul>
+      {(detail || pending) && (
+        <div>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Festivals
+          </h4>
+          {detail ? (
+            detail.events.length > 0 ? (
+              <ul className="space-y-1">
+                {detail.events.map((e) => (
+                  <li key={e.name}>
+                    <span className="font-medium">{e.name}</span>{" "}
+                    <span className="text-slate-400">
+                      ({MONTH_NAMES[e.month - 1]})
+                    </span>
+                    <br />
+                    <span className="text-slate-500">{e.blurb}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-slate-500">No major festivals listed.</p>
+            )
           ) : (
-            <p className="text-slate-500">No major festivals listed.</p>
-          )
-        ) : (
-          <Skeleton label="Festivals" />
-        )}
-      </div>
+            <Skeleton label="Festivals" />
+          )}
+        </div>
+      )}
 
       {/* Arrive prepared */}
       {detail ? (
         <ArrivePrepared toolkit={detail.toolkit} plug={region.info?.plugs} />
-      ) : (
+      ) : pending ? (
         <Skeleton label="Arrive prepared" />
-      )}
+      ) : null}
 
       <Link
         href={`/regions/${region.id}`}
