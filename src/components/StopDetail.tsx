@@ -13,13 +13,18 @@ import { SafetyNote } from "@/components/SafetyNote";
 import { ArrivePrepared } from "@/components/ArrivePrepared";
 import { GettingThere } from "@/components/GettingThere";
 import { PackingList } from "@/components/PackingList";
-import { monthOf, MONTH_NAMES } from "@/lib/season";
-import type { Sight, TravelToolkit } from "@/types";
+import { DestinationImage } from "@/components/DestinationImage";
+import { RegionMap } from "@/components/RegionMap";
+import { TravelEssentials } from "@/components/TravelEssentials";
+import { TravelToolkit } from "@/components/TravelToolkit";
+import { BookingCard } from "@/components/BookingCard";
+import { monthOf, MONTH_NAMES, MONTH_NAMES_LONG, datesForMonth } from "@/lib/season";
+import type { Sight, TravelToolkit as Toolkit } from "@/types";
 
 interface RegionDetail {
   sights: Sight[];
   events: { name: string; month: number; blurb: string }[];
-  toolkit: TravelToolkit;
+  toolkit: Toolkit;
   advisory: { level: "low" | "moderate" | "high"; text: string };
 }
 
@@ -84,6 +89,18 @@ export function StopDetail({
 
   return (
     <div className="space-y-5 border-t border-slate-100 bg-slate-50/40 px-4 py-4 text-sm text-slate-700">
+      {/* Hero image */}
+      {region.photo && (
+        <div className="overflow-hidden rounded-xl">
+          <DestinationImage
+            src={region.photo}
+            alt={`${region.name}, ${region.country}`}
+            className="h-40 w-full"
+            sizes="(max-width: 640px) 100vw, 600px"
+          />
+        </div>
+      )}
+
       {/* Quick facts */}
       <div className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
         {region.info?.visa && (
@@ -185,6 +202,22 @@ export function StopDetail({
         </div>
       )}
 
+      {/* Map with sight pins (needs the fetched sights) */}
+      {(detail || pending) && (
+        <div>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Map
+          </h4>
+          {detail ? (
+            <div className="h-72 w-full overflow-hidden rounded-xl border border-slate-200">
+              <RegionMap region={{ ...region, sights: detail.sights }} />
+            </div>
+          ) : (
+            <Skeleton label="Map" />
+          )}
+        </div>
+      )}
+
       {/* Festivals */}
       {(detail || pending) && (
         <div>
@@ -226,12 +259,42 @@ export function StopDetail({
           <Skeleton label="Packing" />
         ))}
 
-      {/* Arrive prepared */}
+      {/* Arrive prepared (compact summary) */}
       {detail ? (
         <ArrivePrepared toolkit={detail.toolkit} plug={region.info?.plugs} />
       ) : pending ? (
         <Skeleton label="Arrive prepared" />
       ) : null}
+
+      {/* Full know-before-you-go essentials (passport-aware visa, currency,
+          language, plugs, getting-there, health) — same block as the region
+          page. info is on SlimRegion, so this renders immediately. */}
+      {region.info && (
+        <TravelEssentials info={region.info} country={region.country} />
+      )}
+
+      {/* Full travel toolkit (phrases, emergency, tipping, water + the live
+          currency converter) — same block as the region page. */}
+      {detail?.toolkit && (
+        <TravelToolkit
+          toolkit={detail.toolkit}
+          currency={region.info?.currency}
+        />
+      )}
+
+      {/* Season-aware Booking link for this stay's month */}
+      {(() => {
+        const m = stayMonth ?? now;
+        const { checkin, checkout } = datesForMonth(m);
+        return (
+          <BookingCard
+            region={region}
+            checkin={checkin}
+            checkout={checkout}
+            monthLabel={MONTH_NAMES_LONG[m - 1]}
+          />
+        );
+      })()}
 
       <Link
         href={`/regions/${region.id}`}
