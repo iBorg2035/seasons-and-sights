@@ -1,7 +1,7 @@
 import { SharedTripView } from "@/components/SharedTripView";
 
 export const metadata = {
-  title: "Shared trip — Seasons & Sights",
+  title: "Shared trip",
   description: "A trip shared from Seasons & Sights — view it and make it yours.",
 };
 

@@ -11,3 +11,6 @@ next-env.d.ts
 # Local tooling / deploy
 .claude/
 /.vercel
+
+# Visual companion mockups
+.superpowers/

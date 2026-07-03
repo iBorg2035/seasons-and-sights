@@ -45,6 +45,7 @@ export function WhenToGoView() {
             <button
               key={label}
               onClick={() => setMonth(value)}
+              aria-pressed={active}
               className={`rounded-lg py-2 text-sm font-medium transition ${
                 active
                   ? "bg-slate-900 text-white"

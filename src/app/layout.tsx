@@ -2,12 +2,14 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Fraunces, Inter } from "next/font/google";
 import { SiteNav } from "@/components/SiteNav";
+import { MigrationRunner } from "@/components/MigrationRunner";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { ErrorReporter } from "@/components/ErrorReporter";
 import { AuthProvider } from "@/lib/contexts/auth-context";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { REGIONS } from "@/data/regions";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -29,7 +31,6 @@ const inter = Inter({
   variable: "--font-body",
 });
 
-const SITE_URL = "https://seasons-and-sights.vercel.app";
 const COUNT = REGIONS.length;
 const ogDesc = `Dry/wet seasons, crowds, festivals, sights, and a season-optimizing trip planner across ${COUNT} destinations.`;
 
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
     template: "%s · Seasons & Sights",
   },
   description:
-    "Know the dry and wet seasons (and the crowds) for destinations across Asia, South America, Europe, and Africa — find local sights and book your stay at the right time of year.",
+    "Know the dry and wet seasons (and the crowds) for destinations across Asia, the Americas, Europe, Africa, and Oceania — find local sights and book your stay at the right time of year.",
   openGraph: {
     title: "Seasons & Sights — travel in the right season",
     description: ogDesc,
@@ -77,6 +78,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <AuthProvider>
+        <MigrationRunner />
         <header className="sticky top-0 z-[1000] border-b border-[var(--hairline)] bg-[var(--chrome)] backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
             <Link

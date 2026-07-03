@@ -101,6 +101,7 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
                 type="email"
                 required
                 autoFocus
+                aria-label="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -110,6 +111,7 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
                 type="password"
                 required
                 minLength={6}
+                aria-label="Password (6+ characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password (6+ characters)"

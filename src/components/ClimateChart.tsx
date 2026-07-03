@@ -57,7 +57,12 @@ export function ClimateChart({ lat, lng }: { lat: number; lng: number }) {
 
   return (
     <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full"
+        role="img"
+        aria-label="Monthly average rainfall (bars) and temperature (line)"
+      >
         {/* Axis labels */}
         <text x={padL - 4} y={padT + 4} fontSize="9" fill="#0ea5e9" textAnchor="end">
           {precipMax}

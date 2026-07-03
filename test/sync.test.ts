@@ -31,6 +31,14 @@ describe("mergeTrips", () => {
     expect(m.toPush.map((x) => x.id)).toEqual(["2"]);
   });
 
+  it("keeps the local copy on a timestamp tie (incl. degenerate updatedAt: 0)", () => {
+    // Regression: strict `>` used to drop the local trip when both sides had
+    // the same timestamp (e.g. a legacy row resolving to 0). Local wins ties.
+    const m = mergeTrips([t("2", "local", 0)], [t("2", "remote", 0)]);
+    expect(m.merged.find((x) => x.id === "2")!.name).toBe("local");
+    expect(m.toPush.map((x) => x.id)).toEqual(["2"]);
+  });
+
   it("pushes all local trips when remote is empty", () => {
     const { merged, toPush } = mergeTrips([t("1", "A", 1)], []);
     expect(toPush).toHaveLength(1);

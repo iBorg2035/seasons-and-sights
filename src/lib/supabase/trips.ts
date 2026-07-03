@@ -1,4 +1,5 @@
 import { getSupabase } from "@/lib/supabase/client";
+import { recordSyncResult } from "@/lib/sync-status";
 
 export interface SavedTrip {
   id: string;
@@ -26,22 +27,43 @@ function fromRow(row: TripRow): SavedTrip {
   };
 }
 
+/**
+ * Record one remote trips-table outcome (the SyncBadge reads it) and normalize
+ * to a boolean. Every trips-table call in this file funnels through here, so
+ * error surfacing can't be added to one function and missed on its sibling —
+ * which is exactly how deleteRemoteTrip shipped silent while upsert got fixed.
+ */
+function reportSync(
+  kind: "read" | "write",
+  error: { message: string } | null
+): boolean {
+  if (error) {
+    recordSyncResult({ kind, ok: false, message: error.message });
+    console.warn(`[trips] cloud ${kind} failed:`, error.message);
+    return false;
+  }
+  recordSyncResult({ kind, ok: true });
+  return true;
+}
+
 /** All of the signed-in user's trips (RLS scopes this to them). */
 export async function fetchRemoteTrips(): Promise<SavedTrip[]> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return [];
   const { data, error } = await sb
     .from("trips")
     .select("id, name, data, updated_at")
     .order("updated_at", { ascending: false });
-  if (error || !data) return [];
+  if (!reportSync("read", error) || !data) return [];
   return (data as TripRow[]).map(fromRow);
 }
 
-export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise<void> {
-  const sb = getSupabase();
-  if (!sb) return;
-  await sb.from("trips").upsert(
+/** Persist a trip to the signed-in user's cloud. Returns true only if it
+ *  actually landed — callers use this to confirm a save instead of assuming it. */
+export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise<boolean> {
+  const sb = await getSupabase();
+  if (!sb) return false;
+  const { error } = await sb.from("trips").upsert(
     {
       id: trip.id,
       user_id: userId,
@@ -52,12 +74,20 @@ export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise
     },
     { onConflict: "user_id,id" }
   );
+  return reportSync("write", error);
 }
 
-export async function deleteRemoteTrip(id: string): Promise<void> {
-  const sb = getSupabase();
-  if (!sb) return;
-  await sb.from("trips").delete().eq("id", id);
+/**
+ * Delete a trip row from the cloud. Returns whether the delete landed;
+ * failures surface on the sync badge. There are no delete tombstones, so a
+ * failed remote delete means the row can reappear on the next sign-in merge —
+ * surfacing the failure is what lets the user know to retry.
+ */
+export async function deleteRemoteTrip(id: string): Promise<boolean> {
+  const sb = await getSupabase();
+  if (!sb) return false;
+  const { error } = await sb.from("trips").delete().eq("id", id);
+  return reportSync("write", error);
 }
 
 /**
@@ -69,7 +99,7 @@ export async function publishShare(trip: {
   start: number;
   stops: [string, number][];
 }): Promise<string | null> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return null;
   const token = crypto.randomUUID();
   const { error } = await sb.from("shared_trips").insert({
@@ -82,7 +112,7 @@ export async function publishShare(trip: {
 
 /** Delete the signed-in user's account and all their trips (cascades). */
 export async function deleteAccount(): Promise<boolean> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return false;
   const { error } = await sb.rpc("delete_account");
   return !error;
@@ -92,7 +122,7 @@ export async function deleteAccount(): Promise<boolean> {
 export async function fetchSharedTrip(
   token: string
 ): Promise<{ name: string; start: number; stops: [string, number][] } | null> {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return null;
   const { data, error } = await sb.rpc("get_shared_trip", { p_token: token });
   const row = (data as { name: string; data: TripRow["data"] }[] | null)?.[0];
@@ -115,7 +145,11 @@ export function mergeTrips(
   const toPush: SavedTrip[] = [];
   for (const l of local) {
     const r = byId.get(l.id);
-    if (!r || (l.updatedAt ?? 0) > (r.updatedAt ?? 0)) {
+    // `>=` (not `>`): on a timestamp tie, keep the local copy and push it. This
+    // matters for the degenerate updatedAt: 0 case (a malformed/legacy row),
+    // where strict `>` would silently drop the local trip from the merge and
+    // the push list. Local is also the user's freshest intent on a true tie.
+    if (!r || (l.updatedAt ?? 0) >= (r.updatedAt ?? 0)) {
       byId.set(l.id, l);
       toPush.push(l);
     }

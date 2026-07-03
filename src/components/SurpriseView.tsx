@@ -59,6 +59,7 @@ export function SurpriseView({ initialMonth }: { initialMonth: number }) {
                 <button
                   key={label}
                   onClick={() => setMonth(value)}
+                  aria-pressed={value === month}
                   className={`rounded-lg py-1.5 text-sm font-medium transition ${
                     value === month
                       ? "bg-slate-900 text-white"
@@ -78,6 +79,7 @@ export function SurpriseView({ initialMonth }: { initialMonth: number }) {
             <button
               key={c}
               onClick={() => setContinent(c)}
+              aria-pressed={continent === c}
               className={`rounded-full border px-3 py-1 text-sm transition ${
                 continent === c
                   ? "border-slate-900 bg-slate-900 text-white"

@@ -4,14 +4,16 @@ import { REGIONS } from "@/data/regions";
 const SITE = "https://seasons-and-sights.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  // /planner and /today are legacy client-side redirects into /trips, and
+  // /trips/[id] pages are private — none of those belong in the sitemap.
   const pages = [
     "",
     "/when-to-go",
-    "/planner",
+    "/trips",
     "/compare",
     "/festivals",
     "/surprise",
-    "/today",
+    "/calendar",
     "/about",
     "/privacy",
     "/terms",

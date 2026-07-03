@@ -25,7 +25,12 @@ export function InviteEditorDialog({
   const [editors, setEditors] = useState<TripEditor[]>([]);
 
   useEffect(() => {
-    listEditors(tripId, ownerId).then(setEditors);
+    listEditors(tripId, ownerId)
+      .then(setEditors)
+      // Surface a load failure instead of silently showing "no editors yet".
+      .catch(() =>
+        setMsg({ text: "Couldn't load the editor list.", ok: false })
+      );
   }, [tripId, ownerId]);
 
   useEffect(() => {
@@ -55,7 +60,11 @@ export function InviteEditorDialog({
     } else {
       setMsg({ text: `Invited ${email}`, ok: true });
       setEmail("");
-      listEditors(tripId, ownerId).then(setEditors);
+      // The invite already succeeded — a failed list refresh shouldn't
+      // overwrite the success message, so just leave the stale list.
+      listEditors(tripId, ownerId)
+        .then(setEditors)
+        .catch(() => {});
     }
     setBusy(false);
   }
@@ -92,6 +101,7 @@ export function InviteEditorDialog({
             <input
               type="email"
               required
+              aria-label="Partner email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="partner@example.com"
@@ -125,7 +135,7 @@ export function InviteEditorDialog({
                     key={ed.editorId}
                     className="flex items-center justify-between text-sm text-slate-700"
                   >
-                    <span className="truncate">{ed.editorId}</span>
+                    <span className="truncate">{ed.editorEmail ?? ed.editorId}</span>
                     <button
                       onClick={async () => {
                         await removeEditor(tripId, ownerId, ed.editorId);

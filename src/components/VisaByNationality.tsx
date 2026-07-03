@@ -35,8 +35,16 @@ export function VisaByNationality({
 
   function choose(code: Passport) {
     const next = passport === code ? null : code;
-    if (next) localStorage.setItem(KEY, next);
-    else localStorage.removeItem(KEY);
+    // Only reflect the change in state and broadcast it once the write has
+    // stuck. A blocked/quota-exceeded localStorage (Safari private mode,
+    // disabled site data) must not leave the chip visually toggled while the
+    // value isn't persisted — see saved-trips.ts for the same guard.
+    try {
+      if (next) localStorage.setItem(KEY, next);
+      else localStorage.removeItem(KEY);
+    } catch {
+      return;
+    }
     setPassport(next);
     window.dispatchEvent(new Event(PASSPORT_EVENT));
   }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildChecklistItems } from "@/lib/checklist";
+import { buildChecklistItems, checklistStorageKey } from "@/lib/checklist";
 import type { Region } from "@/types";
 
 // Minimal stubs — buildChecklistItems only reads country + info fields.
@@ -70,5 +70,18 @@ describe("buildChecklistItems", () => {
     const health = items.find((i) => i.key === "health")!;
     expect(health.label).toMatch(/routine/i);
     expect(items.some((i) => i.key === "visas")).toBe(false);
+  });
+});
+
+describe("checklistStorageKey (per-trip)", () => {
+  it("keys by trip id, not destination set", () => {
+    // Two trips with identical stops must NOT share checklist progress.
+    expect(checklistStorageKey("trip-a")).not.toBe(
+      checklistStorageKey("trip-b")
+    );
+  });
+
+  it("namespaces under the checklist prefix", () => {
+    expect(checklistStorageKey("trip-a")).toBe("seasons-checklist:trip-a");
   });
 });

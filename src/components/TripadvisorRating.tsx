@@ -33,8 +33,13 @@ export function TripadvisorRating({ destination }: { destination: string }) {
   if (!data) return null;
 
   const stars = data.rating
-    ? "★".repeat(Math.round(data.rating)) +
-      "☆".repeat(5 - Math.round(data.rating))
+    ? (() => {
+        // Clamp to 0–5 so an out-of-range value can't make the empty-star
+        // count negative (which would silently drop the ☆ padding) or print
+        // more than five filled stars.
+        const r = Math.max(0, Math.min(5, Math.round(data.rating)));
+        return "★".repeat(r) + "☆".repeat(5 - r);
+      })()
     : null;
 
   return (
@@ -50,7 +55,9 @@ export function TripadvisorRating({ destination }: { destination: string }) {
         )}
       </div>
       <div className="text-sm text-slate-600">
-        {data.reviewCount?.toLocaleString()} reviews on Tripadvisor
+        {data.reviewCount != null
+          ? `${data.reviewCount.toLocaleString()} reviews on Tripadvisor`
+          : "Reviews on Tripadvisor"}
         {data.ranking && (
           <span className="ml-1 text-xs text-slate-400">· {data.ranking}</span>
         )}

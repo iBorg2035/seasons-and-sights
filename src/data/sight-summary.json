@@ -1,0 +1,550 @@
+{
+  "thailand-chiangmai": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "wildlife"
+    ]
+  },
+  "thailand-bangkok": {
+    "count": 4,
+    "types": [
+      "culture",
+      "city"
+    ]
+  },
+  "thailand-krabi": {
+    "count": 4,
+    "types": [
+      "beach",
+      "nature"
+    ]
+  },
+  "thailand-kohsamui": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "beach"
+    ]
+  },
+  "indonesia-bali": {
+    "count": 4,
+    "types": [
+      "nature",
+      "culture",
+      "wildlife"
+    ]
+  },
+  "vietnam-hoian": {
+    "count": 4,
+    "types": [
+      "culture",
+      "beach",
+      "nature"
+    ]
+  },
+  "vietnam-hanoi": {
+    "count": 4,
+    "types": [
+      "city",
+      "nature",
+      "culture"
+    ]
+  },
+  "vietnam-hcmc": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "city"
+    ]
+  },
+  "cambodia-siemreap": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature"
+    ]
+  },
+  "philippines-palawan": {
+    "count": 4,
+    "types": [
+      "nature",
+      "beach"
+    ]
+  },
+  "peru-cusco": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature"
+    ]
+  },
+  "bolivia-uyuni": {
+    "count": 4,
+    "types": [
+      "nature",
+      "culture",
+      "wildlife"
+    ]
+  },
+  "patagonia-elcalafate": {
+    "count": 4,
+    "types": [
+      "nature"
+    ]
+  },
+  "brazil-rio": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "beach"
+    ]
+  },
+  "brazil-amazon-manaus": {
+    "count": 4,
+    "types": [
+      "nature",
+      "culture",
+      "wildlife"
+    ]
+  },
+  "colombia-cartagena": {
+    "count": 4,
+    "types": [
+      "culture",
+      "beach",
+      "city"
+    ]
+  },
+  "chile-atacama": {
+    "count": 4,
+    "types": [
+      "nature"
+    ]
+  },
+  "ecuador-galapagos": {
+    "count": 4,
+    "types": [
+      "wildlife",
+      "beach",
+      "nature"
+    ]
+  },
+  "albania-riviera": {
+    "count": 4,
+    "types": [
+      "beach",
+      "culture",
+      "nature"
+    ]
+  },
+  "montenegro-kotor": {
+    "count": 4,
+    "types": [
+      "culture",
+      "beach",
+      "nature"
+    ]
+  },
+  "turkey-cappadocia": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature"
+    ]
+  },
+  "greece-santorini": {
+    "count": 4,
+    "types": [
+      "city",
+      "culture",
+      "beach"
+    ]
+  },
+  "mexico-yucatan": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "beach"
+    ]
+  },
+  "india-rajasthan": {
+    "count": 4,
+    "types": [
+      "culture",
+      "wildlife"
+    ]
+  },
+  "sri-lanka-south": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "wildlife"
+    ]
+  },
+  "nepal-kathmandu": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "wildlife"
+    ]
+  },
+  "japan-kyoto": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "wildlife"
+    ]
+  },
+  "japan-tokyo": {
+    "count": 4,
+    "types": [
+      "culture",
+      "city",
+      "nature"
+    ]
+  },
+  "japan-hokkaido": {
+    "count": 4,
+    "types": [
+      "city",
+      "nature",
+      "wildlife"
+    ]
+  },
+  "japan-okinawa": {
+    "count": 4,
+    "types": [
+      "culture",
+      "wildlife",
+      "beach"
+    ]
+  },
+  "morocco-marrakech": {
+    "count": 4,
+    "types": [
+      "city",
+      "nature",
+      "culture"
+    ]
+  },
+  "tanzania-zanzibar": {
+    "count": 4,
+    "types": [
+      "culture",
+      "beach",
+      "wildlife",
+      "nature"
+    ]
+  },
+  "south-africa-capetown": {
+    "count": 4,
+    "types": [
+      "nature",
+      "culture",
+      "wildlife"
+    ]
+  },
+  "costa-rica-arenal": {
+    "count": 4,
+    "types": [
+      "nature",
+      "wildlife"
+    ]
+  },
+  "egypt-cairo": {
+    "count": 4,
+    "types": [
+      "culture"
+    ]
+  },
+  "india-agra": {
+    "count": 4,
+    "types": [
+      "culture"
+    ]
+  },
+  "france-paris": {
+    "count": 4,
+    "types": [
+      "city",
+      "culture"
+    ]
+  },
+  "italy-rome": {
+    "count": 4,
+    "types": [
+      "culture"
+    ]
+  },
+  "australia-sydney": {
+    "count": 4,
+    "types": [
+      "culture",
+      "city",
+      "beach",
+      "nature"
+    ]
+  },
+  "newzealand-queenstown": {
+    "count": 4,
+    "types": [
+      "nature",
+      "city"
+    ]
+  },
+  "philippines-manila": {
+    "count": 4,
+    "types": [
+      "culture",
+      "city"
+    ]
+  },
+  "philippines-cebu": {
+    "count": 4,
+    "types": [
+      "nature",
+      "wildlife",
+      "culture"
+    ]
+  },
+  "philippines-boracay": {
+    "count": 4,
+    "types": [
+      "beach",
+      "nature"
+    ]
+  },
+  "philippines-bohol": {
+    "count": 4,
+    "types": [
+      "nature",
+      "wildlife",
+      "beach"
+    ]
+  },
+  "philippines-siargao": {
+    "count": 4,
+    "types": [
+      "nature",
+      "beach"
+    ]
+  },
+  "philippines-banaue": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature"
+    ]
+  },
+  "philippines-dumaguete": {
+    "count": 4,
+    "types": [
+      "wildlife",
+      "city",
+      "nature"
+    ]
+  },
+  "malaysia-kualalumpur": {
+    "count": 4,
+    "types": [
+      "city",
+      "culture"
+    ]
+  },
+  "malaysia-penang": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "city"
+    ]
+  },
+  "malaysia-langkawi": {
+    "count": 4,
+    "types": [
+      "nature",
+      "beach"
+    ]
+  },
+  "malaysia-malacca": {
+    "count": 4,
+    "types": [
+      "culture",
+      "city",
+      "nature"
+    ]
+  },
+  "malaysia-sabah": {
+    "count": 4,
+    "types": [
+      "nature",
+      "wildlife",
+      "beach"
+    ]
+  },
+  "philippines-coron": {
+    "count": 4,
+    "types": [
+      "nature",
+      "wildlife"
+    ]
+  },
+  "philippines-vigan": {
+    "count": 4,
+    "types": [
+      "culture",
+      "city"
+    ]
+  },
+  "philippines-batanes": {
+    "count": 4,
+    "types": [
+      "nature",
+      "culture"
+    ]
+  },
+  "thailand-huahin": {
+    "count": 4,
+    "types": [
+      "beach",
+      "culture",
+      "nature",
+      "city"
+    ]
+  },
+  "mexico-playadelcarmen": {
+    "count": 4,
+    "types": [
+      "city",
+      "wildlife",
+      "nature",
+      "culture"
+    ]
+  },
+  "thailand-kohphangan": {
+    "count": 4,
+    "types": [
+      "beach",
+      "nature",
+      "wildlife"
+    ]
+  },
+  "thailand-kohtao": {
+    "count": 4,
+    "types": [
+      "beach",
+      "wildlife",
+      "nature"
+    ]
+  },
+  "thailand-phuket": {
+    "count": 4,
+    "types": [
+      "beach",
+      "culture",
+      "nature"
+    ]
+  },
+  "indonesia-gili": {
+    "count": 4,
+    "types": [
+      "beach",
+      "wildlife",
+      "nature"
+    ]
+  },
+  "cambodia-kohrong": {
+    "count": 4,
+    "types": [
+      "beach",
+      "nature"
+    ]
+  },
+  "vietnam-phuquoc": {
+    "count": 4,
+    "types": [
+      "beach",
+      "nature",
+      "city"
+    ]
+  },
+  "india-goa": {
+    "count": 4,
+    "types": [
+      "beach",
+      "culture",
+      "nature"
+    ]
+  },
+  "maldives-atolls": {
+    "count": 4,
+    "types": [
+      "city",
+      "wildlife",
+      "culture"
+    ]
+  },
+  "indonesia-komodo": {
+    "count": 4,
+    "types": [
+      "wildlife",
+      "nature",
+      "beach"
+    ]
+  },
+  "indonesia-nusapenida": {
+    "count": 4,
+    "types": [
+      "nature",
+      "beach"
+    ]
+  },
+  "frenchpolynesia-borabora": {
+    "count": 4,
+    "types": [
+      "nature",
+      "wildlife",
+      "beach",
+      "city"
+    ]
+  },
+  "usa-maui": {
+    "count": 4,
+    "types": [
+      "nature",
+      "beach",
+      "wildlife"
+    ]
+  },
+  "puerto-rico-sanjuan": {
+    "count": 4,
+    "types": [
+      "culture",
+      "nature",
+      "beach"
+    ]
+  },
+  "brazil-florianopolis": {
+    "count": 4,
+    "types": [
+      "beach",
+      "culture"
+    ]
+  },
+  "brazil-curitiba": {
+    "count": 4,
+    "types": [
+      "nature",
+      "culture"
+    ]
+  }
+}

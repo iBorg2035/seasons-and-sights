@@ -61,6 +61,7 @@ export function CompareView({ initialMonth }: { initialMonth: number }) {
                         key={r.id}
                         onClick={() => toggle(r.id)}
                         disabled={full}
+                        aria-pressed={on}
                         className={`rounded-full border px-3 py-1 text-sm transition ${
                           on
                             ? "border-slate-900 bg-slate-900 text-white"
@@ -90,6 +91,7 @@ export function CompareView({ initialMonth }: { initialMonth: number }) {
                 <button
                   key={label}
                   onClick={() => setMonth(value)}
+                  aria-pressed={value === month}
                   className={`rounded-lg py-1.5 text-sm font-medium transition ${
                     value === month
                       ? "bg-slate-900 text-white"

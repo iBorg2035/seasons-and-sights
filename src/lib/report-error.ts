@@ -1,7 +1,7 @@
 // Lightweight, dependency-free error reporting. Sends events to Sentry's
-// classic store endpoint only when NEXT_PUBLIC_SENTRY_DSN is set — otherwise a
-// no-op. Keeps the app deploy-safe with zero added dependencies; set the DSN to
-// turn monitoring on.
+// modern envelope endpoint only when NEXT_PUBLIC_SENTRY_DSN is set — otherwise
+// a no-op. Keeps the app deploy-safe with zero added dependencies; set the DSN
+// to turn monitoring on.
 
 const DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
 

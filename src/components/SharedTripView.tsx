@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { fetchSharedTrip } from "@/lib/supabase/trips";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { getSlimRegion } from "@/data/regions-slim";
 import { planItinerary, legDateRanges, climateForMonth } from "@/lib/season";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { DestinationImage } from "@/components/DestinationImage";
+import { createTrip, updateTrip } from "@/lib/saved-trips";
+import { setActiveTripId } from "@/lib/active-trip";
 
 function fmtDate(d: Date): string {
   return d.toLocaleDateString("en-US", {
@@ -20,15 +23,34 @@ function fmtDate(d: Date): string {
 type Loaded = { name: string; start: number; stops: [string, number][] };
 
 export function SharedTripView({ token }: { token: string }) {
-  const [state, setState] = useState<"loading" | "missing" | Loaded>("loading");
+  const router = useRouter();
+  const [state, setState] = useState<
+    "loading" | "missing" | "error" | Loaded
+  >("loading");
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setState("missing");
       return;
     }
-    fetchSharedTrip(token).then((t) => setState(t ?? "missing"));
+    fetchSharedTrip(token)
+      .then((t) => setState(t ?? "missing"))
+      // A rejected fetch (offline, Supabase down) is not the same as a bad
+      // link — show a retryable error instead of a forever-loading skeleton.
+      .catch(() => setState("error"));
   }, [token]);
+
+  /** Import the shared trip as a new trip in this user's list and open it. */
+  function importToMyTrips() {
+    if (state === "loading" || state === "missing" || state === "error") return;
+    const trip = createTrip(state.name);
+    updateTrip(trip.id, (t) => {
+      t.start = state.start;
+      t.stops = state.stops;
+    });
+    setActiveTripId(trip.id);
+    router.push(`/trips/${trip.id}`);
+  }
 
   if (state === "loading") {
     return <div className="h-48 animate-pulse rounded-2xl bg-slate-100" />;
@@ -42,11 +64,29 @@ export function SharedTripView({ token }: { token: string }) {
           removed.
         </p>
         <Link
-          href="/planner"
+          href="/trips"
           className="mt-4 inline-block rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
         >
           Plan your own trip →
         </Link>
+      </div>
+    );
+  }
+
+  if (state === "error") {
+    return (
+      <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center">
+        <p className="text-slate-600">
+          Couldn&apos;t load this shared trip — check your connection and try
+          again.
+        </p>
+        <button
+          type="button"
+          onClick={() => location.reload()}
+          className="mt-4 inline-block rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -61,10 +101,6 @@ export function SharedTripView({ token }: { token: string }) {
   const legs = planItinerary(chosen, state.start);
   const ranges = legDateRanges(state.start, legs);
 
-  const importHref = `/planner?start=${state.start}&stops=${state.stops
-    .map(([id, d]) => `${id}:${d}`)
-    .join(",")}`;
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -76,12 +112,13 @@ export function SharedTripView({ token }: { token: string }) {
             {state.name}
           </h1>
         </div>
-        <Link
-          href={importHref}
+        <button
+          type="button"
+          onClick={importToMyTrips}
           className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
         >
-          Open in planner →
-        </Link>
+          Copy to my trips →
+        </button>
       </div>
 
       <ol className="space-y-3">
@@ -124,9 +161,9 @@ export function SharedTripView({ token }: { token: string }) {
       </ol>
 
       <p className="text-sm text-slate-500">
-        Want your own? Build a season-optimized trip on the{" "}
-        <Link href="/planner" className="font-medium text-amber-600 hover:underline">
-          planner
+        Want your own?{" "}
+        <Link href="/trips" className="font-medium text-amber-600 hover:underline">
+          Build a season-optimized trip
         </Link>
         .
       </p>
