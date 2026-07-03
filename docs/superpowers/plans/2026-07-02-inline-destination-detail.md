@@ -1,5 +1,14 @@
 # Inline Destination Detail Implementation Plan
 
+> **Status: ✅ IMPLEMENTED (2026-07-02)** — all five tasks shipped, including the
+> packing-list phase the Notes deferred. Deviations from the drafts below:
+> advisories keyed to the dataset's exact country strings (Turkey / United
+> States / Argentina & Chile) with a full-coverage test; festival months render
+> as names; StopDetail gained a failure state + retry and a session cache
+> (the draft's silent catch was the known infinite-skeleton bug class); the
+> packing list is month-aware via the leg's stay month. Only "region page
+> adopts the route" remains deferred.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Pull the destination page's rich detail inline into trip-page stop accordions (via a new lazy `/api/region-detail` route), so the trip page is self-sufficient — plus add curated safety advisories, arrive-prepared cards, and getting-there transport lines.
