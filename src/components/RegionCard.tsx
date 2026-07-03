@@ -47,7 +47,7 @@ export function RegionCard({
 
       <div className="relative flex flex-col gap-3 p-5">
         <div>
-          <h3 className="font-semibold text-slate-900 group-hover:text-amber-600">
+          <h3 className="font-semibold text-slate-900 group-hover:text-teal-700">
             {region.name}
           </h3>
           <p className="text-sm text-slate-500">

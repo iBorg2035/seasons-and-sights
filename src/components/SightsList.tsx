@@ -26,7 +26,7 @@ export function SightsList({ sights }: { sights: Sight[] }) {
                   href={sight.wiki}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs font-medium text-amber-600 hover:underline"
+                  className="text-xs font-medium text-teal-700 hover:underline"
                 >
                   Learn more ↗
                 </a>

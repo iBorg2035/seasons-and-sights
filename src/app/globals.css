@@ -2,22 +2,28 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ───────── Modern Explorer palette ─────────
+   Deep Ocean Blue (primary) + Tropical Teal (links/active) + Sunset Coral
+   (key actions), on warm-neutral surfaces. 70% neutral / 20% blue+teal /
+   10% coral+status. Season-data colors (dry=amber, wet=sky, shoulder=emerald)
+   are defined in SEASON_META and stay fixed — they carry meaning. */
+
 :root {
-  --background: #f7f1e6; /* sand */
-  --foreground: #1c1917; /* ink */
-  --glow-1: rgba(249, 115, 22, 0.1);
-  --glow-2: rgba(14, 116, 144, 0.1);
-  --chrome: rgba(247, 241, 230, 0.8);
-  --hairline: #e7ddca;
+  --background: #f8faf7; /* warm off-white */
+  --foreground: #172a3a; /* charcoal navy */
+  --glow-1: rgba(13, 148, 136, 0.08); /* teal */
+  --glow-2: rgba(21, 94, 117, 0.07); /* deep blue */
+  --chrome: rgba(248, 250, 247, 0.85);
+  --hairline: #e2e8e0;
 }
 
 .dark {
-  --background: #181410; /* warm near-black */
-  --foreground: #f3ece0;
-  --glow-1: rgba(249, 115, 22, 0.1);
-  --glow-2: rgba(14, 116, 144, 0.14);
-  --chrome: rgba(24, 20, 16, 0.8);
-  --hairline: #3a322a;
+  --background: #0b1418; /* deep navy-black */
+  --foreground: #e6eef1;
+  --glow-1: rgba(45, 212, 191, 0.1); /* bright teal */
+  --glow-2: rgba(30, 122, 147, 0.14); /* bright blue */
+  --chrome: rgba(11, 20, 24, 0.85);
+  --hairline: #1f3540;
 }
 
 .font-display {
@@ -51,9 +57,9 @@ h3 {
   border-radius: 0.75rem;
 }
 
-/* Visible keyboard focus everywhere. */
+/* Visible keyboard focus everywhere — teal (the link/active accent). */
 :focus-visible {
-  outline: 2px solid #f97316;
+  outline: 2px solid #0d9488;
   outline-offset: 2px;
   border-radius: 3px;
 }
@@ -71,84 +77,86 @@ h3 {
 }
 
 /* ───────── Dark mode: remap the common light-mode utilities ─────────
-   The components use literal Tailwind colors; these scoped overrides flip
-   the surfaces, text, and borders without editing every component. */
+   Components use literal Tailwind slate/stone colors; these scoped overrides
+   flip surfaces, text, and borders to navy-tinted equivalents without editing
+   every component. */
 .dark .bg-white {
-  background-color: #221c16;
+  background-color: #13242b;
 }
 .dark .bg-slate-50 {
-  background-color: #2a231c;
+  background-color: #162a33;
 }
 .dark .border-slate-200,
 .dark .border-slate-100,
 .dark .border-slate-300 {
-  border-color: #3a322a;
+  border-color: #1f3540;
 }
 .dark .ring-slate-200 {
-  --tw-ring-color: #3a322a;
+  --tw-ring-color: #1f3540;
 }
 .dark .divide-slate-100 > * {
-  border-color: #3a322a;
+  border-color: #1f3540;
 }
 
 .dark .text-slate-900,
 .dark .text-stone-900 {
-  color: #f3ece0;
+  color: #e6eef1;
 }
 .dark .text-slate-800,
 .dark .text-stone-800 {
-  color: #e8dccb;
+  color: #cfe0e6;
 }
 .dark .text-slate-700,
 .dark .text-stone-700 {
-  color: #d8ccba;
+  color: #aecbd4;
 }
 .dark .text-slate-600,
 .dark .text-stone-600 {
-  color: #b9ad9b;
+  color: #8ba6b2;
 }
 .dark .text-slate-500,
 .dark .text-stone-500 {
-  color: #9c907f;
+  color: #6e8a96;
 }
 .dark .text-slate-400,
 .dark .text-stone-400 {
-  color: #837767;
+  color: #56707c;
 }
 .dark .text-slate-300 {
-  color: #6f6456;
+  color: #445964;
 }
 
 /* Active/dark pills (e.g. selected filters, number badges) invert to light. */
 .dark .bg-slate-900 {
-  background-color: #f3ece0;
+  background-color: #e6eef1;
 }
 .dark .bg-slate-900.text-white {
-  color: #181410;
+  color: #0b1418;
 }
 .dark .hover\:bg-slate-700:hover {
-  background-color: #e0d5c4;
+  background-color: #cfe0e6;
 }
 
-/* Warm hover backgrounds. */
+/* Teal-tinted hover backgrounds (chrome accent hover). */
 .dark .hover\:bg-slate-100:hover {
-  background-color: #2a231c;
+  background-color: #162a33;
 }
-.dark .hover\:bg-orange-100\/70:hover {
-  background-color: rgba(249, 115, 22, 0.16);
+.dark .hover\:bg-teal-50:hover {
+  background-color: rgba(45, 212, 191, 0.14);
 }
 
 /* Dim and tint the map tiles so the basemap reads dark; markers are overlays
    and keep their colors. */
 .dark .leaflet-container {
-  background: #2a231c;
+  background: #162a33;
 }
 .dark .leaflet-tile {
   filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
 }
 
 /* Colored pills (season/crowd/festival chips, banners) read as bright pastels
-   in dark mode — retint them to translucent fills with lighter text. */
+   in dark mode — retint them to translucent fills with lighter text. Season
+   colors are data (dry amber / shoulder green / wet sky) and stay meaningful. */
 .dark .bg-amber-50,
 .dark .bg-amber-100 {
   background-color: rgba(245, 158, 11, 0.16);
@@ -167,7 +175,7 @@ h3 {
   background-color: rgba(139, 92, 246, 0.18);
 }
 .dark .bg-teal-100 {
-  background-color: rgba(20, 184, 166, 0.16);
+  background-color: rgba(45, 212, 191, 0.18);
 }
 .dark .bg-fuchsia-50 {
   background-color: rgba(217, 70, 239, 0.14);
@@ -180,6 +188,9 @@ h3 {
 .dark .text-violet-800 { color: #c4b5fd; }
 .dark .text-teal-800 { color: #5eead4; }
 .dark .text-amber-600 { color: #fbbf24; }
+.dark .text-teal-600 { color: #2dd4bf; }
+.dark .text-teal-700 { color: #5eead4; }
+.dark .text-sky-800 { color: #7dd3fc; }
 .dark .text-fuchsia-600 { color: #e879f9; }
 
 .dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.3); }
@@ -187,4 +198,11 @@ h3 {
 .dark .border-emerald-200 { border-color: rgba(16, 185, 129, 0.3); }
 .dark .border-rose-200 { border-color: rgba(244, 63, 94, 0.3); }
 .dark .border-violet-200 { border-color: rgba(139, 92, 246, 0.3); }
-.dark .border-teal-200 { border-color: rgba(20, 184, 166, 0.3); }
+.dark .border-teal-200 { border-color: rgba(45, 212, 191, 0.3); }
+
+/* Dark-mode brightening of the Modern Explorer chrome accents.
+   Primary buttons (bg-sky-800) -> brighter blue; links (text-teal-700) ->
+   bright teal. Keeps contrast on the dark navy surfaces. */
+.dark .bg-sky-800 { background-color: #1e7a93; }
+.dark .bg-sky-800:hover { background-color: #248aab; }
+.dark .hover\:bg-sky-900:hover { background-color: #248aab; }

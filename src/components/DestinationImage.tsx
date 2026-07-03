@@ -23,7 +23,7 @@ export function DestinationImage({
     return (
       <div
         aria-hidden
-        className={`bg-gradient-to-br from-amber-200 via-orange-200 to-cyan-200 ${className}`}
+        className={`bg-gradient-to-br from-teal-200 via-sky-200 to-cyan-200 ${className}`}
       />
     );
   }

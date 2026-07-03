@@ -34,15 +34,15 @@ export function OnboardingIntro() {
   }
 
   return (
-    <section className="relative mb-8 rounded-2xl border border-amber-300 bg-amber-900/90 p-5">
+    <section className="relative mb-8 rounded-2xl border border-sky-700 bg-sky-900/95 p-5">
       <button
         onClick={dismiss}
         aria-label="Dismiss"
-        className="absolute right-3 top-3 text-amber-400 transition hover:text-white"
+        className="absolute right-3 top-3 text-sky-300 transition hover:text-white"
       >
         ✕
       </button>
-      <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+      <p className="text-xs font-semibold uppercase tracking-wide text-sky-300">
         New here? How it works
       </p>
       <div className="mt-3 grid gap-4 sm:grid-cols-3">
@@ -55,14 +55,14 @@ export function OnboardingIntro() {
               <p className="text-sm font-semibold text-white">
                 {i + 1}. {s.title}
               </p>
-              <p className="mt-0.5 text-sm text-amber-100/90">{s.text}</p>
+              <p className="mt-0.5 text-sm text-sky-100/90">{s.text}</p>
             </div>
           </div>
         ))}
       </div>
       <button
         onClick={dismiss}
-        className="mt-4 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+        className="mt-4 rounded-lg bg-sky-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-sky-900"
       >
         Got it
       </button>

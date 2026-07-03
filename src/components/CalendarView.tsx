@@ -153,7 +153,7 @@ export function CalendarView() {
         <p className="text-slate-600">No trips to show on the calendar yet.</p>
         <Link
           href="/trips"
-          className="mt-4 inline-block rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+          className="mt-4 inline-block rounded-xl bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
         >
           Plan a trip →
         </Link>
@@ -186,7 +186,7 @@ export function CalendarView() {
                 <button
                   onClick={() => open(row)}
                   title={`${row.name}: ${MONTH_NAMES[row.start - 1]} start · ${row.totalMonths} months · ${row.stopCount} ${row.stopCount === 1 ? "stop" : "stops"}. Open trip.`}
-                  className="min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-800 transition hover:text-amber-600"
+                  className="min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-800 transition hover:text-teal-700"
                 >
                   {row.name}
                 </button>
@@ -219,7 +219,7 @@ export function CalendarView() {
                   key={m}
                   className={`flex-1 text-center text-[11px] leading-6 ${
                     i + 1 === nowMonth
-                      ? "font-semibold text-amber-600"
+                      ? "font-semibold text-teal-700"
                       : "text-slate-400"
                   }`}
                 >

@@ -255,7 +255,7 @@ export function TripView({
         <p className="text-slate-600">This trip couldn&apos;t be found.</p>
         <Link
           href="/trips"
-          className="mt-4 inline-block rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+          className="mt-4 inline-block rounded-xl bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
         >
           ← Back to trips
         </Link>
@@ -272,7 +272,7 @@ export function TripView({
         aria-current={isActive ? "true" : undefined}
         className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition ${
           isActive
-            ? "border-amber-500 text-amber-700"
+            ? "border-teal-500 text-teal-700"
             : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800"
         }`}
       >
@@ -308,7 +308,7 @@ export function TripView({
               }}
               aria-label="Trip name"
               placeholder="Name this trip…"
-              className="min-w-0 flex-1 rounded-lg border border-amber-300 px-2 py-1 text-sm font-semibold text-slate-900 outline-none focus:border-amber-400"
+              className="min-w-0 flex-1 rounded-lg border border-teal-400 px-2 py-1 text-sm font-semibold text-slate-900 outline-none focus:border-teal-500"
             />
           ) : (
             <button
@@ -318,7 +318,7 @@ export function TripView({
                 setRenaming(true);
               }}
               title="Rename trip"
-              className="min-w-0 flex-1 truncate text-left text-base font-bold text-slate-900 hover:text-amber-600"
+              className="min-w-0 flex-1 truncate text-left text-base font-bold text-slate-900 hover:text-teal-700"
             >
               {trip.name}
             </button>

@@ -49,7 +49,7 @@ export function AccountMenu() {
       <>
         <button
           onClick={() => setDialog(true)}
-          className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-stone-600 transition hover:bg-orange-100/70 hover:text-stone-900"
+          className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-stone-600 transition hover:bg-teal-50 hover:text-stone-900"
         >
           Sign in
         </button>
@@ -67,7 +67,7 @@ export function AccountMenu() {
         aria-haspopup="menu"
         aria-expanded={menu}
         title={user.email ?? "Account"}
-        className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white transition hover:bg-amber-600"
+        className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-800 text-xs font-bold text-white transition hover:bg-sky-900"
       >
         {initial}
       </button>

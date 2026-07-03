@@ -298,7 +298,7 @@ export function StopDetail({
 
       <Link
         href={`/regions/${region.id}`}
-        className="inline-block font-medium text-amber-600 hover:underline"
+        className="inline-block font-medium text-teal-700 hover:underline"
       >
         Full guide →
       </Link>
