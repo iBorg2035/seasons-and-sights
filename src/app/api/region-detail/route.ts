@@ -11,7 +11,7 @@ export const revalidate = 86400; // curated/static data — cache 1 day
  * Server-only destination detail (sights, toolkit, events, advisory) for one
  * region, fetched lazily by the trip page when a stop is expanded. This is
  * the sanctioned way for client views to reach the heavy data modules —
- * importing them directly from a "use client" file is forbidden (CLAUDE.md).
+ * importing them directly from a client component is forbidden (CLAUDE.md).
  */
 export async function GET(req: Request) {
   const id = new URL(req.url).searchParams.get("id");

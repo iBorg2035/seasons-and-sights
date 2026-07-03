@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { updateTrip, type SavedTripLite } from "@/lib/saved-trips";
 import { getSlimRegion } from "@/data/regions-slim";
 import {
@@ -13,6 +12,7 @@ import {
   type ItineraryLeg,
 } from "@/lib/season";
 import { AddStopsDialog } from "@/components/AddStopsDialog";
+import { StopDetail } from "@/components/StopDetail";
 
 const DURATIONS = [1, 2, 3] as const;
 
@@ -128,51 +128,10 @@ export function StopsSection({
             </button>
 
             {isOpen && (
-              <div className="space-y-3 border-t border-slate-100 px-4 py-3 text-sm text-slate-600">
-                <div className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
-                  {region.info?.visa && (
-                    <p>
-                      <span className="font-medium text-slate-700">Visa:</span>{" "}
-                      {region.info.visa}
-                    </p>
-                  )}
-                  {typeof region.dailyBudget === "number" && (
-                    <p>
-                      <span className="font-medium text-slate-700">
-                        Daily cost:
-                      </span>{" "}
-                      ~${region.dailyBudget}/day
-                    </p>
-                  )}
-                  {region.sightCount > 0 && (
-                    <p>
-                      <span className="font-medium text-slate-700">
-                        Highlights:
-                      </span>{" "}
-                      {region.sightCount} sight
-                      {region.sightCount === 1 ? "" : "s"}
-                      {region.sightTypes.length
-                        ? ` · ${region.sightTypes.join(", ")}`
-                        : ""}
-                    </p>
-                  )}
-                  {region.info?.health && (
-                    <p>
-                      <span className="font-medium text-slate-700">Health:</span>{" "}
-                      {region.info.health}
-                    </p>
-                  )}
-                </div>
-                {region.climateBlurb && (
-                  <p className="text-slate-500">{region.climateBlurb}</p>
-                )}
-                <Link
-                  href={`/regions/${region.id}`}
-                  className="inline-block font-medium text-amber-600 hover:underline"
-                >
-                  Full guide →
-                </Link>
-              </div>
+              <StopDetail
+                region={region}
+                prevStop={i > 0 ? resolved[i - 1]?.region : undefined}
+              />
             )}
 
             {/* Controls row — always visible */}
