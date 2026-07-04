@@ -14,6 +14,7 @@ import {
 import { getSlimRegion } from "@/data/regions-slim";
 import type { SlimRegion } from "@/data/regions-slim";
 import type { SavedTripLite } from "@/lib/saved-trips";
+import { assessTripHealth } from "@/lib/trip-health";
 
 /**
  * Resolve a trip's [id, duration] stops into planner stops using the slim
@@ -66,6 +67,7 @@ export function RouteSection({
 
   const legs = planItinerary(stops, start);
   const ranges = legDateRanges(start, legs);
+  const health = assessTripHealth(legs, { isFlexibleStart: isFlexible });
   const totalMonths = legs.reduce((sum, l) => sum + l.months.length, 0);
   const fitSummary = legs.every((l) => l.fit >= 80)
     ? "Every stop lands in dry season"
@@ -131,6 +133,94 @@ export function RouteSection({
           ))}
         </div>
       </div>
+
+      {/* Trip health diagnostic */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+              Trip health
+            </p>
+            <h3 className="mt-1 text-lg font-semibold text-slate-900">
+              {health.label} · {health.score}/100
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">{health.summary}</p>
+          </div>
+          <div className="flex h-16 w-16 flex-none items-center justify-center rounded-full border-4 border-teal-200 bg-teal-50 text-lg font-bold text-teal-800">
+            {health.score}
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            ["Weather", health.metrics.weather],
+            ["Crowds", health.metrics.crowds],
+            ["Pace", health.metrics.pace],
+            ["Prep", health.metrics.prep],
+          ].map(([label, score]) => (
+            <div key={label} className="rounded-lg border border-slate-100 px-3 py-2">
+              <p className="text-xs font-medium text-slate-500">{label}</p>
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-teal-500"
+                  style={{ width: `${score}%` }}
+                />
+              </div>
+              <p className="mt-1 text-xs font-semibold text-slate-700">
+                {score}/100
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {(health.warnings.length > 0 || health.strengths.length > 0) && (
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {health.warnings.length > 0 && (
+              <div>
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Watchouts
+                </h4>
+                <ul className="space-y-2">
+                  {health.warnings.slice(0, 4).map((warning) => (
+                    <li
+                      key={`${warning.title}:${warning.detail}`}
+                      className={`rounded-lg border px-3 py-2 text-sm ${
+                        warning.severity === "risk"
+                          ? "border-rose-200 bg-rose-50 text-rose-800"
+                          : warning.severity === "watch"
+                            ? "border-amber-200 bg-amber-50 text-amber-800"
+                            : "border-sky-200 bg-sky-50 text-sky-800"
+                      }`}
+                    >
+                      <span className="block font-semibold">
+                        {warning.title}
+                      </span>
+                      <span>{warning.detail}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {health.strengths.length > 0 && (
+              <div>
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Working well
+                </h4>
+                <ul className="space-y-2">
+                  {health.strengths.map((strength) => (
+                    <li
+                      key={strength}
+                      className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+                    >
+                      {strength}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
 
       {/* Start month + meta */}
       <div className="space-y-2">
