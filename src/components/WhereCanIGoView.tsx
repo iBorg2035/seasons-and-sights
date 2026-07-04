@@ -113,7 +113,7 @@ export function WhereCanIGoView({
             key={region.id}
             className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
               fit >= 80
-                ? "border-amber-200 bg-amber-50/60"
+                ? "border-amber-200 bg-teal-50/60"
                 : fit >= 50
                   ? "border-emerald-200 bg-emerald-50/50"
                   : "border-slate-200 bg-white"
@@ -123,7 +123,7 @@ export function WhereCanIGoView({
               <div className="flex items-center gap-2">
                 <Link
                   href={`/regions/${region.id}`}
-                  className="font-semibold text-slate-900 hover:text-amber-600"
+                  className="font-semibold text-slate-900 hover:text-teal-700"
                 >
                   {region.name}
                 </Link>
@@ -137,7 +137,7 @@ export function WhereCanIGoView({
             </div>
             <AddToTripButton
               regionId={region.id}
-              className="rounded-full border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:border-amber-400 hover:text-amber-700"
+              className="rounded-full border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:border-teal-400 hover:text-teal-700"
             />
           </li>
         ))}

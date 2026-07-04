@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Season } from "@/types";
+import type { Continent, Season } from "@/types";
 import { REGIONS_SLIM } from "@/data/regions-slim";
+import type { SlimRegion } from "@/data/regions-slim";
+import { CONTINENT_ORDER } from "@/lib/continents";
 import { RegionCard } from "@/components/RegionCard";
 import {
   MONTH_NAMES,
@@ -19,6 +21,22 @@ const SECTION_BLURB: Record<Season, string> = {
   shoulder: "Transitional — variable but often rewarding (and quieter).",
   wet: "Wet season — expect rain; go in only if you know why.",
 };
+
+/** Group a list of regions by continent, in the canonical display order. */
+function groupByContinent(
+  regions: SlimRegion[]
+): { continent: Continent; regions: SlimRegion[] }[] {
+  const byContinent = new Map<Continent, SlimRegion[]>();
+  for (const r of regions) {
+    const arr = byContinent.get(r.continent) ?? [];
+    arr.push(r);
+    byContinent.set(r.continent, arr);
+  }
+  return CONTINENT_ORDER.filter((c) => byContinent.has(c)).map((c) => ({
+    continent: c,
+    regions: byContinent.get(c) ?? [],
+  }));
+}
 
 export function WhenToGoView() {
   const [month, setMonth] = useState(monthOf());
@@ -77,11 +95,21 @@ export function WhenToGoView() {
               <p className="mb-4 text-sm text-slate-500">
                 {SECTION_BLURB[season]}
               </p>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {regions.map((region) => (
-                  <RegionCard key={region.id} region={region} month={month} />
-                ))}
-              </div>
+              {groupByContinent(regions).map(({ continent, regions: cr }) => (
+                <div key={continent} className="mb-6 last:mb-0">
+                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    {continent}{" "}
+                    <span className="font-normal text-slate-400">
+                      ({cr.length})
+                    </span>
+                  </h3>
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {cr.map((region) => (
+                      <RegionCard key={region.id} region={region} month={month} />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </section>
           );
         })}

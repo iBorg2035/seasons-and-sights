@@ -65,7 +65,7 @@ export function SharedTripView({ token }: { token: string }) {
         </p>
         <Link
           href="/trips"
-          className="mt-4 inline-block rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+          className="mt-4 inline-block rounded-xl bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
         >
           Plan your own trip →
         </Link>
@@ -83,7 +83,7 @@ export function SharedTripView({ token }: { token: string }) {
         <button
           type="button"
           onClick={() => location.reload()}
-          className="mt-4 inline-block rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+          className="mt-4 inline-block rounded-xl bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
         >
           Retry
         </button>
@@ -105,7 +105,7 @@ export function SharedTripView({ token }: { token: string }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
             Shared trip
           </p>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
@@ -115,7 +115,7 @@ export function SharedTripView({ token }: { token: string }) {
         <button
           type="button"
           onClick={importToMyTrips}
-          className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+          className="rounded-xl bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
         >
           Copy to my trips →
         </button>
@@ -142,7 +142,7 @@ export function SharedTripView({ token }: { token: string }) {
                   <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/regions/${leg.region.id}`}
-                      className="font-semibold text-slate-900 hover:text-amber-600"
+                      className="font-semibold text-slate-900 hover:text-teal-700"
                     >
                       {i + 1}. {leg.region.name}
                     </Link>
@@ -162,7 +162,7 @@ export function SharedTripView({ token }: { token: string }) {
 
       <p className="text-sm text-slate-500">
         Want your own?{" "}
-        <Link href="/trips" className="font-medium text-amber-600 hover:underline">
+        <Link href="/trips" className="font-medium text-teal-700 hover:underline">
           Build a season-optimized trip
         </Link>
         .

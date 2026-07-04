@@ -95,7 +95,7 @@ export function TripCard({ trip, active }: { trip: SavedTripLite; active: boolea
   return (
     <Link
       href={`/trips/${trip.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-teal-400 hover:shadow-md"
     >
       {/* Gradient thumbnail derived from the first stop(s)' season. */}
       <div className="relative h-24 w-full" style={{ background: headerGradient }}>
@@ -106,7 +106,7 @@ export function TripCard({ trip, active }: { trip: SavedTripLite; active: boolea
 
       <div className="flex flex-col gap-3 p-5">
         <div>
-          <h3 className="font-semibold text-slate-900 group-hover:text-amber-600">
+          <h3 className="font-semibold text-slate-900 group-hover:text-teal-700">
             {trip.name}
           </h3>
           <p className="mt-0.5 text-sm text-slate-500">

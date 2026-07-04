@@ -123,7 +123,7 @@ export function CompareView({ initialMonth }: { initialMonth: number }) {
                 <div>
                   <Link
                     href={`/regions/${r.id}`}
-                    className="font-semibold text-slate-900 hover:text-amber-600"
+                    className="font-semibold text-slate-900 hover:text-teal-700"
                   >
                     {r.name}
                   </Link>

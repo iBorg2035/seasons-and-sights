@@ -13,11 +13,14 @@ import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 export const viewport: Viewport = {
-  themeColor: "#f97316",
+  themeColor: "#0d9488",
 };
 
 // Set the theme class before paint to avoid a flash of the wrong theme.
-const themeScript = `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`;
+// Default to dark when the user hasn't expressed a preference — the app's
+// primary aesthetic is the dark Modern Explorer palette. The 🌙 toggle still
+// overrides and persists the choice.
+const themeScript = `try{var t=localStorage.getItem('theme');if(t!=='light'){document.documentElement.classList.add('dark')}}catch(e){}`;
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -89,7 +92,7 @@ export default function RootLayout({
                 🌤️
               </span>
               <span>
-                Seasons<span className="italic text-orange-500">&amp;</span>Sights
+                Seasons<span className="italic text-teal-600">&amp;</span>Sights
               </span>
             </Link>
             <SiteNav />

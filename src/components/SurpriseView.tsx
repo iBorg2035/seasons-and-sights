@@ -93,7 +93,7 @@ export function SurpriseView({ initialMonth }: { initialMonth: number }) {
 
         <button
           onClick={() => setRollCount((n) => n + 1)}
-          className="w-full rounded-xl bg-amber-500 px-4 py-2.5 font-semibold text-white transition hover:bg-amber-600"
+          className="w-full rounded-xl bg-sky-800 px-4 py-2.5 font-semibold text-white transition hover:bg-sky-900"
         >
           🎲 Surprise me
         </button>
@@ -101,7 +101,7 @@ export function SurpriseView({ initialMonth }: { initialMonth: number }) {
 
       {pick ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm font-medium text-amber-600">
+          <p className="text-sm font-medium text-teal-700">
             In {monthName}, go to…
           </p>
           <div className="mt-1 flex flex-wrap items-start justify-between gap-3">

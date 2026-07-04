@@ -38,7 +38,7 @@ function TripsBadge() {
   return (
     <Link
       href="/trips"
-      className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-amber-600"
+      className="inline-flex items-center gap-1 rounded-full bg-sky-800 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-sky-900"
       title={`${count} saved ${count === 1 ? "trip" : "trips"}`}
     >
       🧳 {count}
@@ -57,7 +57,7 @@ export function SiteNav() {
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-lg px-2.5 py-1.5 font-semibold text-stone-800 transition hover:bg-orange-100/70 hover:text-stone-900"
+            className="rounded-lg px-2.5 py-1.5 font-semibold text-stone-800 transition hover:bg-teal-50 hover:text-stone-900"
           >
             {item.label}
           </Link>
@@ -66,7 +66,7 @@ export function SiteNav() {
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-lg px-2.5 py-1.5 text-stone-600 transition hover:bg-orange-100/70 hover:text-stone-900"
+            className="rounded-lg px-2.5 py-1.5 text-stone-600 transition hover:bg-teal-50 hover:text-stone-900"
           >
             {item.label}
           </Link>
@@ -85,7 +85,7 @@ export function SiteNav() {
           onClick={() => setOpen((o) => !o)}
           aria-label="Toggle menu"
           aria-expanded={open}
-          className="rounded-lg px-2.5 py-1.5 text-stone-600 transition hover:bg-orange-100/70 hover:text-stone-900"
+          className="rounded-lg px-2.5 py-1.5 text-stone-600 transition hover:bg-teal-50 hover:text-stone-900"
         >
           {open ? "✕" : "☰"}
         </button>
@@ -100,7 +100,7 @@ export function SiteNav() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-2.5 py-2 text-stone-700 transition hover:bg-orange-100/70 hover:text-stone-900"
+                className="rounded-lg px-2.5 py-2 text-stone-700 transition hover:bg-teal-50 hover:text-stone-900"
               >
                 {item.label}
               </Link>
@@ -110,7 +110,7 @@ export function SiteNav() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-2.5 py-2 text-stone-700 transition hover:bg-orange-100/70 hover:text-stone-900"
+                className="rounded-lg px-2.5 py-2 text-stone-700 transition hover:bg-teal-50 hover:text-stone-900"
               >
                 {item.label}
               </Link>

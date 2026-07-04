@@ -50,7 +50,7 @@ export function FestivalsView({ initialMonth }: { initialMonth: number }) {
                 month === value
                   ? "bg-slate-900 text-white"
                   : `bg-white ring-1 ring-slate-200 hover:bg-slate-100 ${
-                      isNow ? "text-amber-600" : "text-slate-600"
+                      isNow ? "text-teal-700" : "text-slate-600"
                     }`
               }`}
             >
@@ -91,7 +91,7 @@ export function FestivalsView({ initialMonth }: { initialMonth: number }) {
                       </div>
                       <Link
                         href={`/regions/${region.id}`}
-                        className="text-sm font-medium text-amber-600 hover:underline"
+                        className="text-sm font-medium text-teal-700 hover:underline"
                       >
                         {region.name}, {region.country}
                       </Link>

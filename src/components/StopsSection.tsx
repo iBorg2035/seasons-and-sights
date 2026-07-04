@@ -24,7 +24,11 @@ export function StopsSection({
   /** Re-read the trip after a mutation so the parent stays in sync. */
   onChange: () => void;
 }) {
-  const [openIdx, setOpenIdx] = useState<number | null>(null);
+  // Stops expand to show full destination detail by default — the rich local
+  // info (climate, sights, map, toolkit) is the point of the trip page, so it
+  // shouldn't be hidden behind a click. `openIdx` tracks a *manually* collapsed
+  // stop so the user can still tidy the view; a stop is open unless collapsed.
+  const [collapsedIdx, setCollapsedIdx] = useState<Set<number>>(new Set());
   const [adding, setAdding] = useState(false);
 
   // Resolve stops to slim regions + planner stops, planning so we know each
@@ -51,7 +55,7 @@ export function StopsSection({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+            className="rounded-xl bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
           >
             + Add a destination
           </button>
@@ -84,7 +88,7 @@ export function StopsSection({
       {resolved.map((s, i) => {
         const { region } = s;
         const leg = legByRegion.get(region.id);
-        const isOpen = openIdx === i;
+        const isOpen = !collapsedIdx.has(i);
         const season = leg
           ? climateForMonth(region, leg.months[0]).season
           : "shoulder";
@@ -99,7 +103,14 @@ export function StopsSection({
             {/* Collapsed header — click toggles */}
             <button
               type="button"
-              onClick={() => setOpenIdx(isOpen ? null : i)}
+              onClick={() =>
+                setCollapsedIdx((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(i)) next.delete(i);
+                  else next.add(i);
+                  return next;
+                })
+              }
               aria-expanded={isOpen}
               className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
             >
@@ -216,7 +227,7 @@ export function StopsSection({
     <button
       type="button"
       onClick={() => setAdding(true)}
-      className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 py-3 text-sm font-medium text-slate-500 transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
+      className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 py-3 text-sm font-medium text-slate-500 transition hover:border-teal-400 hover:bg-teal-50 hover:text-teal-700"
     >
       + Add destination
     </button>
