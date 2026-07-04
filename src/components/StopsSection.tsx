@@ -19,10 +19,12 @@ const DURATIONS = [1, 2, 3] as const;
 export function StopsSection({
   trip,
   onChange,
+  onSaveFailure,
 }: {
   trip: SavedTripLite;
   /** Re-read the trip after a mutation so the parent stays in sync. */
   onChange: () => void;
+  onSaveFailure?: () => void;
 }) {
   // Stops expand to show full destination detail by default — the rich local
   // info (climate, sights, map, toolkit) is the point of the trip page, so it
@@ -78,7 +80,10 @@ export function StopsSection({
   }
 
   function mutate(fn: (t: SavedTripLite) => void) {
-    updateTrip(trip.id, fn);
+    if (!updateTrip(trip.id, fn)) {
+      onSaveFailure?.();
+      return;
+    }
     onChange();
   }
 

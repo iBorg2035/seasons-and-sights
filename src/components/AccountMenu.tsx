@@ -32,6 +32,7 @@ export function AccountMenu() {
   const { configured, loading, user, signOut } = useAuth();
   const [dialog, setDialog] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -102,8 +103,13 @@ export function AccountMenu() {
                 )
               )
                 return;
+              const deleted = await deleteAccount();
+              if (!deleted) {
+                setDeleteError(true);
+                return;
+              }
+              setDeleteError(false);
               setMenu(false);
-              await deleteAccount();
               try {
                 localStorage.removeItem(SAVED_KEY);
                 notifySavedTripsChanged();
@@ -116,6 +122,11 @@ export function AccountMenu() {
           >
             Delete account
           </button>
+          {deleteError && (
+            <p className="px-3 py-2 text-xs text-rose-600">
+              Couldn&apos;t delete the account. Please try again.
+            </p>
+          )}
         </div>
       )}
     </div>

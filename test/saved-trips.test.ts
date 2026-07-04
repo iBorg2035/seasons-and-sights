@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   getSavedTrips,
   createTrip,
@@ -9,9 +9,12 @@ import {
 
 describe("trip store helpers", () => {
   beforeEach(() => localStorage.clear());
+  afterEach(() => vi.restoreAllMocks());
 
   it("createTrip adds a fresh trip and returns it", () => {
     const t = createTrip();
+    expect(t).not.toBeNull();
+    if (!t) throw new Error("trip was not created");
     expect(t.id).toBeTruthy();
     expect(t.name).toBe("Untitled trip");
     expect(getSavedTrips()).toHaveLength(1);
@@ -20,12 +23,16 @@ describe("trip store helpers", () => {
 
   it("getTrip returns the trip by id, undefined when missing", () => {
     const t = createTrip();
+    expect(t).not.toBeNull();
+    if (!t) throw new Error("trip was not created");
     expect(getTrip(t.id)?.id).toBe(t.id);
     expect(getTrip("nope")).toBeUndefined();
   });
 
   it("updateTrip mutates in place and bumps updatedAt", () => {
     const t = createTrip();
+    expect(t).not.toBeNull();
+    if (!t) throw new Error("trip was not created");
     const before = t.updatedAt ?? 0;
     updateTrip(t.id, (trip) => {
       trip.name = "Renamed";
@@ -42,5 +49,15 @@ describe("trip store helpers", () => {
     updateTrip("missing", (t) => (t.name = "x"));
     expect(getSavedTrips()).toHaveLength(1);
     expect(getSavedTrips()[0].name).toBe("Untitled trip");
+  });
+
+  it("createTrip returns null and leaves no phantom trip when storage throws", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("Persistent storage disabled", "SecurityError");
+    });
+
+    const t = createTrip();
+    expect(t).toBeNull();
+    expect(getSavedTrips()).toHaveLength(0);
   });
 });

@@ -62,17 +62,20 @@ export function renameSavedTrip(
   return renamed;
 }
 
-/** Create a fresh empty trip, persist it, and return it. */
-export function createTrip(name = "Untitled trip"): SavedTripLite {
+/** Create a fresh trip, persist it, and return it only after it sticks. */
+export function createTrip(
+  name = "Untitled trip",
+  initial: Partial<Pick<SavedTripLite, "start" | "stops">> = {}
+): SavedTripLite | null {
   const trip: SavedTripLite = {
     id: crypto.randomUUID(),
     name,
-    start: 0, // 0 = unset; the trip page falls back to the current month
-    stops: [],
+    start: initial.start ?? 0, // 0 = unset; the trip page falls back to the current month
+    stops: initial.stops?.map((s) => [s[0], s[1]] as [string, number]) ?? [],
     updatedAt: Date.now(),
   };
   const next = [trip, ...getSavedTrips()];
-  writeSavedTrips(next);
+  if (!writeSavedTrips(next)) return null;
   return trip;
 }
 

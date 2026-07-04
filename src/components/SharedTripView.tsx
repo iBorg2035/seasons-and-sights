@@ -9,7 +9,7 @@ import { getSlimRegion } from "@/data/regions-slim";
 import { planItinerary, legDateRanges, climateForMonth } from "@/lib/season";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { DestinationImage } from "@/components/DestinationImage";
-import { createTrip, updateTrip } from "@/lib/saved-trips";
+import { createTrip } from "@/lib/saved-trips";
 import { setActiveTripId } from "@/lib/active-trip";
 
 function fmtDate(d: Date): string {
@@ -27,6 +27,7 @@ export function SharedTripView({ token }: { token: string }) {
   const [state, setState] = useState<
     "loading" | "missing" | "error" | Loaded
   >("loading");
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -43,11 +44,15 @@ export function SharedTripView({ token }: { token: string }) {
   /** Import the shared trip as a new trip in this user's list and open it. */
   function importToMyTrips() {
     if (state === "loading" || state === "missing" || state === "error") return;
-    const trip = createTrip(state.name);
-    updateTrip(trip.id, (t) => {
-      t.start = state.start;
-      t.stops = state.stops;
+    const trip = createTrip(state.name, {
+      start: state.start,
+      stops: state.stops,
     });
+    if (!trip) {
+      setSaveError(true);
+      return;
+    }
+    setSaveError(false);
     setActiveTripId(trip.id);
     router.push(`/trips/${trip.id}`);
   }
@@ -120,6 +125,12 @@ export function SharedTripView({ token }: { token: string }) {
           Copy to my trips →
         </button>
       </div>
+      {saveError && (
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          Couldn&apos;t copy this trip. Check that browser storage is enabled
+          and try again.
+        </p>
+      )}
 
       <ol className="space-y-3">
         {legs.map((leg, i) => {

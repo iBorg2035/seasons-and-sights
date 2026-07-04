@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ configured: false }, { status: 200 });
   }
 
-  const q = req.nextUrl.searchParams.get("q");
+  const q = req.nextUrl.searchParams.get("q")?.trim().slice(0, 120);
   if (!q) {
     return NextResponse.json({ error: "Missing ?q= param" }, { status: 400 });
   }

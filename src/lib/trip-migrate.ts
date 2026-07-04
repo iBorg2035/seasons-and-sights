@@ -1,4 +1,4 @@
-import { getSavedTrips, createTrip, updateTrip } from "@/lib/saved-trips";
+import { getSavedTrips, createTrip } from "@/lib/saved-trips";
 import { setActiveTripId } from "@/lib/active-trip";
 
 const MIGRATED_FLAG = "seasons-migrated-v2";
@@ -37,14 +37,11 @@ export function migrateDraftToTrips(): void {
   }
 
   if (draftStops.length > 0) {
-    // createTrip gives us an id + name; override start/stops with the draft's.
-    const trip = createTrip("Untitled trip");
-    const start = draftStart;
-    const stops = draftStops;
-    updateTrip(trip.id, (t) => {
-      t.start = start;
-      t.stops = stops;
+    const trip = createTrip("Untitled trip", {
+      start: draftStart,
+      stops: draftStops,
     });
+    if (!trip) return;
     setActiveTripId(trip.id);
   } else {
     // No draft: if there are saved trips, point active at the newest; else nothing.

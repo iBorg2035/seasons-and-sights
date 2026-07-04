@@ -31,6 +31,7 @@ export default function TripsPage() {
   const router = useRouter();
   const [trips, setTrips] = useState<SavedTripLite[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState(false);
 
   // Re-read both stores; gated on `window` so SSR never touches localStorage.
   // ensureActiveTripId (not getActiveTripId) repairs the pointer if the active
@@ -54,6 +55,11 @@ export default function TripsPage() {
 
   const handleNew = () => {
     const t = createTrip();
+    if (!t) {
+      setSaveError(true);
+      return;
+    }
+    setSaveError(false);
     router.push(`/trips/${t.id}`);
   };
 
@@ -79,6 +85,12 @@ export default function TripsPage() {
           <span aria-hidden>＋</span> New trip
         </button>
       </section>
+      {saveError && (
+        <p className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          Couldn&apos;t save a new trip. Check that browser storage is enabled
+          and try again.
+        </p>
+      )}
 
       {count === 0 ? (
         // Empty state: a dashed-border card inviting creation, echoing

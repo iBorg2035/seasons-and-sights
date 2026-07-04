@@ -17,9 +17,11 @@ export function ShareTripButton({
   const [state, setState] = useState<"idle" | "working" | "done" | "error">(
     "idle"
   );
+  const [manualUrl, setManualUrl] = useState<string | null>(null);
 
   async function share() {
     if (!trip.stops.length) return;
+    setManualUrl(null);
     let url = window.location.href;
     if (isSupabaseConfigured) {
       setState("working");
@@ -34,7 +36,9 @@ export function ShareTripButton({
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      // Clipboard may be blocked; the link still works.
+      setManualUrl(url);
+      setState("idle");
+      return;
     }
     setState("done");
     setTimeout(() => setState("idle"), 2500);
@@ -50,13 +54,28 @@ export function ShareTripButton({
           : "Share link";
 
   return (
-    <button
-      onClick={share}
-      disabled={state === "working" || !trip.stops.length}
-      className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
-      title="Create a shareable link to this trip"
-    >
-      🔗 {label}
-    </button>
+    <div className="relative inline-flex">
+      <button
+        onClick={share}
+        disabled={state === "working" || !trip.stops.length}
+        className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
+        title="Create a shareable link to this trip"
+      >
+        🔗 {label}
+      </button>
+      {manualUrl && (
+        <div className="absolute right-0 top-full z-30 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+          <p className="mb-2 text-xs text-slate-500">
+            Copy this link manually:
+          </p>
+          <input
+            readOnly
+            value={manualUrl}
+            onFocus={(e) => e.currentTarget.select()}
+            className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-700"
+          />
+        </div>
+      )}
+    </div>
   );
 }

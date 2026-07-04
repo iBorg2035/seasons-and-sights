@@ -136,6 +136,7 @@ export function CalendarView() {
   const router = useRouter();
   const { user } = useAuth();
   const nowMonth = useMemo(() => monthOf(), []);
+  const [deleteError, setDeleteError] = useState(false);
 
   function open(row: Row) {
     router.push(`/trips/${row.id}`);
@@ -143,7 +144,11 @@ export function CalendarView() {
 
   function remove(row: Row) {
     if (!row.trip) return;
-    deleteSavedTrip(row.trip.id);
+    if (!deleteSavedTrip(row.trip.id)) {
+      setDeleteError(true);
+      return;
+    }
+    setDeleteError(false);
     if (user) void deleteRemoteTrip(row.trip.id);
   }
 
@@ -163,6 +168,12 @@ export function CalendarView() {
 
   return (
     <div className="space-y-4">
+      {deleteError && (
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          Couldn&apos;t delete that trip. Check that browser storage is enabled
+          and try again.
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
         {(["dry", "shoulder", "wet"] as Season[]).map((s) => (
           <span key={s} className="inline-flex items-center gap-1.5">

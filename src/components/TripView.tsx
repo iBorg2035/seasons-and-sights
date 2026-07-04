@@ -56,6 +56,7 @@ export function TripView({
   const [menuOpen, setMenuOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("route");
+  const [saveError, setSaveError] = useState(false);
 
   // Snapshot of the trip as it was when the page loaded, for the "reset to
   // last saved" escape hatch. In-memory only (per page session); reloading
@@ -69,6 +70,31 @@ export function TripView({
   const refresh = useCallback(() => {
     setTrip(getTrip(tripId));
   }, [tripId]);
+
+  /** Mirror a local trip edit to the cloud when signed in. No-op signed-out. */
+  const mirrorToCloud = useCallback(
+    (id: string) => {
+      if (!user) return;
+      const t = getTrip(id);
+      if (t) void upsertRemoteTrip(user.id, t as SavedTrip);
+    },
+    [user]
+  );
+
+  const persistTripEdit = useCallback(
+    (id: string, mutate: (trip: SavedTripLite) => void): boolean => {
+      const ok = updateTrip(id, mutate);
+      if (!ok) {
+        setSaveError(true);
+        return false;
+      }
+      setSaveError(false);
+      refresh();
+      mirrorToCloud(id);
+      return true;
+    },
+    [mirrorToCloud, refresh]
+  );
 
   // Load + mark this trip active + subscribe to change events.
   useEffect(() => {
@@ -97,14 +123,13 @@ export function TripView({
     if (!addRegionId || !trip) return;
     const already = trip.stops.some(([id]) => id === addRegionId);
     if (!already) {
-      updateTrip(tripId, (t) => {
+      const saved = persistTripEdit(tripId, (t) => {
         t.stops.push([addRegionId, 2]);
       });
-      refresh();
-      mirrorToCloud(tripId);
+      if (!saved) return;
     }
     router.replace(`/trips/${tripId}`);
-  }, [addRegionId, trip, tripId, router, refresh]);
+  }, [addRegionId, trip, tripId, router, persistTripEdit]);
 
   // On sign-in, pull the user's cloud trips, merge with what's local
   // (last-write-wins), and push any local-only trips up. Keyed on user.id so
@@ -142,13 +167,6 @@ export function TripView({
       cancelled = true;
     };
   }, [user?.id, refresh]);
-
-  /** Mirror a local trip edit to the cloud when signed in. No-op signed-out. */
-  function mirrorToCloud(id: string) {
-    if (!user) return;
-    const t = getTrip(id);
-    if (t) void upsertRemoteTrip(user.id, t as SavedTrip);
-  }
 
   // If the trip still has the default name, invite a rename on first load —
   // the user almost certainly wants to name a fresh trip.
@@ -212,32 +230,32 @@ export function TripView({
     const trimmed = nameDraft.trim();
     setRenaming(false);
     if (trimmed && trimmed !== trip?.name) {
-      updateTrip(tripId, (t) => {
+      persistTripEdit(tripId, (t) => {
         t.name = trimmed;
       });
-      refresh();
-      mirrorToCloud(tripId);
     }
   }
 
   function handleReset() {
     if (!snapshotRef.current) return;
     const saved = JSON.parse(snapshotRef.current) as SavedTripLite;
-    updateTrip(tripId, (t) => {
+    const ok = persistTripEdit(tripId, (t) => {
       t.name = saved.name;
       t.start = saved.start;
       t.stops = saved.stops.map((s) => [s[0], s[1]] as [string, number]);
     });
-    refresh();
-    mirrorToCloud(tripId);
-    setMenuOpen(false);
+    if (ok) setMenuOpen(false);
   }
 
   function handleDelete() {
     if (!trip) return;
     const ok = window.confirm(`Delete "${trip.name}"? This can't be undone.`);
     if (!ok) return;
-    deleteSavedTrip(trip.id);
+    if (!deleteSavedTrip(trip.id)) {
+      setSaveError(true);
+      return;
+    }
+    setSaveError(false);
     if (user) void deleteRemoteTrip(trip.id);
     // Clear the now-stale active pointer; /trips will repair it on arrival
     // via ensureActiveTripId if other trips remain.
@@ -399,16 +417,20 @@ export function TripView({
 
       {/* Sections */}
       <main className="mx-auto max-w-5xl space-y-12 px-4 py-8">
+        {saveError && (
+          <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            Couldn&apos;t save this trip. Check that browser storage is enabled
+            and try again.
+          </p>
+        )}
         <section id="route" className="scroll-mt-32">
           <h2 className="mb-4 text-lg font-semibold text-slate-900">Route</h2>
           <RouteSection
             trip={trip}
             onStartChange={(month) => {
-              updateTrip(trip.id, (t) => {
+              persistTripEdit(trip.id, (t) => {
                 t.start = month;
               });
-              refresh();
-              mirrorToCloud(trip.id);
             }}
           />
         </section>
@@ -423,9 +445,11 @@ export function TripView({
           <StopsSection
             trip={trip}
             onChange={() => {
+              setSaveError(false);
               refresh();
               mirrorToCloud(trip.id);
             }}
+            onSaveFailure={() => setSaveError(true)}
           />
         </section>
 

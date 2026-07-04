@@ -6,12 +6,26 @@ export const revalidate = 2592000; // 30 days
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const lat = Number(searchParams.get("lat"));
-  const lng = Number(searchParams.get("lng"));
+  const latParam = searchParams.get("lat");
+  const lngParam = searchParams.get("lng");
+  const lat = Number(latParam);
+  const lng = Number(lngParam);
 
-  if (Number.isNaN(lat) || Number.isNaN(lng)) {
+  if (
+    latParam === null ||
+    lngParam === null ||
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    lat < -90 ||
+    lat > 90 ||
+    lng < -180 ||
+    lng > 180
+  ) {
     return NextResponse.json(
-      { error: "lat and lng query params are required" },
+      {
+        error:
+          "valid lat (-90..90) and lng (-180..180) query params are required",
+      },
       { status: 400 }
     );
   }

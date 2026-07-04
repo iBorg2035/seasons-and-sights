@@ -24,6 +24,7 @@ export function AddToTripButton({
 }) {
   const router = useRouter();
   const [added, setAdded] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   // Reflect whether this destination is already in the active trip, so the
   // button can show "✓ In your trip" without a page navigation.
@@ -49,17 +50,27 @@ export function AddToTripButton({
     e.preventDefault();
     e.stopPropagation();
     let id = ensureActiveTripId();
-    if (!id) {
+    if (!id || !getTrip(id)) {
       const t = createTrip();
+      if (!t) {
+        setSaveFailed(true);
+        setTimeout(() => setSaveFailed(false), 2500);
+        return;
+      }
       id = t.id;
     }
     setActiveTripId(id);
+    setSaveFailed(false);
     router.push(`/trips/${id}?add=${regionId}`);
   };
 
   return (
     <button onClick={onClick} aria-pressed={added} className={className}>
-      {added ? "✓ In your trip" : "+ Add to trip"}
+      {saveFailed
+        ? "Couldn't save"
+        : added
+          ? "✓ In your trip"
+          : "+ Add to trip"}
     </button>
   );
 }

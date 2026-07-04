@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { migrateDraftToTrips } from "@/lib/trip-migrate";
 import { getSavedTrips } from "@/lib/saved-trips";
 import { getActiveTripId } from "@/lib/active-trip";
 
 describe("draft→trips migration", () => {
   beforeEach(() => localStorage.clear());
+  afterEach(() => vi.restoreAllMocks());
 
   it("promotes an existing draft into a saved trip", () => {
     localStorage.setItem("seasons-draft", JSON.stringify({ start: 10, stops: [{ id: "vietnam-hoian", duration: 2 }] }));
@@ -41,5 +42,24 @@ describe("draft→trips migration", () => {
   it("does nothing when there was no draft", () => {
     migrateDraftToTrips();
     expect(getSavedTrips()).toHaveLength(0);
+  });
+
+  it("keeps the draft retryable when creating the migrated trip fails", () => {
+    const draft = JSON.stringify({
+      start: 1,
+      stops: [{ id: "vietnam-hoian", duration: 2 }],
+    });
+    localStorage.setItem("seasons-draft", draft);
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation((key) => {
+      if (key === "seasons-saved-trips") {
+        throw new DOMException("Persistent storage disabled", "SecurityError");
+      }
+    });
+
+    migrateDraftToTrips();
+
+    expect(getSavedTrips()).toHaveLength(0);
+    expect(localStorage.getItem("seasons-draft")).toBe(draft);
+    expect(localStorage.getItem("seasons-migrated-v2")).toBeNull();
   });
 });
