@@ -3,6 +3,8 @@ import { recordSyncResult } from "@/lib/sync-status";
 
 export interface SavedTrip {
   id: string;
+  /** Remote owner id. For shared trips this differs from the signed-in user. */
+  ownerId?: string;
   name: string;
   start: number;
   stops: [string, number][];
@@ -12,6 +14,7 @@ export interface SavedTrip {
 
 interface TripRow {
   id: string;
+  user_id?: string;
   name: string;
   data: { start: number; stops: [string, number][] };
   updated_at?: string;
@@ -20,6 +23,7 @@ interface TripRow {
 function fromRow(row: TripRow): SavedTrip {
   return {
     id: row.id,
+    ownerId: row.user_id,
     name: row.name,
     start: row.data.start,
     stops: row.data.stops,
@@ -52,7 +56,7 @@ export async function fetchRemoteTrips(): Promise<SavedTrip[]> {
   if (!sb) return [];
   const { data, error } = await sb
     .from("trips")
-    .select("id, name, data, updated_at")
+    .select("id, user_id, name, data, updated_at")
     .order("updated_at", { ascending: false });
   if (!reportSync("read", error) || !data) return [];
   return (data as TripRow[]).map(fromRow);
@@ -63,14 +67,34 @@ export async function fetchRemoteTrips(): Promise<SavedTrip[]> {
 export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise<boolean> {
   const sb = await getSupabase();
   if (!sb) return false;
+  const ownerId = trip.ownerId ?? userId;
+  const payload = {
+    name: trip.name,
+    data: { start: trip.start, stops: trip.stops },
+    // Preserve the trip's own edit time so last-write-wins stays correct.
+    updated_at: new Date(trip.updatedAt ?? Date.now()).toISOString(),
+  };
+  if (ownerId !== userId) {
+    const { data, error } = await sb
+      .from("trips")
+      .update(payload)
+      .eq("user_id", ownerId)
+      .eq("id", trip.id)
+      .select("id")
+      .maybeSingle();
+    if (error) return reportSync("write", error);
+    if (!data) {
+      return reportSync("write", {
+        message: "Shared trip could not be updated",
+      });
+    }
+    return reportSync("write", null);
+  }
   const { error } = await sb.from("trips").upsert(
     {
       id: trip.id,
-      user_id: userId,
-      name: trip.name,
-      data: { start: trip.start, stops: trip.stops },
-      // Preserve the trip's own edit time so last-write-wins stays correct.
-      updated_at: new Date(trip.updatedAt ?? Date.now()).toISOString(),
+      user_id: ownerId,
+      ...payload,
     },
     { onConflict: "user_id,id" }
   );
@@ -150,8 +174,9 @@ export function mergeTrips(
     // where strict `>` would silently drop the local trip from the merge and
     // the push list. Local is also the user's freshest intent on a true tie.
     if (!r || (l.updatedAt ?? 0) >= (r.updatedAt ?? 0)) {
-      byId.set(l.id, l);
-      toPush.push(l);
+      const next = r ? { ...l, ownerId: l.ownerId ?? r.ownerId } : l;
+      byId.set(l.id, next);
+      toPush.push(next);
     }
   }
 

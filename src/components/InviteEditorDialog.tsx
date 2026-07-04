@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  getUserIdByEmail,
-  inviteEditor,
+  inviteEditorByEmail,
   listEditors,
   removeEditor,
   type TripEditor,
@@ -45,20 +44,14 @@ export function InviteEditorDialog({
     e.preventDefault();
     setBusy(true);
     setMsg(null);
-    const uid = await getUserIdByEmail(email.trim());
-    if (!uid) {
-      setMsg({
-        text: "No account found for that email. They need to sign up first.",
-        ok: false,
-      });
-      setBusy(false);
-      return;
-    }
-    const { error } = await inviteEditor(tripId, ownerId, uid);
+    const { error } = await inviteEditorByEmail(tripId, email);
     if (error) {
       setMsg({ text: error, ok: false });
     } else {
-      setMsg({ text: `Invited ${email}`, ok: true });
+      setMsg({
+        text: "Invite sent. If that email has an account, they'll be added.",
+        ok: true,
+      });
       setEmail("");
       // The invite already succeeded — a failed list refresh shouldn't
       // overwrite the success message, so just leave the stale list.

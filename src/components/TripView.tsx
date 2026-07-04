@@ -66,6 +66,8 @@ export function TripView({
     !!trip &&
     !!snapshotRef.current &&
     JSON.stringify(trip) !== snapshotRef.current;
+  const canManageEditors =
+    !!user && !!trip && (!trip.ownerId || trip.ownerId === user.id);
 
   const refresh = useCallback(() => {
     setTrip(getTrip(tripId));
@@ -256,7 +258,9 @@ export function TripView({
       return;
     }
     setSaveError(false);
-    if (user) void deleteRemoteTrip(trip.id);
+    if (user && (!trip.ownerId || trip.ownerId === user.id)) {
+      void deleteRemoteTrip(trip.id);
+    }
     // Clear the now-stale active pointer; /trips will repair it on arrival
     // via ensureActiveTripId if other trips remain.
     setActiveTripId(null);
@@ -375,7 +379,7 @@ export function TripView({
                   role="menu"
                   className="absolute right-0 z-30 mt-1 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
                 >
-                  {user && (
+                  {canManageEditors && (
                     <button
                       type="button"
                       onClick={() => {
@@ -466,10 +470,10 @@ export function TripView({
         </section>
       </main>
 
-      {inviteOpen && user && (
+      {inviteOpen && user && canManageEditors && (
         <InviteEditorDialog
           tripId={trip.id}
-          ownerId={user.id}
+          ownerId={trip.ownerId ?? user.id}
           onClose={() => setInviteOpen(false)}
         />
       )}

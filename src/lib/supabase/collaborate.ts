@@ -7,34 +7,17 @@ export interface TripEditor {
   editorEmail?: string;
 }
 
-/** Look up a user by email (via the secure RPC). */
-export async function getUserIdByEmail(
-  email: string
-): Promise<string | null> {
-  const sb = await getSupabase();
-  if (!sb) return null;
-  const { data, error } = await sb.rpc("get_user_id_by_email", {
-    p_email: email,
-  });
-  if (error || !data) return null;
-  return data as string;
-}
-
-/** Invite a user (by their resolved uuid) as an editor on a trip. */
-export async function inviteEditor(
+/** Invite a user by email without revealing whether the account exists. */
+export async function inviteEditorByEmail(
   tripId: string,
-  ownerId: string,
-  editorId: string
+  email: string
 ): Promise<{ error?: string }> {
   const sb = await getSupabase();
   if (!sb) return { error: "Not configured" };
-  if (editorId === ownerId) return { error: "You can't invite yourself" };
-  const { error } = await sb.from("trip_editors").insert({
-    trip_id: tripId,
-    owner_id: ownerId,
-    editor_id: editorId,
+  const { error } = await sb.rpc("invite_trip_editor_by_email", {
+    p_trip_id: tripId,
+    p_email: email.trim(),
   });
-  if (error?.code === "23505") return { error: "Already invited" };
   return { error: error?.message };
 }
 

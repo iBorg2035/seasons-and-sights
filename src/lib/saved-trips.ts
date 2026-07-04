@@ -6,6 +6,8 @@ export const SAVED_TRIPS_EVENT = "seasons-saved-trips-change";
 
 export interface SavedTripLite {
   id: string;
+  /** Remote owner id for cloud-synced/shared trips. Local-only trips omit it. */
+  ownerId?: string;
   name: string;
   start: number;
   stops: [string, number][];

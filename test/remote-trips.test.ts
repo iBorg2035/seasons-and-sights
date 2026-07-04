@@ -4,6 +4,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const fake = {
   deleteError: null as { message: string } | null,
   upsertError: null as { message: string } | null,
+  updateError: null as { message: string } | null,
+  updateData: { id: "t1" } as { id: string } | null,
+  updatePayload: null as unknown,
+  updateEq: [] as [string, string][],
 };
 
 vi.mock("@/lib/supabase/client", () => ({
@@ -12,6 +16,27 @@ vi.mock("@/lib/supabase/client", () => ({
     from: () => ({
       delete: () => ({ eq: async () => ({ error: fake.deleteError }) }),
       upsert: async () => ({ error: fake.upsertError }),
+      update: (payload: unknown) => {
+        fake.updatePayload = payload;
+        return {
+          eq: (field: string, value: string) => {
+            fake.updateEq.push([field, value]);
+            return {
+              eq: (field2: string, value2: string) => {
+                fake.updateEq.push([field2, value2]);
+                return {
+                  select: () => ({
+                    maybeSingle: async () => ({
+                      data: fake.updateData,
+                      error: fake.updateError,
+                    }),
+                  }),
+                };
+              },
+            };
+          },
+        };
+      },
     }),
   }),
 }));
@@ -24,6 +49,10 @@ const trip = { id: "t1", name: "T", start: 1, stops: [] as [string, number][] };
 beforeEach(() => {
   fake.deleteError = null;
   fake.upsertError = null;
+  fake.updateError = null;
+  fake.updateData = { id: "t1" };
+  fake.updatePayload = null;
+  fake.updateEq = [];
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
@@ -49,5 +78,28 @@ describe("remote trips error surfacing (reportSync funnel)", () => {
     fake.upsertError = null;
     await expect(upsertRemoteTrip("u1", trip)).resolves.toBe(true);
     expect(getSyncStatus()).toBe("synced");
+  });
+
+  it("updates the owner row when an editor saves a shared trip", async () => {
+    await expect(
+      upsertRemoteTrip("editor-user", { ...trip, ownerId: "owner-user" })
+    ).resolves.toBe(true);
+
+    expect(fake.updatePayload).toMatchObject({ name: "T" });
+    expect(fake.updateEq).toEqual([
+      ["user_id", "owner-user"],
+      ["id", "t1"],
+    ]);
+  });
+
+  it("reports failure when an editor update matches no owner row", async () => {
+    fake.updateData = null;
+
+    await expect(
+      upsertRemoteTrip("editor-user", { ...trip, ownerId: "owner-user" })
+    ).resolves.toBe(false);
+
+    expect(getSyncStatus()).toBe("failed");
+    expect(getLastErrorMessage()).toBe("Shared trip could not be updated");
   });
 });

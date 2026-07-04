@@ -28,18 +28,20 @@ export function setActiveTripId(id: string | null): void {
 
 /**
  * Return a valid active-trip id, repairing the pointer if it points at a
- * deleted/missing trip and saved trips exist to fall back to: in that case the
- * pointer is repointed to the newest saved trip. When there are no saved trips
- * at all there is nothing to repair toward, so the current pointer (possibly
- * null) is returned untouched.
+ * deleted/missing trip: with saved trips available it repoints to the newest
+ * trip; with no saved trips it clears the stale pointer and returns null.
  */
 export function ensureActiveTripId(): string | null {
   const current = getActiveTripId();
   const trips = getSavedTrips();
   // Pointer already references an existing trip — keep it.
   if (current && trips.some((t) => t.id === current)) return current;
-  // Nothing to fall back to — leave the pointer as-is.
-  if (trips.length === 0) return current;
+  // Nothing to fall back to — clear stale pointers so legacy redirects land on
+  // /trips instead of a missing trip page.
+  if (trips.length === 0) {
+    if (current) setActiveTripId(null);
+    return null;
+  }
   // Stale (or missing) pointer with saved trips available: repoint to the
   // newest by updatedAt. (getSavedTrips returns storage order, not sorted, so
   // we compute the max defensively.)

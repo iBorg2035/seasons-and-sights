@@ -143,19 +143,48 @@ create policy "Editors can update trips"
     )
   );
 
--- Look up a user id by email (for invite-by-email). Security definer so the
--- caller can't enumerate the full users table.
+-- Deprecated: the app no longer exposes account-existence lookups by email.
 drop function if exists public.get_user_id_by_email(text);
-create or replace function public.get_user_id_by_email(p_email text)
-returns uuid
-language sql
+
+-- Invite by email without revealing whether that email has an account. If the
+-- account exists, the caller owns the trip, and the target isn't the caller, an
+-- editor row is inserted. Otherwise the function returns successfully with no
+-- visible distinction.
+drop function if exists public.invite_trip_editor_by_email(text, text);
+create or replace function public.invite_trip_editor_by_email(
+  p_trip_id text,
+  p_email text
+)
+returns void
+language plpgsql
 security definer
 set search_path = public
 as $$
-  select id from auth.users where email = lower(p_email) limit 1;
+declare
+  v_owner uuid := auth.uid();
+  v_editor uuid;
+begin
+  select id into v_editor
+  from auth.users
+  where lower(email) = lower(trim(p_email))
+  limit 1;
+
+  if v_editor is null or v_editor = v_owner then
+    return;
+  end if;
+
+  insert into public.trip_editors (trip_id, owner_id, editor_id)
+  select p_trip_id, v_owner, v_editor
+  where exists (
+    select 1 from public.trips
+    where trips.user_id = v_owner
+      and trips.id = p_trip_id
+  )
+  on conflict do nothing;
+end;
 $$;
 
-grant execute on function public.get_user_id_by_email(text) to authenticated;
+grant execute on function public.invite_trip_editor_by_email(text, text) to authenticated;
 
 -- Resolve a set of user ids to their emails, for displaying invited editors by
 -- email instead of an opaque UUID. Security definer so the caller can't read

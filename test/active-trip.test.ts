@@ -30,6 +30,10 @@ describe("active-trip pointer", () => {
   });
 
   it("ensureActiveTripId returns the current id when valid", () => {
+    localStorage.setItem(
+      "seasons-saved-trips",
+      JSON.stringify([{ id: "keep-me", name: "Trip", start: 1, stops: [] }])
+    );
     setActiveTripId("keep-me");
     expect(ensureActiveTripId()).toBe("keep-me");
   });
@@ -47,5 +51,11 @@ describe("active-trip pointer", () => {
     const id = ensureActiveTripId();
     expect(id).toBe("new"); // newest by updatedAt
     expect(getActiveTripId()).toBe("new"); // repointed
+  });
+
+  it("ensureActiveTripId clears a stale pointer when there are no saved trips", () => {
+    setActiveTripId("does-not-exist");
+    expect(ensureActiveTripId()).toBeNull();
+    expect(getActiveTripId()).toBeNull();
   });
 });

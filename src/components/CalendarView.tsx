@@ -45,6 +45,7 @@ interface Row {
   cells: (MonthCell | null)[];
   trip: {
     id: string;
+    ownerId?: string;
     name: string;
     start: number;
     stops: [string, number][];
@@ -149,7 +150,9 @@ export function CalendarView() {
       return;
     }
     setDeleteError(false);
-    if (user) void deleteRemoteTrip(row.trip.id);
+    if (user && (!row.trip.ownerId || row.trip.ownerId === user.id)) {
+      void deleteRemoteTrip(row.trip.id);
+    }
   }
 
   if (rows.length === 0) {

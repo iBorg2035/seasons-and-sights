@@ -39,6 +39,15 @@ describe("mergeTrips", () => {
     expect(m.toPush.map((x) => x.id)).toEqual(["2"]);
   });
 
+  it("preserves the remote owner id when a local edit wins a conflict", () => {
+    const m = mergeTrips(
+      [t("2", "local edit", 3)],
+      [{ ...t("2", "remote", 2), ownerId: "owner-user" }]
+    );
+    expect(m.merged.find((x) => x.id === "2")?.ownerId).toBe("owner-user");
+    expect(m.toPush[0].ownerId).toBe("owner-user");
+  });
+
   it("pushes all local trips when remote is empty", () => {
     const { merged, toPush } = mergeTrips([t("1", "A", 1)], []);
     expect(toPush).toHaveLength(1);
