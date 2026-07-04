@@ -152,8 +152,8 @@ export function StopsSection({
             )}
 
             {/* Controls row — always visible */}
-            <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50/60 px-4 py-2">
-              <span className="text-xs font-medium text-slate-500">Stay:</span>
+            <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-white px-4 py-2">
+              <span className="text-xs font-medium text-slate-700">Stay:</span>
               {DURATIONS.map((d) => (
                 <button
                   key={d}
@@ -168,7 +168,7 @@ export function StopsSection({
                   className={`rounded-md border px-2 py-0.5 text-xs font-medium transition ${
                     s.duration === d
                       ? "border-amber-300 bg-amber-100 text-amber-800"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
                   {d}m
@@ -189,7 +189,7 @@ export function StopsSection({
                 }
                 disabled={i === 0}
                 aria-label="Move up"
-                className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"
+                className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-slate-700 transition hover:bg-slate-50 disabled:opacity-30"
               >
                 ▲
               </button>
@@ -207,7 +207,7 @@ export function StopsSection({
                 }
                 disabled={i === resolved.length - 1}
                 aria-label="Move down"
-                className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"
+                className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-slate-700 transition hover:bg-slate-50 disabled:opacity-30"
               >
                 ▼
               </button>

@@ -88,7 +88,7 @@ export function StopDetail({
   const pending = !detail && !failed;
 
   return (
-    <div className="space-y-5 border-t border-slate-100 bg-slate-50/40 px-4 py-4 text-sm text-slate-700">
+    <div className="space-y-5 border-t border-slate-100 bg-white px-4 py-4 text-sm text-slate-800">
       {/* Hero image */}
       {region.photo && (
         <div className="overflow-hidden rounded-xl">
@@ -156,7 +156,7 @@ export function StopDetail({
 
       {/* When to go: season calendar + crowds */}
       <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-700">
           When to go
         </h4>
         <SeasonStrip region={region} highlightMonth={now} showLegend={false} />
@@ -164,13 +164,13 @@ export function StopDetail({
           <CrowdStrip region={region} showLegend={false} />
         </div>
         {region.climateBlurb && (
-          <p className="mt-2 text-slate-500">{region.climateBlurb}</p>
+          <p className="mt-2 text-slate-600">{region.climateBlurb}</p>
         )}
       </div>
 
       {/* Climate + live weather */}
       <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-700">
           Climate &amp; weather
         </h4>
         <ClimateChart lat={region.lat} lng={region.lng} />
@@ -185,14 +185,14 @@ export function StopDetail({
       {/* Sights */}
       {(detail || pending) && (
         <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-700">
             See
           </h4>
           {detail ? (
             detail.sights.length > 0 ? (
               <SightsList sights={detail.sights} />
             ) : (
-              <p className="text-slate-500">
+              <p className="text-slate-600">
                 No curated sights for this destination yet.
               </p>
             )
@@ -205,7 +205,7 @@ export function StopDetail({
       {/* Map with sight pins (needs the fetched sights) */}
       {(detail || pending) && (
         <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-700">
             Map
           </h4>
           {detail ? (
@@ -221,7 +221,7 @@ export function StopDetail({
       {/* Festivals */}
       {(detail || pending) && (
         <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-700">
             Festivals
           </h4>
           {detail ? (
@@ -230,16 +230,16 @@ export function StopDetail({
                 {detail.events.map((e) => (
                   <li key={e.name}>
                     <span className="font-medium">{e.name}</span>{" "}
-                    <span className="text-slate-400">
+                    <span className="text-slate-500">
                       ({MONTH_NAMES[e.month - 1]})
                     </span>
                     <br />
-                    <span className="text-slate-500">{e.blurb}</span>
+                    <span className="text-slate-600">{e.blurb}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-slate-500">No major festivals listed.</p>
+              <p className="text-slate-600">No major festivals listed.</p>
             )
           ) : (
             <Skeleton label="Festivals" />
