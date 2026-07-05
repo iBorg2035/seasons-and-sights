@@ -18,12 +18,12 @@
 }
 
 .dark {
-  --background: #0b1418; /* deep navy-black */
+  --background: #000000; /* pure black — OLED-friendly, the requested dark */
   --foreground: #e6eef1;
   --glow-1: rgba(45, 212, 191, 0.1); /* bright teal */
   --glow-2: rgba(30, 122, 147, 0.14); /* bright blue */
-  --chrome: rgba(11, 20, 24, 0.85);
-  --hairline: #1f3540;
+  --chrome: rgba(0, 0, 0, 0.9);
+  --hairline: #1f2933;
 }
 
 .font-display {
@@ -97,21 +97,22 @@ h3 {
 
 /* ───────── Dark mode: remap the common light-mode utilities ─────────
    Components use literal Tailwind slate/stone colors; these scoped overrides
-   flip surfaces, text, and borders to navy-tinted equivalents without editing
+   flip surfaces, text, and borders to near-black (with a faint navy tint so
+   cards stay distinguishable from the pure-black background) without editing
    every component. */
 .dark .bg-white {
-  background-color: #13242b;
+  background-color: #0a1014; /* near-black card surface */
 }
 .dark .bg-slate-50 {
-  background-color: #162a33;
+  background-color: #0d1419; /* marginally lighter sub-surface (detail panels) */
 }
 .dark .border-slate-200,
 .dark .border-slate-100,
 .dark .border-slate-300 {
-  border-color: #1f3540;
+  border-color: #1a242c;
 }
 .dark .ring-slate-200 {
-  --tw-ring-color: #1f3540;
+  --tw-ring-color: #1a242c;
 }
 .dark .divide-slate-100 > * {
   border-color: #1f3540;
@@ -150,7 +151,7 @@ h3 {
   background-color: #e6eef1;
 }
 .dark .bg-slate-900.text-white {
-  color: #0b1418;
+  color: #000000;
 }
 .dark .hover\:bg-slate-700:hover {
   background-color: #cfe0e6;
@@ -158,7 +159,7 @@ h3 {
 
 /* Teal-tinted hover backgrounds (chrome accent hover). */
 .dark .hover\:bg-slate-100:hover {
-  background-color: #162a33;
+  background-color: #121a20;
 }
 .dark .hover\:bg-teal-50:hover {
   background-color: rgba(45, 212, 191, 0.14);
@@ -167,7 +168,7 @@ h3 {
 /* Dim and tint the map tiles so the basemap reads dark; markers are overlays
    and keep their colors. */
 .dark .leaflet-container {
-  background: #162a33;
+  background: #0a1014;
 }
 .dark .leaflet-tile {
   filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
