@@ -54,7 +54,7 @@ describe("<StopDetail>", () => {
     render(<StopDetail region={kyoto} stayMonth={4} />);
     await waitFor(() => expect(screen.getByText("Fushimi Inari")).toBeTruthy());
     expect(screen.getByText(/Gion Matsuri/)).toBeTruthy();
-    expect(screen.getByText(/Very safe/)).toBeTruthy();
+    expect(screen.getByText(/Very safe\./)).toBeTruthy();
     // Packing list, tailored to the stay month, built from the fetched sights.
     expect(screen.getByText(/Pack for April/)).toBeTruthy();
     expect(screen.getByText(/Reusable water bottle/)).toBeTruthy();
