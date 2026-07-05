@@ -185,15 +185,19 @@ h3 {
 .dark .bg-sky-100 {
   background-color: rgba(56, 189, 248, 0.16);
 }
+.dark .bg-emerald-50,
 .dark .bg-emerald-100 {
   background-color: rgba(16, 185, 129, 0.16);
 }
+.dark .bg-rose-50,
 .dark .bg-rose-100 {
   background-color: rgba(244, 63, 94, 0.16);
 }
+.dark .bg-violet-50,
 .dark .bg-violet-100 {
   background-color: rgba(139, 92, 246, 0.18);
 }
+.dark .bg-teal-50,
 .dark .bg-teal-100 {
   background-color: rgba(45, 212, 191, 0.18);
 }
