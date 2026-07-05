@@ -53,11 +53,12 @@ export function InviteEditorDialog({
         ok: true,
       });
       setEmail("");
-      // The invite already succeeded — a failed list refresh shouldn't
-      // overwrite the success message, so just leave the stale list.
-      listEditors(tripId, ownerId)
-        .then(setEditors)
-        .catch(() => {});
+      // Deliberately not refreshing the editor list here: doing so would let
+      // the inviter tell, from whether the list grew, whether the email they
+      // just entered has an account — exactly what invite_trip_editor_by_email
+      // (supabase/schema.sql) is designed not to reveal. The list still picks
+      // up new editors the next time this dialog is opened (see the mount
+      // effect above).
     }
     setBusy(false);
   }

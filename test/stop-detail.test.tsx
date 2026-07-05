@@ -54,7 +54,10 @@ describe("<StopDetail>", () => {
     render(<StopDetail region={kyoto} stayMonth={4} />);
     await waitFor(() => expect(screen.getByText("Fushimi Inari")).toBeTruthy());
     expect(screen.getByText(/Gion Matsuri/)).toBeTruthy();
-    expect(screen.getByText(/Very safe/)).toBeTruthy();
+    // TravelEssentials' health line also matches /Very safe/ now, so scope
+    // to SafetyNote's paragraph via its unique "Safety:" label.
+    const safetyPara = screen.getByText(/Safety:/).closest("p");
+    expect(safetyPara?.textContent).toMatch(/Very safe/);
     // Packing list, tailored to the stay month, built from the fetched sights.
     expect(screen.getByText(/Pack for April/)).toBeTruthy();
     expect(screen.getByText(/Reusable water bottle/)).toBeTruthy();

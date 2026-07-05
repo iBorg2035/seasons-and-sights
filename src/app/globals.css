@@ -105,6 +105,9 @@ h3 {
 .dark .bg-slate-50 {
   background-color: #162a33;
 }
+.dark .bg-slate-100 {
+  background-color: #1a323c;
+}
 .dark .border-slate-200,
 .dark .border-slate-100,
 .dark .border-slate-300 {

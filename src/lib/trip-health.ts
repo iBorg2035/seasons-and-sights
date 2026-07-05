@@ -10,7 +10,6 @@ type TripHealthRegion = ClimateRegion & {
   id: string;
   name: string;
   country: string;
-  dailyBudget?: number;
   info?: TravelInfo;
 };
 

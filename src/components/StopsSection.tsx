@@ -28,9 +28,11 @@ export function StopsSection({
 }) {
   // Stops expand to show full destination detail by default — the rich local
   // info (climate, sights, map, toolkit) is the point of the trip page, so it
-  // shouldn't be hidden behind a click. `openIdx` tracks a *manually* collapsed
-  // stop so the user can still tidy the view; a stop is open unless collapsed.
-  const [collapsedIdx, setCollapsedIdx] = useState<Set<number>>(new Set());
+  // shouldn't be hidden behind a click. `collapsedIds` tracks *manually*
+  // collapsed stops by region id (not array position) so a stop's collapsed
+  // state travels with it across reorders/add/remove instead of sticking to
+  // whichever stop now occupies that slot.
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
 
   // Resolve stops to slim regions + planner stops, planning so we know each
@@ -93,7 +95,7 @@ export function StopsSection({
       {resolved.map((s, i) => {
         const { region } = s;
         const leg = legByRegion.get(region.id);
-        const isOpen = !collapsedIdx.has(i);
+        const isOpen = !collapsedIds.has(region.id);
         const season = leg
           ? climateForMonth(region, leg.months[0]).season
           : "shoulder";
@@ -108,15 +110,17 @@ export function StopsSection({
             {/* Collapsed header — click toggles */}
             <button
               type="button"
+              id={`stop-toggle-${region.id}`}
               onClick={() =>
-                setCollapsedIdx((prev) => {
+                setCollapsedIds((prev) => {
                   const next = new Set(prev);
-                  if (next.has(i)) next.delete(i);
-                  else next.add(i);
+                  if (next.has(region.id)) next.delete(region.id);
+                  else next.add(region.id);
                   return next;
                 })
               }
               aria-expanded={isOpen}
+              aria-controls={`stop-panel-${region.id}`}
               className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
             >
               <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
@@ -144,11 +148,17 @@ export function StopsSection({
             </button>
 
             {isOpen && (
-              <StopDetail
-                region={region}
-                prevStop={i > 0 ? resolved[i - 1]?.region : undefined}
-                stayMonth={leg?.months[0]}
-              />
+              <div
+                id={`stop-panel-${region.id}`}
+                role="region"
+                aria-labelledby={`stop-toggle-${region.id}`}
+              >
+                <StopDetail
+                  region={region}
+                  prevStop={i > 0 ? resolved[i - 1]?.region : undefined}
+                  stayMonth={leg?.months[0]}
+                />
+              </div>
             )}
 
             {/* Controls row — always visible */}
