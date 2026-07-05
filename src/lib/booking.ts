@@ -56,3 +56,9 @@ export function buildFlightsUrl(dest: string): string {
     `flights to ${dest}`
   )}`;
 }
+
+/** Rome2Rio multi-modal route comparison deep-link between two destinations
+ *  (e.g. "Bangkok, Thailand" → "Kyoto, Japan"). No API key required. */
+export function buildRome2RioUrl(from: string, to: string): string {
+  return `https://www.rome2rio.com/s/${encodeURIComponent(from)}/${encodeURIComponent(to)}`;
+}

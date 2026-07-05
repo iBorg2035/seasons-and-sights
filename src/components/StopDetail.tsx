@@ -146,10 +146,20 @@ export function StopDetail({
         isFirst={!prevStop}
         from={
           prevStop
-            ? { lat: prevStop.lat, lng: prevStop.lng, name: prevStop.name }
+            ? {
+                lat: prevStop.lat,
+                lng: prevStop.lng,
+                name: prevStop.name,
+                dest: prevStop.bookingDest,
+              }
             : undefined
         }
-        to={{ lat: region.lat, lng: region.lng, name: region.name }}
+        to={{
+          lat: region.lat,
+          lng: region.lng,
+          name: region.name,
+          dest: region.bookingDest,
+        }}
         regionName={region.name}
         note={region.info?.gettingThere}
       />

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildBookingUrl, buildFlightsUrl } from "@/lib/booking";
+import { buildBookingUrl, buildFlightsUrl, buildRome2RioUrl } from "@/lib/booking";
 
 describe("buildBookingUrl", () => {
   it("builds a Booking.com search URL with the destination", () => {
@@ -55,5 +55,15 @@ describe("buildFlightsUrl", () => {
     const url = buildFlightsUrl("Cusco, Peru");
     expect(url).toContain("google.com/travel/flights");
     expect(url).toContain(encodeURIComponent("flights to Cusco, Peru"));
+  });
+});
+
+describe("buildRome2RioUrl", () => {
+  it("builds a rome2rio route-comparison URL with origin and destination", () => {
+    const url = new URL(buildRome2RioUrl("Bangkok, Thailand", "Kyoto, Japan"));
+    expect(url.hostname).toBe("www.rome2rio.com");
+    expect(url.pathname).toBe(
+      `/s/${encodeURIComponent("Bangkok, Thailand")}/${encodeURIComponent("Kyoto, Japan")}`
+    );
   });
 });
