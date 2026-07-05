@@ -329,6 +329,38 @@ export function estimateTripCost(legs: ItineraryLeg<ClimateRegion>[]): number {
   return legs.reduce((sum, leg) => sum + estimateLegCost(leg), 0);
 }
 
+/**
+ * Estimated spend so far for a trip in progress: prorates each leg's
+ * already-computed estimateLegCost by the fraction of that leg's real
+ * calendar days elapsed. No second cost model — spent + (total - spent)
+ * always equals estimateTripCost's total exactly.
+ */
+export function estimateSpendSoFar(
+  legs: ItineraryLeg<ClimateRegion>[],
+  ranges: { start: Date; end: Date }[],
+  now: Date = new Date()
+): number {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  return legs.reduce((sum, leg, i) => {
+    const legCost = estimateLegCost(leg);
+    if (legCost === 0) return sum;
+
+    const range = ranges[i];
+    const start = new Date(range.start.getFullYear(), range.start.getMonth(), range.start.getDate());
+    const end = new Date(range.end.getFullYear(), range.end.getMonth(), range.end.getDate());
+
+    if (today >= end) return sum + legCost; // fully past: 100% spent
+    if (today < start) return sum; // fully future: 0% spent
+
+    const MS_PER_DAY = 86_400_000;
+    const totalDays = Math.round((end.getTime() - start.getTime()) / MS_PER_DAY);
+    const elapsedDays = Math.round((today.getTime() - start.getTime()) / MS_PER_DAY) + 1;
+    const fraction = Math.min(1, Math.max(0, elapsedDays / totalDays));
+    return sum + legCost * fraction;
+  }, 0);
+}
+
 /** Whole-dollar USD, e.g. "$2,400". */
 export function formatUsd(n: number): string {
   return `$${Math.round(n).toLocaleString("en-US")}`;

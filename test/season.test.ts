@@ -10,8 +10,11 @@ import {
   wrapMonth,
   crowdForMonth,
   estimateTripCost,
+  estimateSpendSoFar,
   formatUsd,
   findActiveLeg,
+  type ItineraryLeg,
+  type ClimateRegion,
 } from "@/lib/season";
 import { REGIONS } from "@/data/regions";
 import type { Region } from "@/types";
@@ -205,6 +208,63 @@ describe("budget", () => {
     const legs = planItinerary([{ region: cusco, durationMonths: 2 }], 6);
     expect(estimateTripCost(legs)).toBe(3000); // 50 × 2 months × 30 days
     expect(formatUsd(3000)).toBe("$3,000");
+  });
+});
+
+describe("estimateSpendSoFar", () => {
+  const leg = (dailyBudget: number, months: number): ItineraryLeg<ClimateRegion> => ({
+    region: { months: {}, dailyBudget } as unknown as ClimateRegion,
+    position: 0,
+    months: Array.from({ length: months }, (_, i) => i + 1),
+    fit: 100,
+  });
+
+  it("counts a fully past leg as 100% spent", () => {
+    const legs = [leg(50, 2)]; // 50 * 2 * 30 = 3000
+    const ranges = [{ start: new Date(2026, 0, 1), end: new Date(2026, 2, 1) }];
+    expect(estimateSpendSoFar(legs, ranges, new Date(2026, 5, 1))).toBe(3000);
+  });
+
+  it("counts a fully future leg as 0% spent", () => {
+    const legs = [leg(50, 2)];
+    const ranges = [{ start: new Date(2026, 6, 1), end: new Date(2026, 8, 1) }];
+    expect(estimateSpendSoFar(legs, ranges, new Date(2026, 5, 1))).toBe(0);
+  });
+
+  it("prorates the active leg by real-calendar elapsed days", () => {
+    const legs = [leg(30, 2)]; // 30 * 2 * 30 = 1800 total
+    const ranges = [{ start: new Date(2026, 5, 1), end: new Date(2026, 7, 1) }]; // Jun 1 – Aug 1, 61 days
+    const spent = estimateSpendSoFar(legs, ranges, new Date(2026, 6, 1)); // day 31
+    expect(spent).toBeCloseTo(1800 * (31 / 61));
+  });
+
+  it("sums to no more than estimateTripCost across past + active + future legs", () => {
+    const legs = [leg(40, 1), leg(60, 1), leg(20, 1)];
+    const ranges = [
+      { start: new Date(2026, 0, 1), end: new Date(2026, 1, 1) }, // past
+      { start: new Date(2026, 1, 1), end: new Date(2026, 2, 1) }, // active
+      { start: new Date(2026, 2, 1), end: new Date(2026, 3, 1) }, // future
+    ];
+    const now = new Date(2026, 1, 15);
+    const total = estimateTripCost(legs);
+    const spent = estimateSpendSoFar(legs, ranges, now);
+    expect(spent).toBeGreaterThanOrEqual(0);
+    expect(spent).toBeLessThanOrEqual(total);
+  });
+
+  it("returns 0 for an empty itinerary", () => {
+    expect(estimateSpendSoFar([], [], new Date())).toBe(0);
+  });
+
+  it("skips a leg with no dailyBudget without affecting other legs' proration", () => {
+    const legs = [leg(0, 1), leg(50, 1)];
+    const ranges = [
+      { start: new Date(2026, 0, 1), end: new Date(2026, 1, 1) },
+      { start: new Date(2026, 1, 1), end: new Date(2026, 2, 1) },
+    ];
+    const spent = estimateSpendSoFar(legs, ranges, new Date(2026, 1, 15));
+    expect(spent).toBeGreaterThan(0);
+    expect(spent).toBeLessThanOrEqual(estimateTripCost(legs));
   });
 });
 

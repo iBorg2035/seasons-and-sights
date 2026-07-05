@@ -10,6 +10,9 @@ import {
   MONTH_NAMES_LONG,
   SEASON_META,
   SIGHT_TYPE_META,
+  estimateTripCost,
+  estimateSpendSoFar,
+  formatUsd,
   type ItineraryLeg,
   type PlannerStop,
 } from "@/lib/season";
@@ -73,14 +76,17 @@ export function RouteSection({
     );
   }
 
+  const now = new Date();
   const legs = planItinerary(stops, start);
   const ranges = legDateRanges(start, legs);
-  const active = findActiveLeg(ranges);
+  const active = findActiveLeg(ranges, now);
   const health = assessTripHealth(legs, {
     isFlexibleStart: isFlexible,
     interests: trip.interests,
   });
   const interests = trip.interests ?? [];
+  const totalCost = estimateTripCost(legs);
+  const spendSoFar = active ? estimateSpendSoFar(legs, ranges, now) : 0;
 
   function toggleInterest(type: SightType) {
     if (!onInterestsChange) return;
@@ -100,8 +106,17 @@ export function RouteSection({
     <div className="space-y-5">
       {active && (
         <div className="rounded-xl border border-teal-200 bg-teal-50 px-4 py-2.5 text-sm font-medium text-teal-800">
-          📍 You&apos;re in {legs[active.index].region.name} — day {active.day}{" "}
-          of {active.totalDays}
+          <p>
+            📍 You&apos;re in {legs[active.index].region.name} — day{" "}
+            {active.day} of {active.totalDays}
+          </p>
+          {totalCost > 0 && (
+            <p className="mt-1 text-xs font-normal text-teal-700">
+              Est. ~{formatUsd(spendSoFar)} of ~{formatUsd(totalCost)} spent so
+              far ({formatUsd(totalCost - spendSoFar)} left) — based on
+              curated daily-budget estimates, not tracked expenses
+            </p>
+          )}
         </div>
       )}
 
@@ -340,6 +355,7 @@ export function RouteSection({
           </span>{" "}
           · {totalMonths} month{totalMonths === 1 ? "" : "s"} total ·{" "}
           {fitSummary}
+          {totalCost > 0 && <> · ~{formatUsd(totalCost)} estimated</>}
         </p>
       </div>
 
