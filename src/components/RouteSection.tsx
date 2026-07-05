@@ -3,6 +3,7 @@
 import {
   planItinerary,
   legDateRanges,
+  findActiveLeg,
   fitQuality,
   climateForMonth,
   MONTH_NAMES,
@@ -74,6 +75,7 @@ export function RouteSection({
 
   const legs = planItinerary(stops, start);
   const ranges = legDateRanges(start, legs);
+  const active = findActiveLeg(ranges);
   const health = assessTripHealth(legs, {
     isFlexibleStart: isFlexible,
     interests: trip.interests,
@@ -96,6 +98,13 @@ export function RouteSection({
 
   return (
     <div className="space-y-5">
+      {active && (
+        <div className="rounded-xl border border-teal-200 bg-teal-50 px-4 py-2.5 text-sm font-medium text-teal-800">
+          📍 You&apos;re in {legs[active.index].region.name} — day {active.day}{" "}
+          of {active.totalDays}
+        </div>
+      )}
+
       {/* Stop chips, colored by each leg's season fit */}
       <ol className="flex flex-wrap items-center gap-2">
         {legs.map((leg, i) => {

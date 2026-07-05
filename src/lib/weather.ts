@@ -16,9 +16,12 @@ export interface WeatherSnapshot {
   /** Today's sunrise/sunset (ISO local, e.g. "2026-06-16T05:12"), if available. */
   sunrise: string | null;
   sunset: string | null;
+  /** IANA zone, e.g. "Asia/Bangkok" — from Open-Meteo's timezone=auto. Null if the upstream response omitted it. */
+  timezone: string | null;
 }
 
 interface OpenMeteoResponse {
+  timezone?: string;
   current?: {
     temperature_2m: number;
     precipitation: number;
@@ -77,6 +80,7 @@ export async function fetchWeather(
     daily,
     sunrise: data.daily?.sunrise?.[0] ?? null,
     sunset: data.daily?.sunset?.[0] ?? null,
+    timezone: data.timezone ?? null,
   };
 }
 

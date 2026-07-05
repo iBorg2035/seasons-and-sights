@@ -27,6 +27,18 @@ function dayLength(sunrise: string, sunset: string): string {
   return `${Math.floor(mins / 60)}h ${Math.round(mins % 60)}m`;
 }
 
+function localTimeNow(timezone: string): string | null {
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date());
+  } catch {
+    return null; // defensive against a malformed/unsupported IANA string
+  }
+}
+
 export function WeatherNow({ lat, lng }: { lat: number; lng: number }) {
   const [data, setData] = useState<WeatherSnapshot | null>(null);
   const [error, setError] = useState(false);
@@ -71,6 +83,14 @@ export function WeatherNow({ lat, lng }: { lat: number; lng: number }) {
               </div>
             </div>
           </div>
+
+          {data.timezone &&
+            (() => {
+              const t = localTimeNow(data.timezone!);
+              return t ? (
+                <p className="mt-2 text-sm text-slate-500">🕐 {t} local</p>
+              ) : null;
+            })()}
 
           {data.sunrise && data.sunset && (
             <div className="mt-3 flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">

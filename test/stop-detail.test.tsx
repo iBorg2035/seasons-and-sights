@@ -70,4 +70,18 @@ describe("<StopDetail>", () => {
     );
     expect(detailCalls).toHaveLength(0);
   });
+
+  it("highlights a festival that falls during the passed stayMonths", async () => {
+    mockFetch(async () => new Response(JSON.stringify(okPayload), { status: 200 }));
+    render(<StopDetail region={kyoto} stayMonths={[7]} />);
+    await waitFor(() => expect(screen.getByText(/Gion Matsuri/)).toBeTruthy());
+    expect(screen.getByText(/During your stay/i)).toBeTruthy();
+  });
+
+  it("does not highlight a festival outside the passed stayMonths", async () => {
+    mockFetch(async () => new Response(JSON.stringify(okPayload), { status: 200 }));
+    render(<StopDetail region={kyoto} stayMonths={[1]} />);
+    await waitFor(() => expect(screen.getByText(/Gion Matsuri/)).toBeTruthy());
+    expect(screen.queryByText(/During your stay/i)).toBeNull();
+  });
 });

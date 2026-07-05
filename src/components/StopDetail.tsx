@@ -47,12 +47,16 @@ export function StopDetail({
   region,
   prevStop,
   stayMonth,
+  stayMonths,
 }: {
   region: SlimRegion;
   /** The previous stop's region (for the getting-there line), or undefined. */
   prevStop?: SlimRegion;
   /** 1-based month this stay starts (from the planned leg); defaults to now. */
   stayMonth?: number;
+  /** All 1-based months this stay spans (the planned leg's full `months`),
+   *  used to highlight festivals that actually fall during the visit. */
+  stayMonths?: number[];
 }) {
   const [detail, setDetail] = useState<RegionDetail | null>(null);
   // A failed fetch must surface (retryable), never leave skeletons spinning —
@@ -237,16 +241,31 @@ export function StopDetail({
           {detail ? (
             detail.events.length > 0 ? (
               <ul className="space-y-1">
-                {detail.events.map((e) => (
-                  <li key={e.name}>
-                    <span className="font-medium">{e.name}</span>{" "}
-                    <span className="text-slate-500">
-                      ({MONTH_NAMES[e.month - 1]})
-                    </span>
-                    <br />
-                    <span className="text-slate-600">{e.blurb}</span>
-                  </li>
-                ))}
+                {detail.events.map((e) => {
+                  const duringStay = stayMonths?.includes(e.month) ?? false;
+                  return (
+                    <li
+                      key={e.name}
+                      className={
+                        duringStay
+                          ? "rounded-lg border border-teal-200 bg-teal-50 px-3 py-2"
+                          : undefined
+                      }
+                    >
+                      {duringStay && (
+                        <span className="mr-1.5 inline-block rounded-full border border-teal-300 bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
+                          During your stay
+                        </span>
+                      )}
+                      <span className="font-medium">{e.name}</span>{" "}
+                      <span className="text-slate-500">
+                        ({MONTH_NAMES[e.month - 1]})
+                      </span>
+                      <br />
+                      <span className="text-slate-600">{e.blurb}</span>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p className="text-slate-600">No major festivals listed.</p>

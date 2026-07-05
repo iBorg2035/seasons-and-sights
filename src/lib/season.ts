@@ -354,6 +354,50 @@ export function legDateRanges(
   });
 }
 
+export interface ActiveLeg {
+  /** Index into the legs/ranges array. */
+  index: number;
+  /** 1-based day of the stay; the start date itself is day 1. */
+  day: number;
+  /** Whole-day span of the leg (end date, exclusive, minus start date). */
+  totalDays: number;
+}
+
+/**
+ * Which leg (if any) `now` falls within, given date ranges from
+ * `legDateRanges`. Ranges are half-open [start, end) — `end` is the first day
+ * of the next leg, so a boundary day belongs to the leg that's starting, not
+ * the one ending. Both `now` and the range boundaries are normalized to
+ * midnight-local before comparing, so time-of-day drift can't shift the day
+ * count by one.
+ */
+export function findActiveLeg(
+  ranges: { start: Date; end: Date }[],
+  now: Date = new Date()
+): ActiveLeg | null {
+  const MS_PER_DAY = 86_400_000;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  for (let i = 0; i < ranges.length; i++) {
+    const start = new Date(
+      ranges[i].start.getFullYear(),
+      ranges[i].start.getMonth(),
+      ranges[i].start.getDate()
+    );
+    const end = new Date(
+      ranges[i].end.getFullYear(),
+      ranges[i].end.getMonth(),
+      ranges[i].end.getDate()
+    );
+    if (today >= start && today < end) {
+      const day = Math.round((today.getTime() - start.getTime()) / MS_PER_DAY) + 1;
+      const totalDays = Math.round((end.getTime() - start.getTime()) / MS_PER_DAY);
+      return { index: i, day, totalDays };
+    }
+  }
+  return null;
+}
+
 /** Map an average fit score to a season-like quality bucket for display. */
 export function fitQuality(fit: number): { season: Season; label: string } {
   if (fit >= 80) return { season: "dry", label: "Dry — ideal" };

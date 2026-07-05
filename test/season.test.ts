@@ -11,6 +11,7 @@ import {
   crowdForMonth,
   estimateTripCost,
   formatUsd,
+  findActiveLeg,
 } from "@/lib/season";
 import { REGIONS } from "@/data/regions";
 import type { Region } from "@/types";
@@ -212,5 +213,59 @@ describe("wrapMonth", () => {
     expect(wrapMonth(13)).toBe(1);
     expect(wrapMonth(0)).toBe(12);
     expect(wrapMonth(-1)).toBe(11);
+  });
+});
+
+describe("findActiveLeg", () => {
+  const ranges = (specs: [Date, Date][]) =>
+    specs.map(([start, end]) => ({ start, end }));
+
+  it("finds day 1 on the start date itself", () => {
+    const r = ranges([[new Date(2026, 5, 1), new Date(2026, 7, 1)]]); // Jun 1 – Aug 1 (61 days)
+    expect(findActiveLeg(r, new Date(2026, 5, 1))).toEqual({
+      index: 0,
+      day: 1,
+      totalDays: 61,
+    });
+  });
+
+  it("finds the last inclusive day (end is exclusive)", () => {
+    const r = ranges([[new Date(2026, 5, 1), new Date(2026, 7, 1)]]);
+    expect(findActiveLeg(r, new Date(2026, 6, 31))).toEqual({
+      index: 0,
+      day: 61,
+      totalDays: 61,
+    });
+  });
+
+  it("returns null before the trip starts", () => {
+    const r = ranges([[new Date(2026, 5, 1), new Date(2026, 7, 1)]]);
+    expect(findActiveLeg(r, new Date(2026, 4, 1))).toBeNull();
+  });
+
+  it("returns null after the trip ends", () => {
+    const r = ranges([[new Date(2026, 5, 1), new Date(2026, 7, 1)]]);
+    expect(findActiveLeg(r, new Date(2026, 7, 1))).toBeNull();
+  });
+
+  it("returns null for an empty ranges array", () => {
+    expect(findActiveLeg([], new Date())).toBeNull();
+  });
+
+  it("picks the correct leg across a multi-leg trip and hands off cleanly at the boundary", () => {
+    const r = ranges([
+      [new Date(2026, 5, 1), new Date(2026, 6, 1)], // Jun, 30 days
+      [new Date(2026, 6, 1), new Date(2026, 7, 1)], // Jul, 31 days
+    ]);
+    expect(findActiveLeg(r, new Date(2026, 6, 1))).toEqual({
+      index: 1,
+      day: 1,
+      totalDays: 31,
+    });
+    expect(findActiveLeg(r, new Date(2026, 5, 30))).toEqual({
+      index: 0,
+      day: 30,
+      totalDays: 30,
+    });
   });
 });
