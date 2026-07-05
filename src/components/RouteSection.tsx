@@ -8,6 +8,7 @@ import {
   MONTH_NAMES,
   MONTH_NAMES_LONG,
   SEASON_META,
+  SIGHT_TYPE_META,
   type ItineraryLeg,
   type PlannerStop,
 } from "@/lib/season";
@@ -15,6 +16,9 @@ import { getSlimRegion } from "@/data/regions-slim";
 import type { SlimRegion } from "@/data/regions-slim";
 import type { SavedTripLite } from "@/lib/saved-trips";
 import { assessTripHealth } from "@/lib/trip-health";
+import type { SightType } from "@/types";
+
+const INTEREST_TYPES = Object.keys(SIGHT_TYPE_META) as SightType[];
 
 /**
  * Resolve a trip's [id, duration] stops into planner stops using the slim
@@ -46,10 +50,13 @@ function fmtDate(d: Date): string {
 export function RouteSection({
   trip,
   onStartChange,
+  onInterestsChange,
 }: {
   trip: SavedTripLite;
   /** Called when the user picks a new start month (1–12). */
   onStartChange?: (month: number) => void;
+  /** Called when the user toggles a travel-interest chip. */
+  onInterestsChange?: (interests: SightType[]) => void;
 }) {
   const stops = tripToStops(trip);
   // `start` is 1-based; 0/unset falls back to the current month for display.
@@ -67,7 +74,19 @@ export function RouteSection({
 
   const legs = planItinerary(stops, start);
   const ranges = legDateRanges(start, legs);
-  const health = assessTripHealth(legs, { isFlexibleStart: isFlexible });
+  const health = assessTripHealth(legs, {
+    isFlexibleStart: isFlexible,
+    interests: trip.interests,
+  });
+  const interests = trip.interests ?? [];
+
+  function toggleInterest(type: SightType) {
+    if (!onInterestsChange) return;
+    const next = interests.includes(type)
+      ? interests.filter((t) => t !== type)
+      : [...interests, type];
+    onInterestsChange(next);
+  }
   const totalMonths = legs.reduce((sum, l) => sum + l.months.length, 0);
   const fitSummary = legs.every((l) => l.fit >= 80)
     ? "Every stop lands in dry season"
@@ -151,13 +170,50 @@ export function RouteSection({
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {[
-            ["Weather", health.metrics.weather],
-            ["Crowds", health.metrics.crowds],
-            ["Pace", health.metrics.pace],
-            ["Prep", health.metrics.prep],
-          ].map(([label, score]) => (
+        {onInterestsChange && (
+          <div className="mt-4">
+            <p className="text-xs font-medium text-slate-500">
+              What are you excited about on this trip?
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {INTEREST_TYPES.map((type) => {
+                const active = interests.includes(type);
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => toggleInterest(type)}
+                    aria-pressed={active}
+                    className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                      active
+                        ? "border-teal-300 bg-teal-100 text-teal-800"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {SIGHT_TYPE_META[type].label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div
+          className={`mt-4 grid grid-cols-2 gap-2 ${
+            health.metrics.interestFit !== undefined ? "sm:grid-cols-5" : "sm:grid-cols-4"
+          }`}
+        >
+          {(
+            [
+              ["Weather", health.metrics.weather],
+              ["Crowds", health.metrics.crowds],
+              ["Pace", health.metrics.pace],
+              ["Prep", health.metrics.prep],
+              ...(health.metrics.interestFit !== undefined
+                ? [["Interests", health.metrics.interestFit]]
+                : []),
+            ] as [string, number][]
+          ).map(([label, score]) => (
             <div key={label} className="rounded-lg border border-slate-100 px-3 py-2">
               <p className="text-xs font-medium text-slate-500">{label}</p>
               <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100">

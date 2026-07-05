@@ -1,0 +1,252 @@
+{
+  "thailand-chiangmai": [
+    4,
+    11
+  ],
+  "thailand-bangkok": [
+    4,
+    11
+  ],
+  "indonesia-bali": [
+    3
+  ],
+  "vietnam-hanoi": [
+    2
+  ],
+  "cambodia-siemreap": [
+    4,
+    11
+  ],
+  "peru-cusco": [
+    6
+  ],
+  "brazil-rio": [
+    2,
+    12
+  ],
+  "japan-kyoto": [
+    4,
+    7,
+    11
+  ],
+  "nepal-kathmandu": [
+    3,
+    10,
+    11
+  ],
+  "sri-lanka-south": [
+    8
+  ],
+  "colombia-cartagena": [
+    1,
+    11
+  ],
+  "montenegro-kotor": [
+    2,
+    8
+  ],
+  "india-rajasthan": [
+    3,
+    11
+  ],
+  "mexico-yucatan": [
+    11
+  ],
+  "greece-santorini": [
+    8
+  ],
+  "japan-tokyo": [
+    4,
+    7,
+    11
+  ],
+  "japan-hokkaido": [
+    2,
+    7
+  ],
+  "japan-okinawa": [
+    8,
+    10
+  ],
+  "india-agra": [
+    2,
+    3,
+    11
+  ],
+  "france-paris": [
+    6,
+    7
+  ],
+  "italy-rome": [
+    4
+  ],
+  "australia-sydney": [
+    6,
+    12
+  ],
+  "newzealand-queenstown": [
+    6
+  ],
+  "philippines-manila": [
+    1
+  ],
+  "philippines-cebu": [
+    1
+  ],
+  "philippines-siargao": [
+    9
+  ],
+  "philippines-dumaguete": [
+    10
+  ],
+  "malaysia-kualalumpur": [
+    1
+  ],
+  "malaysia-penang": [
+    8
+  ],
+  "malaysia-sabah": [
+    5
+  ],
+  "philippines-vigan": [
+    5
+  ],
+  "puerto-rico-sanjuan": [
+    1
+  ],
+  "brazil-florianopolis": [
+    2
+  ],
+  "thailand-krabi": [
+    4,
+    11
+  ],
+  "thailand-kohsamui": [
+    4,
+    11
+  ],
+  "vietnam-hoian": [
+    2,
+    9
+  ],
+  "vietnam-hcmc": [
+    2,
+    4
+  ],
+  "philippines-palawan": [
+    6
+  ],
+  "bolivia-uyuni": [
+    2,
+    11
+  ],
+  "patagonia-elcalafate": [
+    2
+  ],
+  "brazil-amazon-manaus": [
+    5,
+    6
+  ],
+  "chile-atacama": [
+    2,
+    7
+  ],
+  "albania-riviera": [
+    3,
+    6
+  ],
+  "turkey-cappadocia": [
+    6,
+    8
+  ],
+  "morocco-marrakech": [
+    7,
+    11
+  ],
+  "tanzania-zanzibar": [
+    2,
+    7
+  ],
+  "south-africa-capetown": [
+    1,
+    3
+  ],
+  "costa-rica-arenal": [
+    1,
+    9
+  ],
+  "egypt-cairo": [
+    4,
+    11
+  ],
+  "philippines-boracay": [
+    1
+  ],
+  "philippines-bohol": [
+    7
+  ],
+  "philippines-banaue": [
+    4
+  ],
+  "malaysia-langkawi": [
+    2,
+    5
+  ],
+  "malaysia-malacca": [
+    2,
+    6
+  ],
+  "philippines-coron": [
+    8
+  ],
+  "thailand-huahin": [
+    4,
+    8
+  ],
+  "mexico-playadelcarmen": [
+    2,
+    11
+  ],
+  "thailand-kohphangan": [
+    4,
+    11
+  ],
+  "thailand-kohtao": [
+    4,
+    11
+  ],
+  "thailand-phuket": [
+    4,
+    10
+  ],
+  "indonesia-gili": [
+    2,
+    8
+  ],
+  "cambodia-kohrong": [
+    4,
+    11
+  ],
+  "vietnam-phuquoc": [
+    2,
+    10
+  ],
+  "india-goa": [
+    2,
+    12
+  ],
+  "indonesia-nusapenida": [
+    3
+  ],
+  "frenchpolynesia-borabora": [
+    7,
+    11
+  ],
+  "usa-maui": [
+    6,
+    9
+  ],
+  "brazil-curitiba": [
+    3
+  ]
+}

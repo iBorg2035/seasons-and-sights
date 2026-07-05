@@ -436,6 +436,11 @@ export function TripView({
                 t.start = month;
               });
             }}
+            onInterestsChange={(interests) => {
+              persistTripEdit(trip.id, (t) => {
+                t.interests = interests;
+              });
+            }}
           />
         </section>
 

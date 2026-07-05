@@ -1,4 +1,4 @@
-import type { TravelInfo } from "@/types";
+import type { SightType, TravelInfo } from "@/types";
 import {
   climateForMonth,
   crowdForMonth,
@@ -12,6 +12,7 @@ type TripHealthRegion = ClimateRegion & {
   country: string;
   dailyBudget?: number;
   info?: TravelInfo;
+  sightTypes?: SightType[];
 };
 
 export type TripHealthSeverity = "info" | "watch" | "risk";
@@ -31,6 +32,8 @@ export interface TripHealthReport {
     crowds: number;
     pace: number;
     prep: number;
+    /** Only present when `options.interests` was non-empty. */
+    interestFit?: number;
   };
   warnings: TripHealthWarning[];
   strengths: string[];
@@ -61,6 +64,20 @@ function healthFlags(info?: TravelInfo): string[] {
   return flags;
 }
 
+/** Neutral score for a leg whose region has no curated sights yet — neither
+ *  rewarded nor penalized for an interest match we can't actually check. */
+const NEUTRAL_INTEREST_FIT = 75;
+
+/** Fraction of the traveler's picked interests represented at a leg's stop,
+ *  0-100. Normalized by interest count (not sight-type count) so a stop that
+ *  covers everything the traveler picked scores 100 regardless of how many
+ *  *other* sight types it also has. */
+function interestFitScore(sightTypes: SightType[] | undefined, interests: SightType[]): number {
+  if (!sightTypes || sightTypes.length === 0) return NEUTRAL_INTEREST_FIT;
+  const matched = interests.filter((i) => sightTypes.includes(i)).length;
+  return Math.round((matched / interests.length) * 100);
+}
+
 function visaNeedsReview(info?: TravelInfo): boolean {
   const visa = (info?.visa ?? "").toLowerCase();
   if (!visa) return false;
@@ -74,8 +91,9 @@ function visaNeedsReview(info?: TravelInfo): boolean {
 
 export function assessTripHealth<R extends TripHealthRegion>(
   legs: ItineraryLeg<R>[],
-  options: { isFlexibleStart?: boolean } = {}
+  options: { isFlexibleStart?: boolean; interests?: SightType[] } = {}
 ): TripHealthReport {
+  const interests = options.interests?.length ? options.interests : undefined;
   const warnings: TripHealthWarning[] = [];
   const strengths: string[] = [];
 
@@ -182,9 +200,21 @@ export function assessTripHealth<R extends TripHealthRegion>(
   if (pace >= 85) strengths.push("The route pace looks comfortable.");
   if (prep >= 85) strengths.push("Entry and health prep look straightforward.");
 
-  const score = clampScore(
-    weather * 0.5 + crowds * 0.18 + pace * 0.17 + prep * 0.15
-  );
+  // Interest fit only enters the score when the traveler has picked
+  // interests for this trip — otherwise the score is identical to before
+  // this dimension existed.
+  const interestFit = interests
+    ? clampScore(avg(regions.map((region) => interestFitScore(region.sightTypes, interests))))
+    : undefined;
+  if (interestFit !== undefined && interestFit >= 80) {
+    strengths.push("This route matches what you're excited about.");
+  }
+
+  const score = interestFit === undefined
+    ? clampScore(weather * 0.5 + crowds * 0.18 + pace * 0.17 + prep * 0.15)
+    : clampScore(
+        weather * 0.44 + crowds * 0.1584 + pace * 0.1496 + prep * 0.132 + interestFit * 0.12
+      );
   const label =
     score >= 85
       ? "Excellent"
@@ -207,7 +237,7 @@ export function assessTripHealth<R extends TripHealthRegion>(
     score,
     label,
     summary,
-    metrics: { weather, crowds, pace, prep },
+    metrics: { weather, crowds, pace, prep, interestFit },
     warnings,
     strengths,
   };

@@ -44,6 +44,17 @@ describe("trip store helpers", () => {
     expect((after?.updatedAt ?? 0) >= before).toBe(true);
   });
 
+  it("round-trips interests through updateTrip/getTrip", () => {
+    const t = createTrip();
+    expect(t).not.toBeNull();
+    if (!t) throw new Error("trip was not created");
+    expect(t.interests).toBeUndefined();
+    updateTrip(t.id, (trip) => {
+      trip.interests = ["beach", "wildlife"];
+    });
+    expect(getTrip(t.id)?.interests).toEqual(["beach", "wildlife"]);
+  });
+
   it("updateTrip is a no-op for a missing id", () => {
     createTrip();
     updateTrip("missing", (t) => (t.name = "x"));

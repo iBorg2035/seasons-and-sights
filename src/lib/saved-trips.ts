@@ -1,3 +1,5 @@
+import type { SightType } from "@/types";
+
 // Named trips the user has saved. The single source of truth for a user's
 // trips, read/written by the trips list, trip page, calendar, and nav badge,
 // kept in sync across views via SAVED_TRIPS_EVENT.
@@ -11,6 +13,9 @@ export interface SavedTripLite {
   name: string;
   start: number;
   stops: [string, number][];
+  /** Sight types the traveler is excited about on this trip (e.g. beach,
+   *  wildlife); feeds the optional interest-fit dimension in trip-health.ts. */
+  interests?: SightType[];
   updatedAt?: number;
 }
 

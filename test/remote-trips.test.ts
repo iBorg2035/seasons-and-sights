@@ -8,6 +8,7 @@ const fake = {
   updateData: { id: "t1" } as { id: string } | null,
   updatePayload: null as unknown,
   updateEq: [] as [string, string][],
+  upsertPayload: null as unknown,
 };
 
 vi.mock("@/lib/supabase/client", () => ({
@@ -15,7 +16,10 @@ vi.mock("@/lib/supabase/client", () => ({
   getSupabase: async () => ({
     from: () => ({
       delete: () => ({ eq: async () => ({ error: fake.deleteError }) }),
-      upsert: async () => ({ error: fake.upsertError }),
+      upsert: async (payload: unknown) => {
+        fake.upsertPayload = payload;
+        return { error: fake.upsertError };
+      },
       update: (payload: unknown) => {
         fake.updatePayload = payload;
         return {
@@ -53,6 +57,7 @@ beforeEach(() => {
   fake.updateData = { id: "t1" };
   fake.updatePayload = null;
   fake.updateEq = [];
+  fake.upsertPayload = null;
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
@@ -90,6 +95,16 @@ describe("remote trips error surfacing (reportSync funnel)", () => {
       ["user_id", "owner-user"],
       ["id", "t1"],
     ]);
+  });
+
+  it("includes interests in the upsert payload (regression: cloud sync must mirror local fields)", async () => {
+    await expect(
+      upsertRemoteTrip("u1", { ...trip, interests: ["beach", "wildlife"] })
+    ).resolves.toBe(true);
+
+    expect(fake.upsertPayload).toMatchObject({
+      data: { interests: ["beach", "wildlife"] },
+    });
   });
 
   it("reports failure when an editor update matches no owner row", async () => {

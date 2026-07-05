@@ -8,6 +8,7 @@ import type {
 } from "@/types";
 import photos from "@/data/photos.json";
 import wikiTitles from "@/data/wiki-titles.json";
+import crowdOverrides from "@/data/crowd-overrides.json";
 
 const SEASON_BY_CHAR: Record<string, Season> = {
   D: "dry",
@@ -1431,6 +1432,12 @@ const DAILY_BUDGET: Record<string, number> = {
 const WIKI_TITLE = wikiTitles as Record<string, string>;
 const PHOTOS = photos as Record<string, string>;
 
+// Festival months per region, derived from events.ts by
+// scripts/build-crowd-overrides.mjs (regenerate after editing events.ts).
+// Only ever pushes a month to "high" — never overrides a manually curated
+// crowd level (see the loop below) and never downgrades to "mid"/"low".
+const CROWD_OVERRIDES = crowdOverrides as Record<string, number[]>;
+
 // Practical essentials per destination. Indicative (esp. visa) — the UI shows a
 // "verify for your nationality" disclaimer.
 const TRAVEL_INFO: Record<string, TravelInfo> = {
@@ -1513,4 +1520,8 @@ for (const region of REGIONS_CORE) {
   if (WIKI_TITLE[region.id]) region.wikiTitle = WIKI_TITLE[region.id];
   if (PHOTOS[region.id]) region.photo = PHOTOS[region.id];
   if (TRAVEL_INFO[region.id]) region.info = TRAVEL_INFO[region.id];
+  for (const month of CROWD_OVERRIDES[region.id] ?? []) {
+    const entry = region.months[month];
+    if (entry && !entry.crowd) entry.crowd = "high";
+  }
 }

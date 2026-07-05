@@ -160,6 +160,30 @@ describe("crowdForMonth", () => {
     expect(climateForMonth(rio, 2).season).toBe("wet");
     expect(crowdForMonth(rio, 2)).toBe("high");
   });
+
+  it("derives a high override from a festival month, even in wet season", () => {
+    const kyoto = getRegion("japan-kyoto") as Region;
+    // July is wet season (tsuyu) for Kyoto, but Gion Matsuri packs the city —
+    // scripts/build-crowd-overrides.mjs should have flipped this to "high".
+    expect(climateForMonth(kyoto, 7).season).toBe("wet");
+    expect(crowdForMonth(kyoto, 7)).toBe("high");
+  });
+
+  it("leaves non-festival months on a festival-having region season-derived", () => {
+    const kyoto = getRegion("japan-kyoto") as Region;
+    // January has no curated festival for Kyoto; shoulder season → moderate.
+    expect(climateForMonth(kyoto, 1).season).toBe("shoulder");
+    expect(crowdForMonth(kyoto, 1)).toBe("mid");
+  });
+
+  it("keeps a region's manually curated override and note intact", () => {
+    const rio = getRegion("brazil-rio") as Region;
+    // December is wet season but Réveillon (NYE) is a manual override; the
+    // derived-from-events pass must not clobber it or its note.
+    expect(climateForMonth(rio, 12).season).toBe("wet");
+    expect(crowdForMonth(rio, 12)).toBe("high");
+    expect(climateForMonth(rio, 12).note).toMatch(/summer rains/);
+  });
 });
 
 describe("events", () => {

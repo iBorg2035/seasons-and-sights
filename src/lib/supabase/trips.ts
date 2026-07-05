@@ -1,5 +1,6 @@
 import { getSupabase } from "@/lib/supabase/client";
 import { recordSyncResult } from "@/lib/sync-status";
+import type { SightType } from "@/types";
 
 export interface SavedTrip {
   id: string;
@@ -8,6 +9,7 @@ export interface SavedTrip {
   name: string;
   start: number;
   stops: [string, number][];
+  interests?: SightType[];
   /** Epoch ms of the last edit; drives last-write-wins on sync. */
   updatedAt?: number;
 }
@@ -16,7 +18,7 @@ interface TripRow {
   id: string;
   user_id?: string;
   name: string;
-  data: { start: number; stops: [string, number][] };
+  data: { start: number; stops: [string, number][]; interests?: SightType[] };
   updated_at?: string;
 }
 
@@ -27,6 +29,7 @@ function fromRow(row: TripRow): SavedTrip {
     name: row.name,
     start: row.data.start,
     stops: row.data.stops,
+    interests: row.data.interests,
     updatedAt: row.updated_at ? Date.parse(row.updated_at) : 0,
   };
 }
@@ -70,7 +73,7 @@ export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise
   const ownerId = trip.ownerId ?? userId;
   const payload = {
     name: trip.name,
-    data: { start: trip.start, stops: trip.stops },
+    data: { start: trip.start, stops: trip.stops, interests: trip.interests },
     // Preserve the trip's own edit time so last-write-wins stays correct.
     updated_at: new Date(trip.updatedAt ?? Date.now()).toISOString(),
   };

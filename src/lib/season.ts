@@ -1,4 +1,4 @@
-import type { Region, Season, MonthClimate, CrowdLevel, MonthlyClimate } from "@/types";
+import type { Region, Season, MonthClimate, CrowdLevel, MonthlyClimate, SightType } from "@/types";
 
 /** Minimal region shape needed by the planner and season helpers. */
 export type ClimateRegion = { months: MonthlyClimate };
@@ -75,6 +75,16 @@ export const CROWD_META: Record<
     dot: "bg-teal-500",
     chip: "bg-teal-100 text-teal-800 border-teal-200",
   },
+};
+
+/** Display metadata for each sight type — same taxonomy/emoji as the Explore
+ *  filter, reused for the trip-level "travel interests" picker. */
+export const SIGHT_TYPE_META: Record<SightType, { label: string }> = {
+  beach: { label: "🏖️ Beach" },
+  nature: { label: "🏔️ Nature" },
+  wildlife: { label: "🦜 Wildlife" },
+  culture: { label: "🏛️ Culture" },
+  city: { label: "🏙️ City" },
 };
 
 const CROWD_BY_SEASON: Record<Season, CrowdLevel> = {
