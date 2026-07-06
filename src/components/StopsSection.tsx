@@ -28,9 +28,10 @@ export function StopsSection({
 }) {
   // Stops expand to show full destination detail by default — the rich local
   // info (climate, sights, map, toolkit) is the point of the trip page, so it
-  // shouldn't be hidden behind a click. `openIdx` tracks a *manually* collapsed
-  // stop so the user can still tidy the view; a stop is open unless collapsed.
-  const [collapsedIdx, setCollapsedIdx] = useState<Set<number>>(new Set());
+  // shouldn't be hidden behind a click. `collapsedIds` tracks *manually*
+  // collapsed stops by region id (not array position) so reordering a stop
+  // doesn't leave its collapsed/expanded state behind at the old index.
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
 
   // Resolve stops to slim regions + planner stops, planning so we know each
@@ -93,7 +94,7 @@ export function StopsSection({
       {resolved.map((s, i) => {
         const { region } = s;
         const leg = legByRegion.get(region.id);
-        const isOpen = !collapsedIdx.has(i);
+        const isOpen = !collapsedIds.has(region.id);
         const season = leg
           ? climateForMonth(region, leg.months[0]).season
           : "shoulder";
@@ -109,10 +110,10 @@ export function StopsSection({
             <button
               type="button"
               onClick={() =>
-                setCollapsedIdx((prev) => {
+                setCollapsedIds((prev) => {
                   const next = new Set(prev);
-                  if (next.has(i)) next.delete(i);
-                  else next.add(i);
+                  if (next.has(region.id)) next.delete(region.id);
+                  else next.add(region.id);
                   return next;
                 })
               }
