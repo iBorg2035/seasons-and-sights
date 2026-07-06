@@ -53,11 +53,12 @@ export function InviteEditorDialog({
         ok: true,
       });
       setEmail("");
-      // The invite already succeeded — a failed list refresh shouldn't
-      // overwrite the success message, so just leave the stale list.
-      listEditors(tripId, ownerId)
-        .then(setEditors)
-        .catch(() => {});
+      // Deliberately don't refresh the editor list here: whether it grows is
+      // the exact enumeration side channel invite_trip_editor_by_email was
+      // built to avoid (a real account gets added, a fake one is a no-op, so
+      // an immediate refresh would let the inviter infer account existence
+      // from list length alone). The list stays as of dialog-open time until
+      // the dialog is reopened.
     }
     setBusy(false);
   }
