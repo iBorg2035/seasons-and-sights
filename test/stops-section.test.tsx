@@ -89,3 +89,24 @@ describe("<StopsSection> collapse state (regression: reorder used to collapse th
     expect(headerFor("Kyoto").getAttribute("aria-expanded")).toBe("true");
   });
 });
+
+describe("<StopsSection> a11y (regression: expand toggle had no aria-controls link to its panel)", () => {
+  it("links each toggle button to its panel via aria-controls/id", () => {
+    const trip = createTrip("T", {
+      stops: [["thailand-bangkok", 2]],
+    })!;
+
+    const { container } = render(<Harness tripId={trip.id} />);
+
+    const toggle = screen
+      .getAllByRole("button")
+      .find((b) => b.hasAttribute("aria-expanded"))!;
+    const panelId = toggle.getAttribute("aria-controls");
+    expect(panelId).toBeTruthy();
+
+    const panel = container.querySelector(`#${panelId}`);
+    expect(panel).not.toBeNull();
+    expect(panel!.getAttribute("aria-labelledby")).toBe(toggle.id);
+    expect(toggle.id).toBeTruthy();
+  });
+});

@@ -117,7 +117,9 @@ export function StopsSection({
                   return next;
                 })
               }
+              id={`stop-toggle-${region.id}`}
               aria-expanded={isOpen}
+              aria-controls={`stop-panel-${region.id}`}
               className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
             >
               <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
@@ -145,12 +147,17 @@ export function StopsSection({
             </button>
 
             {isOpen && (
-              <StopDetail
-                region={region}
-                prevStop={i > 0 ? resolved[i - 1]?.region : undefined}
-                stayMonth={leg?.months[0]}
-                stayMonths={leg?.months}
-              />
+              <div
+                id={`stop-panel-${region.id}`}
+                aria-labelledby={`stop-toggle-${region.id}`}
+              >
+                <StopDetail
+                  region={region}
+                  prevStop={i > 0 ? resolved[i - 1]?.region : undefined}
+                  stayMonth={leg?.months[0]}
+                  stayMonths={leg?.months}
+                />
+              </div>
             )}
 
             {/* Controls row — always visible */}

@@ -30,7 +30,11 @@ interface RegionDetail {
 
 function Skeleton({ label }: { label: string }) {
   return (
-    <div className="h-16 animate-pulse rounded-lg bg-slate-100" aria-label={label} />
+    <div
+      className="h-16 animate-pulse rounded-lg bg-slate-100"
+      role="status"
+      aria-label={label}
+    />
   );
 }
 
@@ -133,7 +137,10 @@ export function StopDetail({
       </div>
 
       {failed && (
-        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">
+        <p
+          role="alert"
+          className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700"
+        >
           Couldn&apos;t load the full destination details.{" "}
           <button
             type="button"

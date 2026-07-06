@@ -39,14 +39,23 @@ describe("<StopDetail>", () => {
     // can't be pre-warmed by the success test below.
     mockFetch(() => Promise.reject(new Error("offline")));
     render(<StopDetail region={bangkok} />);
-    await waitFor(() =>
-      expect(
-        screen.getByText(/couldn't load the full destination details/i)
-      ).toBeTruthy()
+    await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
+    expect(screen.getByRole("alert").textContent).toMatch(
+      /couldn't load the full destination details/i
     );
     expect(screen.getByRole("button", { name: /retry/i })).toBeTruthy();
     // The detail-dependent skeletons are gone, not spinning forever.
     expect(screen.queryByLabelText("Sights")).toBeNull();
+  });
+
+  it("marks loading skeletons with role=status for assistive tech", () => {
+    // A fresh, never-rendered region so the module-level detail cache can't
+    // short-circuit straight to the resolved state.
+    const cusco = getSlimRegion("peru-cusco")!;
+    mockFetch(() => new Promise(() => {})); // never resolves — stay pending
+    render(<StopDetail region={cusco} />);
+    const statuses = screen.getAllByRole("status");
+    expect(statuses.length).toBeGreaterThan(0);
   });
 
   it("renders the fetched detail (sights, festivals, advisory, packing)", async () => {
