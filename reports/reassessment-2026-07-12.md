@@ -1,0 +1,44 @@
+# Reassessment — 2026-07-12
+
+**Summary:** No changes on `main` since the 07-10 report — `origin/main` is still exactly `b9f4d2f` (last commit dated 2026-07-06), zero new commits — so this cycle is again a pure re-verification pass: all health checks (`tsc`, `vitest`, `next build`), data integrity, bundle hygiene, storage scoping, and per-entity isolation were re-run from scratch in a disposable worktree and every result is identical to 07-06 through 07-10. No bugs, no new holes. This run is **outside the routine's originally configured schedule** (2026-06-30 – 2026-07-09 window ended after 07-09); it was executed at the user's explicit ad-hoc request on 2026-07-12, two days after the prior ad-hoc run on 07-10.
+
+Assessed against `origin/main@b9f4d2f` (same commit the 07-06 through 07-10 reports reviewed), read via a disposable git worktree — nothing merged into `reassessment-reports` and no source files modified.
+
+## Changed since last report
+
+Nothing. `git log b9f4d2f..origin/main` is empty — no commits have landed since the 07-10 audit (or indeed since 07-06). This report exists because the user asked to run the check now, not because new code shipped.
+
+## Confirmed bugs
+
+None.
+
+## Data holes
+
+Unchanged from 07-01 through 07-10 (no data files touched): **4 of 72 destinations still have no `events`** (`ecuador-galapagos`, `philippines-batanes`, `maldives-atolls`, `indonesia-komodo`); 9 orphaned `ADVISORY` keys in `src/data/advisories.ts` (`Laos`, `South Korea`, `Taiwan`, `China`, `Argentina`, `Spain`, `Portugal`, `Croatia`, `Kenya`) with no matching region country. Every country present in `REGIONS` still resolves via `visaFor()`; no orphaned `wiki-titles.json`/`toolkits.ts` keys; no unreferenced files under `public/photos/`.
+
+## Improvement opportunities
+
+- **Minor dead field, still open (unchanged):** `TripHealthRegion.dailyBudget` (`src/lib/trip-health.ts:13`) remains declared but unused inside `assessTripHealth`. Low priority.
+- **Minor, no test guard (unchanged):** `src/data/crowd-overrides.json` is a generated artifact with no CI check that it's regenerated after an `events.ts` edit. Still in sync today; low priority.
+- **Still open (unchanged), `mergeTrips` tombstone gap** — `src/lib/supabase/trips.ts:109` explicitly notes "There are no delete tombstones", confirmed still true: a trip deleted on one device while offline on another can be resurrected on next sync. Untouched since first flagged 07-02.
+- **The 4-destination events hole and 9 orphaned advisory keys** remain the only open data-completeness items; both are low-effort content additions rather than bugs.
+- No new opportunities identified this cycle — nothing changed to surface any.
+
+## Healthy / no action
+
+- `npx tsc --noEmit`: 0 errors.
+- `npx next build`: compiles cleanly, no warnings, all 98 routes/pages present (unchanged route set).
+- `npx vitest run`: **128/128 pass** across 23 test files, no regressions, no flakiness observed on re-run.
+- Client bundle hygiene: zero `"use client"` files import `@/data/regions`/`sights`/`events`/`toolkits` — all consume only `@/data/regions-slim`. `REGIONS_SLIM` still correctly ships `sights: []` and `toolkit`/`events: undefined` while keeping `climateBlurb`/`info` intact.
+- Data integrity across all 72 destinations: no duplicate ids, all 12 months present, ≥2 sights each, non-zero lat/lng, resolvable photo file, `wiki-titles.json` entry, `toolkits.ts` entry, `dailyBudget`, `info` block. No orphaned photo files, no orphaned `wiki-titles.json`/`toolkits.ts` keys.
+- **Storage scoping** (`grep -rhoE 'localStorage\.[a-z]+Item\([^,)]+' src`): every key is either correctly per-entity (`checklistStorageKey(tripId)` via `storageKey`) or legitimately global (`theme`, `seasons-onboarded` (`KEY`), `seasons-passport` (`KEY`), `ACTIVE_TRIP_KEY`, `MIGRATED_FLAG`, `SAVED_TRIPS_KEY` (`SAVED_KEY`), `seasons-draft`). No new keys.
+- **Per-entity isolation:** `test/checklist.test.ts` and `test/stops-section.test.tsx` (the position-vs-id-keyed collapse-state regression test) both still pass when run directly — no isolation bleed introduced.
+- **Remote-write error handling:** `upsertRemoteTrip`/`deleteRemoteTrip` (`src/lib/supabase/trips.ts`) both still correctly propagate failures via `reportSync`; the only remaining `.catch(() => {})` sites (`ServiceWorkerRegister.tsx`, `TripadvisorRating.tsx`, `report-error.ts`) are legitimate best-effort/self-referential swallows, unchanged from prior cycles.
+
+## Verification notes
+
+`origin/main` is unchanged at `b9f4d2f` since the 07-10 audit — no new commits to diff-review. The full check suite was re-run from a clean disposable `git worktree` off `origin/main`: fresh `npm install`, `npx tsc --noEmit`, `npx vitest run`, `npx next build`. A throwaway `npx tsx` script (placed inside the worktree so relative imports resolved, then deleted before worktree removal) imported `regions.ts`/`regions-slim.ts`/`toolkits.ts`/`wiki-titles.json`/`advisories.ts` plus `visaFor()` and did an `fs.readdirSync` of `public/photos` to re-check data integrity, visa coverage, advisory-key coverage, and orphaned/unreferenced files. Re-grepped every `"use client"` file for heavy-data imports and every `localStorage.*Item(` call site for scoping, and re-ran the two isolation-critical regression tests (`checklist.test.ts`, `stops-section.test.tsx`) directly. All results are bit-for-bit consistent with the 07-06 through 07-10 reports. The worktree and scratch script were removed after the audit; `git status` on `reassessment-reports` is clean apart from the two files committed with this report.
+
+## Note on run window
+
+The routine's originally configured window (2026-06-30 → 2026-07-09, 10 scheduled runs) ended after the 07-09 report. This 07-12 report, like the 07-10 report, was produced on an ad-hoc basis at explicit user request, not by the schedule. No further daily reassessments will run automatically unless the user re-enables/extends the schedule.
