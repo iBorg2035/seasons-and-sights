@@ -1,0 +1,25 @@
+---
+description: Seasons & Sights travel app conventions and guardrails
+alwaysApply: true
+---
+
+# Seasons & Sights
+
+Next.js 15 (App Router) + React 19 + TS + Tailwind. Full project context: [CLAUDE.md](CLAUDE.md).
+
+## Commands
+
+- `npm run dev` · `npm run build` · `npm start` · `npx vitest run` · `npx tsc --noEmit`
+
+## Architecture
+
+- Client routes import `@/data/regions-slim` and `@/data/events-slim` only — never heavy `@/data/regions` (server-only).
+- Trips: `src/lib/saved-trips.ts` is the single source; `src/lib/active-trip.ts` holds the active-trip pointer.
+- Auth/Supabase is lazy-loaded and must degrade gracefully when env vars are absent.
+
+## QA guardrails
+
+- Test state **transitions**, not static state — see [docs/QA-JOURNEYS.md](docs/QA-JOURNEYS.md).
+- Per-entity `localStorage`/DB keys MUST include the trip or destination id.
+- Every bug fix gets a regression test in `test/`.
+- Verify against a production build (`npm run build`) and hard-refresh before shipping.

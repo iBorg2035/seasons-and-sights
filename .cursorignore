@@ -1,0 +1,21 @@
+# Build / deps (mirror .gitignore)
+node_modules/
+.next/
+out/
+build/
+
+# Large generated or static assets (agents rarely need these)
+public/
+src/data/photos.json
+src/data/wiki-titles.json
+src/data/sight-summary.json
+
+# Local-only / non-source
+.claude/
+.vercel/
+.superpowers/
+reports/
+
+# Secrets
+.env
+.env.local
