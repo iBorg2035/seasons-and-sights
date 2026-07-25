@@ -4,13 +4,11 @@ import { useState } from "react";
 import { updateTrip, type SavedTripLite } from "@/lib/saved-trips";
 import { getSlimRegion } from "@/data/regions-slim";
 import {
-  planItinerary,
   fitQuality,
   climateForMonth,
   SEASON_META,
-  type PlannerStop,
-  type ItineraryLeg,
 } from "@/lib/season";
+import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { AddStopsDialog } from "@/components/AddStopsDialog";
 import { StopDetail } from "@/components/StopDetail";
 
@@ -34,19 +32,16 @@ export function StopsSection({
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
 
-  // Resolve stops to slim regions + planner stops, planning so we know each
-  // leg's start month for the season-fit label.
-  const stops: PlannerStop[] = [];
+  // Rows for the stop list, in the trip's own order (the planner reorders, but
+  // the editable list must stay in the order the user arranged).
   const resolved = trip.stops
     .map(([id, duration]) => {
       const region = getSlimRegion(id);
-      if (region) stops.push({ region, durationMonths: duration });
       return region ? { id, duration, region } : null;
     })
     .filter((s): s is NonNullable<typeof s> => s !== null);
 
-  const start = trip.start || new Date().getMonth() + 1;
-  const legs: ItineraryLeg[] = planItinerary(stops, start);
+  const legs = tripSlimLegs(trip);
   // planItinerary reorders for best fit; map region id → leg for the label.
   const legByRegion = new Map(legs.map((l) => [l.region.id, l]));
 

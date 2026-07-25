@@ -13,35 +13,14 @@ import {
   estimateTripCost,
   estimateSpendSoFar,
   formatUsd,
-  type ItineraryLeg,
-  type PlannerStop,
 } from "@/lib/season";
-import { getSlimRegion } from "@/data/regions-slim";
-import type { SlimRegion } from "@/data/regions-slim";
+import { isFlexibleStart, resolveStartMonth } from "@/lib/trip-plan";
+import { tripToSlimStops } from "@/lib/trip-plan-slim";
 import type { SavedTripLite } from "@/lib/saved-trips";
 import { assessTripHealth } from "@/lib/trip-health";
 import type { SightType } from "@/types";
 
 const INTEREST_TYPES = Object.keys(SIGHT_TYPE_META) as SightType[];
-
-/**
- * Resolve a trip's [id, duration] stops into planner stops using the slim
- * (client-safe) region data, skipping any id that no longer resolves.
- */
-export function tripToStops(trip: SavedTripLite): PlannerStop<SlimRegion>[] {
-  return trip.stops
-    .map(([id, duration]) => {
-      const region = getSlimRegion(id);
-      return region ? { region, durationMonths: duration } : null;
-    })
-    .filter((s): s is NonNullable<typeof s> => s !== null);
-}
-
-/** Plan the itinerary legs for a trip (slim regions, client-safe). */
-export function tripLegs(trip: SavedTripLite): ItineraryLeg<SlimRegion>[] {
-  const start = trip.start || new Date().getMonth() + 1;
-  return planItinerary(tripToStops(trip), start);
-}
 
 function fmtDate(d: Date): string {
   return d.toLocaleDateString("en-US", {
@@ -62,11 +41,10 @@ export function RouteSection({
   /** Called when the user toggles a travel-interest chip. */
   onInterestsChange?: (interests: SightType[]) => void;
 }) {
-  const stops = tripToStops(trip);
-  // `start` is 1-based; 0/unset falls back to the current month for display.
-  const currentMonth = new Date().getMonth() + 1;
-  const start = trip.start || currentMonth;
-  const isFlexible = trip.start === 0;
+  const stops = tripToSlimStops(trip);
+  // `start` is 1-based; anything outside 1-12 falls back to the current month.
+  const start = resolveStartMonth(trip.start);
+  const isFlexible = isFlexibleStart(trip.start);
 
   if (stops.length === 0) {
     return (

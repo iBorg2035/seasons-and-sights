@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchSharedTrip } from "@/lib/supabase/trips";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
-import { getSlimRegion } from "@/data/regions-slim";
-import { planItinerary, legDateRanges, climateForMonth } from "@/lib/season";
+import { legDateRanges, climateForMonth } from "@/lib/season";
+import { resolveStartMonth } from "@/lib/trip-plan";
+import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { DestinationImage } from "@/components/DestinationImage";
 import { createTrip } from "@/lib/saved-trips";
@@ -96,15 +97,11 @@ export function SharedTripView({ token }: { token: string }) {
     );
   }
 
-  const chosen = state.stops
-    .map(([id, durationMonths]) => {
-      const region = getSlimRegion(id);
-      return region ? { region, durationMonths } : null;
-    })
-    .filter((s): s is NonNullable<typeof s> => s !== null);
-
-  const legs = planItinerary(chosen, state.start);
-  const ranges = legDateRanges(state.start, legs);
+  // resolveStartMonth matters here: a trip shared with a flexible start
+  // arrives as `start: 0`, which is not a month the planner can index.
+  const start = resolveStartMonth(state.start);
+  const legs = tripSlimLegs(state);
+  const ranges = legDateRanges(start, legs);
 
   return (
     <div className="space-y-6">

@@ -8,9 +8,9 @@ import type { SavedTripLite } from "@/lib/saved-trips";
 import {
   MONTH_NAMES_LONG,
   climateForMonth,
-  monthOf,
   wrapMonth,
 } from "@/lib/season";
+import { isFlexibleStart, resolveStartMonth } from "@/lib/trip-plan";
 
 /**
  * Season → brand hex used for the card's gradient header and the proportional
@@ -47,9 +47,9 @@ interface StopSegment {
 }
 
 export function TripCard({ trip, active }: { trip: SavedTripLite; active: boolean }) {
-  // A trip with start=0 has no fixed departure; colour by the current month so
-  // the card still reflects "right now" seasonally.
-  const startMonth = trip.start > 0 ? trip.start : monthOf();
+  // A trip with a flexible start has no fixed departure; colour by the current
+  // month so the card still reflects "right now" seasonally.
+  const startMonth = resolveStartMonth(trip.start);
 
   // Walk the stops month-by-month, recording each leg's season so the timeline
   // can be coloured and the header gradient can be derived from the first legs.
@@ -81,8 +81,9 @@ export function TripCard({ trip, active }: { trip: SavedTripLite; active: boolea
         .filter((c): c is string => Boolean(c))
     )
   );
-  const startLabel =
-    trip.start > 0 ? MONTH_NAMES_LONG[trip.start - 1] : "Flexible";
+  const startLabel = isFlexibleStart(trip.start)
+    ? "Flexible"
+    : MONTH_NAMES_LONG[trip.start - 1];
   const metaParts: string[] = [];
   if (countries.length) metaParts.push(countries.join(" · "));
   metaParts.push(startLabel);

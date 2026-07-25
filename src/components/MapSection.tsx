@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  planItinerary,
   legDateRanges,
   fitQuality,
   MONTH_NAMES,
   SEASON_META,
 } from "@/lib/season";
-import { getSlimRegion } from "@/data/regions-slim";
+import { resolveStartMonth } from "@/lib/trip-plan";
+import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import type { SavedTripLite } from "@/lib/saved-trips";
 import { RouteMap } from "@/components/RouteMap";
 
@@ -16,15 +16,8 @@ function fmtDate(d: Date): string {
 }
 
 export function MapSection({ trip }: { trip: SavedTripLite }) {
-  const stops = trip.stops
-    .map(([id, duration]) => {
-      const region = getSlimRegion(id);
-      return region ? { region, durationMonths: duration } : null;
-    })
-    .filter((s): s is NonNullable<typeof s> => s !== null);
-
-  const start = trip.start || new Date().getMonth() + 1;
-  const legs = planItinerary(stops, start);
+  const start = resolveStartMonth(trip.start);
+  const legs = tripSlimLegs(trip);
   const ranges = legDateRanges(start, legs);
   const totalMonths = legs.reduce((sum, l) => sum + l.months.length, 0);
 

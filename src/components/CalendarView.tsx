@@ -10,10 +10,8 @@ import {
 } from "@/lib/saved-trips";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { deleteRemoteTrip } from "@/lib/supabase/trips";
-import { getSlimRegion } from "@/data/regions-slim";
 import { eventsInMonthForRegions } from "@/data/events-slim";
 import {
-  planItinerary,
   climateForMonth,
   wrapMonth,
   monthOf,
@@ -21,6 +19,8 @@ import {
   MONTH_NAMES_LONG,
   SEASON_META,
 } from "@/lib/season";
+import { resolveStartMonth } from "@/lib/trip-plan";
+import { tripSlimLegs, tripToSlimStops } from "@/lib/trip-plan-slim";
 import type { Season } from "@/types";
 
 const SEASON_BAR: Record<Season, string> = {
@@ -74,16 +74,11 @@ function buildRow(
   stops: [string, number][],
   trip: Row["trip"]
 ): Row | null {
-  const chosen = stops
-    .map(([sid, dur]) => {
-      const region = getSlimRegion(sid);
-      return region ? { region, durationMonths: dur } : null;
-    })
-    .filter((s): s is NonNullable<typeof s> => s !== null);
+  const chosen = tripToSlimStops({ start, stops });
   if (chosen.length === 0) return null;
 
-  const effectiveStart = start >= 1 && start <= 12 ? start : monthOf();
-  const legs = planItinerary(chosen, effectiveStart);
+  const effectiveStart = resolveStartMonth(start);
+  const legs = tripSlimLegs({ start, stops });
 
   const cells: (MonthCell | null)[] = Array(12).fill(null);
   for (const leg of legs) {
