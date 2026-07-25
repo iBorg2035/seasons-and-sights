@@ -122,19 +122,82 @@ export async function deleteRemoteTrip(id: string): Promise<boolean> {
  * (signed in or not). Returns the token, or null if Supabase isn't configured.
  */
 export async function publishShare(trip: {
+  id?: string;
   name: string;
   start: number;
   stops: [string, number][];
 }): Promise<string | null> {
   const sb = await getSupabase();
   if (!sb) return null;
+  // Stamp the creator when signed in so the share can be listed and revoked
+  // later. Signed-out shares are still allowed — they just have no owner, and
+  // therefore can't be revoked.
+  const { data: auth } = await sb.auth.getUser();
   const token = crypto.randomUUID();
   const { error } = await sb.from("shared_trips").insert({
     token,
     name: trip.name,
     data: { start: trip.start, stops: trip.stops },
+    created_by: auth?.user?.id ?? null,
+    trip_id: trip.id ?? null,
   });
   return error ? null : token;
+}
+
+/** A share link the signed-in user published and can revoke. */
+export interface SharedLink {
+  token: string;
+  name: string;
+  tripId: string | null;
+  createdAt: number;
+}
+
+/**
+ * The signed-in user's own share links, newest first. RLS scopes this to
+ * `created_by = auth.uid()`, so it can never list anonymous or other people's
+ * shares. Returns [] when signed out or unconfigured.
+ */
+export async function listMyShares(): Promise<SharedLink[]> {
+  const sb = await getSupabase();
+  if (!sb) return [];
+  const { data, error } = await sb
+    .from("shared_trips")
+    .select("token, name, trip_id, created_at")
+    .order("created_at", { ascending: false });
+  if (!reportSync("read", error) || !data) return [];
+  return (data as { token: string; name: string; trip_id: string | null; created_at: string }[])
+    .map((r) => ({
+      token: r.token,
+      name: r.name,
+      tripId: r.trip_id,
+      createdAt: r.created_at ? Date.parse(r.created_at) : 0,
+    }));
+}
+
+/**
+ * Revoke a share link, breaking it for anyone holding the URL. Only the
+ * creator can do this (RLS); returns whether the delete actually landed, so
+ * the UI never shows a link as revoked when it isn't.
+ */
+export async function revokeShare(token: string): Promise<boolean> {
+  const sb = await getSupabase();
+  if (!sb) return false;
+  // .select() so a delete that matched nothing (RLS filtered it — not yours,
+  // or already gone) reports as a failure instead of a silent success. Same
+  // reason upsertRemoteTrip checks its updated row: never tell the user a
+  // link is revoked when it's still live.
+  const { data, error } = await sb
+    .from("shared_trips")
+    .delete()
+    .eq("token", token)
+    .select("token");
+  if (error) return reportSync("write", error);
+  if (!data || data.length === 0) {
+    return reportSync("write", {
+      message: "That share link could not be revoked",
+    });
+  }
+  return reportSync("write", null);
 }
 
 /** Delete the signed-in user's account and all their trips (cascades). */

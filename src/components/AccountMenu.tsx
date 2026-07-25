@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { AuthDialog } from "@/components/AuthDialog";
+import { SharedLinksDialog } from "@/components/SharedLinksDialog";
 import { deleteAccount } from "@/lib/supabase/trips";
 import {
   SAVED_TRIPS_KEY as SAVED_KEY,
@@ -32,6 +33,7 @@ export function AccountMenu() {
   const { configured, loading, user, signOut } = useAuth();
   const [dialog, setDialog] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [sharesOpen, setSharesOpen] = useState(false);
   const [deleteError, setDeleteError] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -87,6 +89,15 @@ export function AccountMenu() {
             Export my trips
           </button>
           <button
+            onClick={() => {
+              setMenu(false);
+              setSharesOpen(true);
+            }}
+            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+          >
+            Shared links
+          </button>
+          <button
             onClick={async () => {
               setMenu(false);
               await signOut();
@@ -128,6 +139,9 @@ export function AccountMenu() {
             </p>
           )}
         </div>
+      )}
+      {sharesOpen && (
+        <SharedLinksDialog onClose={() => setSharesOpen(false)} />
       )}
     </div>
   );

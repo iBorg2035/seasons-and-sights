@@ -12,7 +12,13 @@ import { publishShare } from "@/lib/supabase/trips";
 export function ShareTripButton({
   trip,
 }: {
-  trip: { name: string; start: number; stops: [string, number][] };
+  trip: {
+    /** Recorded on the share so it can be labelled in the manage-links UI. */
+    id?: string;
+    name: string;
+    start: number;
+    stops: [string, number][];
+  };
 }) {
   const [state, setState] = useState<"idle" | "working" | "done" | "error">(
     "idle"

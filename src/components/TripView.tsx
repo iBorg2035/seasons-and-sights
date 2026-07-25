@@ -361,6 +361,7 @@ export function TripView({
             </button>
             <ShareTripButton
               trip={{
+                id: trip.id,
                 name: trip.name,
                 start: trip.start,
                 stops: trip.stops,

@@ -54,6 +54,41 @@ create policy "Anyone can publish a share"
   to anon, authenticated
   with check (true);
 
+-- Who published the share, so they can later list and revoke it. Nullable:
+-- anonymous (signed-out) shares are still allowed and simply have no owner —
+-- which also means they can't be revoked, since there's no identity to check.
+-- Cascades on account deletion so removing an account removes its share links.
+alter table public.shared_trips
+  add column if not exists created_by uuid references auth.users(id) on delete cascade;
+
+-- The trip this link was published from, so the manage-links UI can label and
+-- group them. Not a foreign key: shares outlive the trip they came from (that's
+-- the point — the recipient keeps working link after you delete your copy).
+alter table public.shared_trips
+  add column if not exists trip_id text;
+
+create index if not exists shared_trips_created_by_idx
+  on public.shared_trips (created_by);
+
+-- Creators may list and revoke their OWN shares. This does not weaken the
+-- no-enumeration property: `auth.uid() = created_by` is never true for
+-- anonymous rows (created_by is null) or for anyone else's rows, so the table
+-- still can't be listed at large, and reads by token still go through
+-- get_shared_trip() below.
+drop policy if exists "Creators can list their shares" on public.shared_trips;
+create policy "Creators can list their shares"
+  on public.shared_trips
+  for select
+  to authenticated
+  using (auth.uid() = created_by);
+
+drop policy if exists "Creators can revoke their shares" on public.shared_trips;
+create policy "Creators can revoke their shares"
+  on public.shared_trips
+  for delete
+  to authenticated
+  using (auth.uid() = created_by);
+
 drop function if exists public.get_shared_trip(uuid);
 create or replace function public.get_shared_trip(p_token uuid)
 returns table (name text, data jsonb)
