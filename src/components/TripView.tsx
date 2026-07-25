@@ -31,8 +31,10 @@ import { RouteSection } from "@/components/RouteSection";
 import { StopsSection } from "@/components/StopsSection";
 import { PrepSection } from "@/components/PrepSection";
 import { MapSection } from "@/components/MapSection";
+import { TripCopilot } from "@/components/TripCopilot";
 
 const SECTIONS = [
+  { id: "copilot", label: "Co-pilot" },
   { id: "route", label: "Route" },
   { id: "stops", label: "Stops" },
   { id: "prep", label: "Prep" },
@@ -427,6 +429,15 @@ export function TripView({
             and try again.
           </p>
         )}
+        <TripCopilot
+          trip={{
+            id: trip.id,
+            name: trip.name,
+            start: trip.start,
+            stops: trip.stops,
+            interests: trip.interests,
+          }}
+        />
         <section id="route" className="scroll-mt-32">
           <h2 className="mb-4 text-lg font-semibold text-slate-900">Route</h2>
           <RouteSection

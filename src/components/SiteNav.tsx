@@ -10,6 +10,7 @@ import { getSavedTrips, SAVED_TRIPS_EVENT } from "@/lib/saved-trips";
 const PRIMARY = [
   { href: "/", label: "Explore" },
   { href: "/trips", label: "My trips" },
+  { href: "/assistant", label: "Assistant" },
 ];
 
 // Secondary (discovery tools)

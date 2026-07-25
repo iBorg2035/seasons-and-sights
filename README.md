@@ -16,6 +16,7 @@ account and co-edited.
 - **Tailwind CSS 4**
 - **Leaflet** + OpenStreetMap tiles (no API key) for maps
 - **Open-Meteo** for live weather (no API key)
+- **SpaceXAI / xAI (Grok)** for the travel assistant (`/assistant` + trip co-pilot) via the Vercel AI SDK — requires server-side `XAI_API_KEY`
 - **Vitest** for unit tests
 
 ## Getting started
@@ -27,9 +28,10 @@ npm run build    # production build
 npm test         # unit tests
 ```
 
-Optional: copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_BOOKING_AID`
-to your Booking.com affiliate id so accommodation links are attributed for
-commission. Links work without it.
+Optional: copy `.env.example` to `.env.local` and set:
+
+- `NEXT_PUBLIC_BOOKING_AID` — Booking.com affiliate id (links work without it)
+- `XAI_API_KEY` — enables **Travel assistant** (`/assistant`) and the **trip co-pilot** on `/trips/[id]` (Grok via SpaceXAI). Create a key at https://console.x.ai
 
 ## Deploy (Vercel)
 
@@ -94,6 +96,9 @@ env (see [`.env.example`](.env.example)). No code change needed.
 - `/festivals` — month-by-month festival calendar across all destinations.
 - `/surprise` — random destination picker with month/region filters.
 - `/where-can-i-go` — reverse planner: constraints in, destinations out.
+- `/assistant` — **Travel assistant**: streaming Grok chat with tools over
+  destinations, seasons, packing, visas, trip health, route planning, and live
+  weather. Also embedded as a co-pilot panel on each `/trips/[id]` page.
 - `/regions/[id]` — **Destination**: season calendar, crowds/price strip,
   historical climate chart, sights map, live weather, festivals, travel
   toolkit, and a season-aware Booking.com link.

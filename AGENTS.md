@@ -7,6 +7,12 @@ to Supabase when signed in. `main` auto-deploys to Vercel.
 ## Commands
 - `npm run dev` · `npm run build` · `npm start` · `npx vitest run` · `npx tsc --noEmit`
 
+## AI assistant (SpaceXAI / Grok)
+- `/assistant` and the trip co-pilot on `/trips/[id]` call `POST /api/assistant`.
+- Requires server env `XAI_API_KEY` (never `NEXT_PUBLIC_*`). Optional `XAI_MODEL` (default `grok-4.5`).
+- Tool implementations live in `src/lib/assistant/tools-data.ts` (server-only; full `REGIONS`).
+- Client chat UI: `AssistantChat` + `TripCopilot`. Roadmap: `docs/AI-ROADMAP.md`.
+
 ## Review & QA norms (read before shipping)
 Most bugs here hide at **state transitions** and **isolation boundaries**, not in
 the lines a diff changed. So:
