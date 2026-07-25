@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { updateTrip, type SavedTripLite } from "@/lib/saved-trips";
+import {
+  updateTrip,
+  moveStop,
+  removeStopAt,
+  type SavedTripLite,
+} from "@/lib/saved-trips";
 import { getSlimRegion } from "@/data/regions-slim";
 import {
   fitQuality,
@@ -184,11 +189,7 @@ export function StopsSection({
                 onClick={() =>
                   mutate((t) => {
                     const idx = t.stops.findIndex(([id]) => id === region.id);
-                    if (idx > 0)
-                      [t.stops[idx - 1], t.stops[idx]] = [
-                        t.stops[idx],
-                        t.stops[idx - 1],
-                      ];
+                    if (idx > 0) moveStop(t, idx, idx - 1);
                   })
                 }
                 disabled={i === 0}
@@ -203,10 +204,7 @@ export function StopsSection({
                   mutate((t) => {
                     const idx = t.stops.findIndex(([id]) => id === region.id);
                     if (idx >= 0 && idx < t.stops.length - 1)
-                      [t.stops[idx + 1], t.stops[idx]] = [
-                        t.stops[idx],
-                        t.stops[idx + 1],
-                      ];
+                      moveStop(t, idx, idx + 1);
                   })
                 }
                 disabled={i === resolved.length - 1}
@@ -219,7 +217,8 @@ export function StopsSection({
                 type="button"
                 onClick={() =>
                   mutate((t) => {
-                    t.stops = t.stops.filter(([id]) => id !== region.id);
+                    const idx = t.stops.findIndex(([id]) => id === region.id);
+                    removeStopAt(t, idx);
                   })
                 }
                 aria-label={`Remove ${region.name}`}
