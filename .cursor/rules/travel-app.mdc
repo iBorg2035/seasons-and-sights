@@ -13,9 +13,11 @@ Next.js 15 (App Router) + React 19 + TS + Tailwind. Full project context: [CLAUD
 
 ## Architecture
 
-- Client routes import `@/data/regions-slim` and `@/data/events-slim` only — never heavy `@/data/regions` (server-only).
+- Client routes import `@/data/regions-slim` and `@/data/events-slim` only — never heavy `@/data/regions` (server-only). `/api/region-detail` is the sanctioned client path to the heavy data.
 - Trips: `src/lib/saved-trips.ts` is the single source; `src/lib/active-trip.ts` holds the active-trip pointer.
-- Auth/Supabase is lazy-loaded and must degrade gracefully when env vars are absent.
+- Trip → itinerary resolution lives only in `src/lib/trip-plan.ts`; client views call `src/lib/trip-plan-slim.ts`. Don't reimplement the flexible-start rule per view.
+- Auth/Supabase is lazy-loaded and must degrade gracefully when env vars are absent; remote failures go through `sync-status.ts`, never a silent `console.warn`.
+- No `dark:` utilities — dark mode is remapped centrally in `src/app/globals.css`. New color families need a remap added there in the same commit.
 
 ## QA guardrails
 
