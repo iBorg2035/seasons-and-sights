@@ -30,13 +30,28 @@ interface AuthState {
 
 /**
  * Where to send the user after the OAuth round trip. Only same-origin paths
- * are allowed through: `next` ends up in a URL the provider redirects to, so
- * accepting an absolute URL would turn sign-in into an open redirect.
+ * are allowed through: `next` is attacker-influenceable (anyone can hand out a
+ * link that sets it), so accepting an absolute URL — including the
+ * protocol-relative "//host" form, which browsers treat as absolute — would
+ * turn sign-in into an open redirect.
  */
 export function safeNext(next: string | null | undefined): string {
   if (!next || !next.startsWith("/") || next.startsWith("//")) return "/trips";
   return next;
 }
+
+/**
+ * Where the post-sign-in destination is parked across the OAuth round trip.
+ *
+ * Deliberately NOT a query parameter on `redirectTo`. Supabase glob-matches
+ * the entire redirect URL against its allowlist, query string included, so
+ * `.../auth/callback?next=/trips` fails to match an entry of
+ * `.../auth/callback` — and a failed match doesn't error, it silently falls
+ * back to the project's Site URL, which is a genuinely baffling way to lose a
+ * redirect. sessionStorage survives the trip (same tab, same origin) and keeps
+ * the callback URL a constant, so the allowlist entry is exact and boring.
+ */
+export const AUTH_NEXT_KEY = "seasons-auth-next";
 
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -97,13 +112,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle: AuthState["signInWithGoogle"] = async (next) => {
     const sb = await getSupabase();
     if (!sb) return { error: "Accounts aren't configured." };
+    try {
+      sessionStorage.setItem(AUTH_NEXT_KEY, safeNext(next));
+    } catch {
+      // Private mode or storage disabled — the callback just defaults.
+    }
     const { error } = await sb.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-          safeNext(next)
-        )}`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     // Only reached on failure — a success navigates away from this page.
     return { error: error?.message };

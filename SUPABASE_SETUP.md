@@ -72,9 +72,21 @@ curl -s "https://<your-project-ref>.supabase.co/auth/v1/settings" -H "apikey: <a
    - *Redirect URLs*: add `https://<your-domain>/auth/callback` and, for local
      work, `http://localhost:3000/auth/callback`.
 
-Step 6 is the one that's easy to miss: without the `/auth/callback` entry the
-sign-in completes at Google and then dead-ends, because Supabase refuses to
-redirect back to an unlisted URL.
+Step 6 is the one that's easy to miss, and it fails in a confusing way:
+Supabase does **not** error on an unlisted redirect. It silently discards it
+and sends the user to the *Site URL* instead. So the symptom of "`/auth/callback`
+isn't allowlisted" is landing on your home page — or, if Site URL is still the
+default, on `http://localhost:3000/?code=…` from a production sign-in.
+
+If you see that, both halves of step 6 need fixing: the Site URL is wrong *and*
+the callback isn't listed.
+
+Note the app deliberately sends a bare `…/auth/callback` with no query string
+(the post-sign-in destination rides in `sessionStorage` instead). Supabase
+glob-matches the entire redirect URL including its query, so a query parameter
+would make an exact allowlist entry fail to match — and fail the silent way
+described above. Keeping the URL constant means the allowlist entry can be
+exact, with no wildcards.
 
 Existing email/password accounts and Google accounts with the same address are
 linked by Supabase automatically as long as the email is verified, so signing

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { safeNext, useAuth } from "@/lib/contexts/auth-context";
+import { AUTH_NEXT_KEY, safeNext, useAuth } from "@/lib/contexts/auth-context";
 
 /** How long to wait for the session before calling it a failed sign-in. */
 const TIMEOUT_MS = 15_000;
@@ -27,7 +27,18 @@ export function AuthCallback() {
   const { user, loading } = useAuth();
   const [timedOut, setTimedOut] = useState(false);
 
-  const next = safeNext(params.get("next"));
+  // Parked in sessionStorage before the redirect, so the callback URL stays a
+  // constant and matches Supabase's allowlist exactly. Still run through
+  // safeNext on the way out — storage is same-origin, but the cost is nothing.
+  const [next] = useState(() => {
+    try {
+      const parked = sessionStorage.getItem(AUTH_NEXT_KEY);
+      sessionStorage.removeItem(AUTH_NEXT_KEY);
+      return safeNext(parked ?? params.get("next"));
+    } catch {
+      return "/trips";
+    }
+  });
   // Google reports a refusal (or a misconfigured client) on the URL itself.
   const providerError =
     params.get("error_description") ?? params.get("error") ?? null;

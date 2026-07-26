@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
-import { safeNext } from "@/lib/contexts/auth-context";
+import { describe, it, expect, beforeEach } from "vitest";
+import { AUTH_NEXT_KEY, safeNext } from "@/lib/contexts/auth-context";
 
 /**
  * `next` is round-tripped through Google and comes back on a URL we redirect
@@ -41,5 +41,33 @@ describe("safeNext", () => {
     // "evil.example" would resolve relative to the current directory, but a
     // bare host-looking value is never something we meant to produce.
     expect(safeNext("evil.example")).toBe("/trips");
+  });
+});
+
+/**
+ * The destination is parked in sessionStorage rather than on the redirect URL,
+ * because Supabase glob-matches the whole redirect URL against its allowlist —
+ * a query string makes an exact entry fail to match, and a failed match
+ * silently falls back to the project's Site URL instead of erroring.
+ */
+describe("parked destination", () => {
+  beforeEach(() => sessionStorage.clear());
+
+  it("survives a round trip through storage", () => {
+    sessionStorage.setItem(AUTH_NEXT_KEY, safeNext("/trips/abc/journal"));
+    expect(safeNext(sessionStorage.getItem(AUTH_NEXT_KEY))).toBe(
+      "/trips/abc/journal"
+    );
+  });
+
+  it("is still sanitised on the way out, not just on the way in", () => {
+    // Storage is same-origin, so this is defence in depth rather than a live
+    // hole — but reading it back unchecked would be the easy mistake.
+    sessionStorage.setItem(AUTH_NEXT_KEY, "//evil.example");
+    expect(safeNext(sessionStorage.getItem(AUTH_NEXT_KEY))).toBe("/trips");
+  });
+
+  it("falls back when nothing was parked", () => {
+    expect(safeNext(sessionStorage.getItem(AUTH_NEXT_KEY))).toBe("/trips");
   });
 });
