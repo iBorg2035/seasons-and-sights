@@ -15,6 +15,7 @@ import type { IcsEvent } from "@/lib/ics";
 import {
   isBooked,
   type BookedRange,
+  type DayStamp,
   type SavedTripLite,
 } from "@/lib/saved-trips";
 
@@ -192,6 +193,34 @@ export function tripIcsEvents<
     });
   });
   return events;
+}
+
+/**
+ * Which destination the trip was in on a given day, or null if that day falls
+ * outside every stay (a gap between stays, or before/after the trip).
+ *
+ * Ranges are half-open — `[start, end)` — matching legDateRanges, bookedLegs
+ * and buildIcs, so the day you fly out belongs to the next stop rather than
+ * being counted twice.
+ *
+ * `legs` and `ranges` must come from the same trip, via tripLegs/tripDateRanges.
+ */
+export function stopOnDay<R extends ClimateRegion>(
+  legs: ItineraryLeg<R>[],
+  ranges: (DateRange | null)[],
+  day: DayStamp
+): R | null {
+  const target = parseDay(day).getTime();
+  if (!Number.isFinite(target)) return null;
+
+  for (let i = 0; i < legs.length; i++) {
+    const range = ranges[i];
+    if (!range) continue;
+    if (target >= range.start.getTime() && target < range.end.getTime()) {
+      return legs[i].region;
+    }
+  }
+  return null;
 }
 
 export type BookingIssue = {
