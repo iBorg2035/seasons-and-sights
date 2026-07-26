@@ -82,7 +82,7 @@ describe("/api/assistant access control", () => {
 
   it("matches the allowlist case-insensitively and ignores surrounding spaces", async () => {
     process.env.ASSISTANT_ALLOWED_EMAILS = " Owner@Example.com , other@example.com ";
-    getServerUserMock.mockResolvedValue({ email: "OWNER@example.COM" });
+    getServerUserMock.mockResolvedValue({ id: "u1", email: "OWNER@example.COM" });
     streamTextMock.mockReturnValue({ stream: {} });
     const { POST } = await import("@/app/api/assistant/route");
 
@@ -100,6 +100,37 @@ describe("/api/assistant access control", () => {
 
     expect(res.status).toBe(403);
     expect(streamTextMock).not.toHaveBeenCalled();
+  });
+
+  it("throttles a burst from one user without reaching the model", async () => {
+    process.env.ASSISTANT_ALLOWED_EMAILS = "owner@example.com";
+    getServerUserMock.mockResolvedValue({ id: "u1", email: "owner@example.com" });
+    streamTextMock.mockReturnValue({ stream: {} });
+    const { POST } = await import("@/app/api/assistant/route");
+
+    const statuses: number[] = [];
+    for (let i = 0; i < 32; i++) {
+      statuses.push((await POST(post(VALID_BODY))).status);
+    }
+
+    const throttled = statuses.filter((s) => s === 429);
+    expect(throttled.length).toBeGreaterThan(0);
+    // The gate is ahead of the model call, so throttled requests cost nothing.
+    expect(streamTextMock.mock.calls.length).toBe(32 - throttled.length);
+  });
+
+  it("throttles per user, not globally", async () => {
+    process.env.ASSISTANT_ALLOWED_EMAILS = "a@example.com,b@example.com";
+    streamTextMock.mockReturnValue({ stream: {} });
+    const { POST } = await import("@/app/api/assistant/route");
+
+    getServerUserMock.mockResolvedValue({ id: "ua", email: "a@example.com" });
+    for (let i = 0; i < 32; i++) await POST(post(VALID_BODY));
+
+    getServerUserMock.mockResolvedValue({ id: "ub", email: "b@example.com" });
+    const res = await POST(post(VALID_BODY));
+
+    expect(res.status).not.toBe(429);
   });
 
   it("still refuses when XAI_API_KEY is absent, before any access check", async () => {

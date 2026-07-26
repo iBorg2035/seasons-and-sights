@@ -40,6 +40,12 @@ export default function PrivacyPage() {
             there unless you sign in.
           </li>
           <li>
+            <strong>Trip co-pilot conversations</strong> — if you use the
+            assistant, what you type and the trip it&apos;s looking at (its
+            destinations, dates and interests) are sent to an AI provider to
+            generate a reply. Don&apos;t put anything sensitive in that box.
+          </li>
+          <li>
             <strong>Anonymous usage</strong> — aggregate analytics and
             performance metrics (via Vercel). No advertising profiles, no sale of
             data.
@@ -55,6 +61,12 @@ export default function PrivacyPage() {
           coordinates are sent to <strong>Open-Meteo</strong>. Maps use{" "}
           <strong>OpenStreetMap</strong>. Outbound accommodation and flight links
           go to Booking.com and Google Flights.
+        </p>
+        <p>
+          The trip co-pilot is powered by <strong>xAI</strong> (Grok). Your
+          messages and trip details are sent there only when you use it — the
+          rest of the site never touches it. The co-pilot is currently limited
+          to test accounts and is off for everyone else.
         </p>
       </Section>
 

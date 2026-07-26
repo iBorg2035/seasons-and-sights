@@ -11,8 +11,17 @@ import { buildSystemPrompt } from "@/lib/assistant/system";
 import { createAssistantTools } from "@/lib/assistant/tools";
 import type { TripContextPayload } from "@/lib/assistant/types";
 import { getServerUser } from "@/lib/supabase/server";
+import { createRateLimiter } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
+
+/**
+ * Per-user spend cap. Generous enough that a real conversation never trips it
+ * (each turn is one request), tight enough that a stuck retry loop or a shared
+ * account can't run up a bill unattended. See rate-limit.ts on why this is a
+ * dampener rather than a hard global bound.
+ */
+const rateLimit = createRateLimiter({ limit: 30, windowMs: 10 * 60 * 1000 });
 
 const MODEL = process.env.XAI_MODEL?.trim() || "grok-4.5";
 
@@ -90,6 +99,16 @@ export async function POST(req: Request) {
     return Response.json(
       { error: "The assistant is in limited testing." },
       { status: 403 }
+    );
+  }
+
+  // Keyed on the verified user id, not anything client-supplied, and still
+  // ahead of the model call so a throttled request costs nothing.
+  const limited = rateLimit(user.id);
+  if (!limited.ok) {
+    return Response.json(
+      { error: "Too many assistant requests — give it a minute." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
     );
   }
 
