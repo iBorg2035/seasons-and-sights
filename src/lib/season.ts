@@ -207,10 +207,23 @@ export interface ItineraryLeg<R extends ClimateRegion = Region> {
   region: R;
   /** 0-based order in the trip. */
   position: number;
-  /** 1-based months of this stay (consecutive, may wrap the year). */
+  /** 1-based months of this stay (consecutive, may wrap the year). Empty for
+   *  a booked stop that hasn't been dated yet. */
   months: number[];
   /** Average season fit (0-100) across the stay's months. */
   fit: number;
+  /**
+   * Real calendar days, set only for booked legs. Planning legs leave this
+   * absent so their objects stay structurally identical to before booked mode
+   * existed — and so estimateLegCost keeps using the nominal 30-day month.
+   */
+  days?: number;
+}
+
+/** A concrete calendar range. `end` is exclusive. */
+export interface DateRange {
+  start: Date;
+  end: Date;
 }
 
 export interface PlannerStop<R extends ClimateRegion = Region> {
@@ -318,10 +331,79 @@ export function planItinerary<R extends ClimateRegion>(
 }
 
 const DAYS_PER_MONTH = 30;
+const MS_PER_DAY = 86_400_000;
 
-/** Estimated cost of a single leg (daily budget × days). */
+/**
+ * Parse a "YYYY-MM-DD" day as LOCAL midnight.
+ *
+ * Deliberately not `new Date("2026-07-03")`, which the spec says to parse as
+ * UTC — west of Greenwich that lands on the 2nd, silently shifting every
+ * booked date by a day.
+ */
+export function parseDay(day: string): Date {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+}
+
+/** The 1-based months a real date range touches. `end` is exclusive, so a
+ *  stay ending on the 1st doesn't count that month. */
+function monthsInRange(start: Date, end: Date): number[] {
+  const out: number[] = [];
+  const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+  const last = new Date(end.getFullYear(), end.getMonth(), 1);
+  const endsOnFirst = end.getDate() === 1;
+  while (cursor <= last) {
+    if (cursor.getTime() === last.getTime() && endsOnFirst) break;
+    out.push(cursor.getMonth() + 1);
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return out;
+}
+
+/**
+ * Legs for a trip whose dates are committed.
+ *
+ * Unlike planItinerary this does NOT reorder: real dates are facts the
+ * traveler has booked around, so permuting them for season fit would produce
+ * an itinerary that contradicts their own bookings. Season fit is still
+ * computed — telling you your committed dates land in the wet season is the
+ * whole point — it just never rearranges them.
+ *
+ * `ranges` is index-aligned with `stops`; a null means that stop isn't dated
+ * yet, and yields an empty leg (no months, no days, zero fit) rather than
+ * being dropped, so leg indices keep matching stop indices.
+ */
+export function bookedLegs<R extends ClimateRegion>(
+  stops: PlannerStop<R>[],
+  ranges: (DateRange | null)[]
+): ItineraryLeg<R>[] {
+  return stops.map((stop, i) => {
+    const range = ranges[i];
+    if (!range) {
+      return { region: stop.region, position: i, months: [], fit: 0, days: 0 };
+    }
+    const months = monthsInRange(range.start, range.end);
+    const days = Math.max(
+      0,
+      Math.round((range.end.getTime() - range.start.getTime()) / MS_PER_DAY)
+    );
+    const fit = months.length
+      ? months.reduce((sum, m) => sum + seasonFitScore(stop.region, m), 0) /
+        months.length
+      : 0;
+    return { region: stop.region, position: i, months, fit, days };
+  });
+}
+
+/**
+ * Estimated cost of a single leg (daily budget × days).
+ *
+ * Booked legs carry a real day count; planning legs fall back to the nominal
+ * 30-day month, so planning-mode totals are unchanged.
+ */
 export function estimateLegCost(leg: ItineraryLeg<ClimateRegion>): number {
-  return ((leg.region as { dailyBudget?: number }).dailyBudget ?? 0) * leg.months.length * DAYS_PER_MONTH;
+  const days = leg.days ?? leg.months.length * DAYS_PER_MONTH;
+  return ((leg.region as { dailyBudget?: number }).dailyBudget ?? 0) * days;
 }
 
 /** Estimated total cost across all legs of an itinerary. */
@@ -337,7 +419,7 @@ export function estimateTripCost(legs: ItineraryLeg<ClimateRegion>[]): number {
  */
 export function estimateSpendSoFar(
   legs: ItineraryLeg<ClimateRegion>[],
-  ranges: { start: Date; end: Date }[],
+  ranges: (DateRange | null)[],
   now: Date = new Date()
 ): number {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -347,13 +429,16 @@ export function estimateSpendSoFar(
     if (legCost === 0) return sum;
 
     const range = ranges[i];
+    // Undated stop: contributes 0, because "unknown" isn't "already spent".
+    // Note this means spent + remaining < total for a partially-booked trip —
+    // the total covers stops whose timing we don't know yet.
+    if (!range) return sum;
     const start = new Date(range.start.getFullYear(), range.start.getMonth(), range.start.getDate());
     const end = new Date(range.end.getFullYear(), range.end.getMonth(), range.end.getDate());
 
     if (today >= end) return sum + legCost; // fully past: 100% spent
     if (today < start) return sum; // fully future: 0% spent
 
-    const MS_PER_DAY = 86_400_000;
     const totalDays = Math.round((end.getTime() - start.getTime()) / MS_PER_DAY);
     const elapsedDays = Math.round((today.getTime() - start.getTime()) / MS_PER_DAY) + 1;
     const fraction = Math.min(1, Math.max(0, elapsedDays / totalDays));
@@ -404,22 +489,26 @@ export interface ActiveLeg {
  * count by one.
  */
 export function findActiveLeg(
-  ranges: { start: Date; end: Date }[],
+  ranges: (DateRange | null)[],
   now: Date = new Date()
 ): ActiveLeg | null {
-  const MS_PER_DAY = 86_400_000;
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   for (let i = 0; i < ranges.length; i++) {
+    const range = ranges[i];
+    // Undated stop (booked mode, partially filled in) — skip rather than
+    // guess. Gaps between stays fall through the same way and correctly
+    // report "not currently travelling".
+    if (!range) continue;
     const start = new Date(
-      ranges[i].start.getFullYear(),
-      ranges[i].start.getMonth(),
-      ranges[i].start.getDate()
+      range.start.getFullYear(),
+      range.start.getMonth(),
+      range.start.getDate()
     );
     const end = new Date(
-      ranges[i].end.getFullYear(),
-      ranges[i].end.getMonth(),
-      ranges[i].end.getDate()
+      range.end.getFullYear(),
+      range.end.getMonth(),
+      range.end.getDate()
     );
     if (today >= start && today < end) {
       const day = Math.round((today.getTime() - start.getTime()) / MS_PER_DAY) + 1;

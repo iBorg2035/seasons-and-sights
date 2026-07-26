@@ -1,11 +1,15 @@
 import {
+  bookedLegs,
+  legDateRanges,
   monthOf,
+  parseDay,
   planItinerary,
   type ClimateRegion,
+  type DateRange,
   type ItineraryLeg,
   type PlannerStop,
 } from "@/lib/season";
-import type { SavedTripLite } from "@/lib/saved-trips";
+import { isBooked, type SavedTripLite } from "@/lib/saved-trips";
 
 /**
  * Turning a saved trip into planner stops and itinerary legs used to be
@@ -25,7 +29,8 @@ import type { SavedTripLite } from "@/lib/saved-trips";
  * SavedTripLite so shared-trip payloads (no id/name/ownerId) and the
  * assistant's trip-context payload satisfy it too.
  */
-export type PlannableTrip = Pick<SavedTripLite, "start" | "stops">;
+export type PlannableTrip = Pick<SavedTripLite, "start" | "stops"> &
+  Partial<Pick<SavedTripLite, "mode" | "bookedDates">>;
 
 /** A start month names a real month; anything else means "flexible". */
 export function isFlexibleStart(start: number | undefined): boolean {
@@ -75,5 +80,81 @@ export function tripLegs<R extends ClimateRegion>(
   lookup: (id: string) => R | undefined,
   now: Date = new Date()
 ): ItineraryLeg<R>[] {
-  return planItinerary(tripToStops(trip, lookup), resolveStartMonth(trip.start, now));
+  const stops = tripToStops(trip, lookup);
+  if (isBooked(trip)) return bookedLegs(stops, bookedRanges(trip));
+  return planItinerary(stops, resolveStartMonth(trip.start, now));
+}
+
+/** The trip's committed ranges as Dates, index-aligned with its stops. */
+function bookedRanges(trip: PlannableTrip): (DateRange | null)[] {
+  return trip.stops.map((_, i) => {
+    const r = trip.bookedDates?.[i];
+    if (!r) return null;
+    return { start: parseDay(r.start), end: parseDay(r.end) };
+  });
+}
+
+/**
+ * Per-leg calendar ranges, whichever mode the trip is in.
+ *
+ * Planning: derived back-to-back from the start month — byte-identical to
+ * calling legDateRanges directly, and never null.
+ * Booked: the committed ranges, in stops order. These may contain nulls
+ * (undated stops) and, unlike planning ranges, are NOT guaranteed contiguous
+ * or non-overlapping — real trips have gaps between stays.
+ *
+ * `legs` must be the output of tripLegs for the same trip.
+ */
+export function tripDateRanges(
+  trip: PlannableTrip,
+  legs: ItineraryLeg<ClimateRegion>[],
+  from: Date = new Date()
+): (DateRange | null)[] {
+  if (isBooked(trip)) return bookedRanges(trip);
+  return legDateRanges(resolveStartMonth(trip.start, from), legs, from);
+}
+
+export type BookingIssue = {
+  /** Index into the trip's stops. */
+  index: number;
+  kind: "overlap" | "gap" | "inverted";
+};
+
+/**
+ * Non-blocking warnings about a booked trip's dates: a stay that ends before
+ * it starts, a gap between consecutive stays, or two stays that overlap.
+ *
+ * Deliberately advisory rather than enforced — overlapping stays are real
+ * (you keep the flat in Lisbon three days into the Porto trip), and so are
+ * gaps (you're going home in between). The UI surfaces these; it doesn't
+ * block saving.
+ */
+export function bookingIssues(trip: PlannableTrip): BookingIssue[] {
+  if (!isBooked(trip)) return [];
+  const ranges = bookedRanges(trip);
+  const issues: BookingIssue[] = [];
+
+  ranges.forEach((r, i) => {
+    if (r && r.end.getTime() <= r.start.getTime()) {
+      issues.push({ index: i, kind: "inverted" });
+    }
+  });
+
+  // Compare each dated stay against the next dated one, skipping undated
+  // stops so a hole in the middle doesn't manufacture a false gap.
+  const dated = ranges
+    .map((r, i) => ({ r, i }))
+    .filter((x): x is { r: DateRange; i: number } => x.r !== null);
+
+  for (let k = 0; k < dated.length - 1; k++) {
+    const cur = dated[k];
+    const next = dated[k + 1];
+    if (next.r.start.getTime() < cur.r.end.getTime()) {
+      issues.push({ index: next.i, kind: "overlap" });
+    } else if (next.r.start.getTime() > cur.r.end.getTime()) {
+      issues.push({ index: next.i, kind: "gap" });
+    }
+  }
+
+  return issues;
 }
