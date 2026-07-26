@@ -101,6 +101,53 @@ $$;
 
 grant execute on function public.get_shared_trip(uuid) to anon, authenticated;
 
+-- ── Per-trip records: journal entries and expenses ───────────────────────────
+-- One generic table rather than a journal_entries/expenses pair: the client
+-- store (src/lib/trip-records.ts) is already generic, so a generic table means
+-- the sync path is written and tested once, and a third entity later is free.
+-- `data` as jsonb matches how trips.data already works.
+
+create table if not exists public.trip_records (
+  user_id    uuid        not null references auth.users (id) on delete cascade,
+  trip_id    text        not null,               -- client-generated trip id
+  entity     text        not null,               -- 'journal' | 'expense'
+  id         text        not null,               -- client-generated row id
+  data       jsonb       not null,               -- the row, minus its key fields
+  updated_at timestamptz not null default now(), -- drives last-write-wins
+  deleted_at timestamptz,                        -- set = tombstone, not a row
+  primary key (user_id, trip_id, entity, id)
+);
+
+-- Deliberately NOT a foreign key to trips. A journal write can race ahead of
+-- the trip's own upsert (mirrorToCloud is fire-and-forget), and an FK would
+-- reject it opaquely and lose the entry. Records are removed explicitly when a
+-- trip is deleted; a stray orphan is invisible, tiny, and cascades away with
+-- the account.
+
+create index if not exists trip_records_trip_idx
+  on public.trip_records (user_id, trip_id);
+
+alter table public.trip_records enable row level security;
+
+-- Bound row size so a runaway client can't dump large payloads. Same IMMUTABLE
+-- constraint on length(data::text) as shared_trips uses.
+alter table public.trip_records drop constraint if exists trip_records_data_size;
+alter table public.trip_records add  constraint trip_records_data_size
+  check (length(data::text) < 16384);
+
+-- Owner-only, deliberately narrower than trips. trip_editors lets a companion
+-- co-edit a trip's ROUTE; it grants no access here. Someone invited to help
+-- plan stops should not silently gain read access to a diary. Widening this
+-- later is easy; narrowing it after people have written private content into a
+-- shared surface is not.
+drop policy if exists "Users manage their own trip records" on public.trip_records;
+create policy "Users manage their own trip records"
+  on public.trip_records
+  for all
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 -- ── Account deletion (GDPR) ──────────────────────────────────────────────────
 -- Lets a signed-in user delete their own account; their trips cascade away via
 -- the foreign key. Runs as definer so it can remove the auth.users row.

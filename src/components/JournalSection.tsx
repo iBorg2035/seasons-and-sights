@@ -35,7 +35,8 @@ export function JournalSection({
   defaultDay: DayStamp;
   /** Which destination the trip was in on a day, or null if none/undated. */
   placeFor: (day: DayStamp) => { name: string } | null;
-  onChanged: () => void;
+  /** Called with the changed row's id so the caller can mirror just that row. */
+  onChanged: (id: string) => void;
 }) {
   const [day, setDay] = useState<DayStamp>(defaultDay);
   const [text, setText] = useState("");
@@ -59,7 +60,7 @@ export function JournalSection({
     setError(null);
     setText("");
     setEditingId(null);
-    onChanged();
+    onChanged(saved.id);
   }
 
   function startEdit(entry: JournalEntry) {
@@ -82,7 +83,9 @@ export function JournalSection({
       return;
     }
     if (editingId === entry.id) cancelEdit();
-    onChanged();
+    // The tombstone, not the entry — mirroring it is what makes the delete
+    // stick on other devices.
+    onChanged(entry.id);
   }
 
   const groups = groupByDay(entries);

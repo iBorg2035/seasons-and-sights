@@ -12,6 +12,10 @@ import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { findActiveLeg, formatDay } from "@/lib/season";
 import { JournalSection } from "@/components/JournalSection";
 import { ExpenseSection } from "@/components/ExpenseSection";
+import { useAuth } from "@/lib/contexts/auth-context";
+import { JOURNAL_ENTITY } from "@/lib/journal";
+import { EXPENSE_ENTITY } from "@/lib/expenses";
+import { mirrorRecord, syncRecords } from "@/lib/supabase/trip-records";
 
 /**
  * The day a new entry should default to: today while the trip is under way,
@@ -29,6 +33,7 @@ function defaultDayFor(
 }
 
 export function TripJournalView({ tripId }: { tripId: string }) {
+  const { user } = useAuth();
   const [trip, setTrip] = useState<SavedTripLite | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -38,6 +43,20 @@ export function TripJournalView({ tripId }: { tripId: string }) {
     setEntries(listEntries(tripId));
     setExpenses(listExpenses(tripId));
   }, [tripId]);
+
+  /**
+   * A local write already succeeded before this runs, so the cloud push is
+   * fire-and-forget: a failure shows on the sync badge rather than blocking
+   * the entry or rolling it back. Signed out, it's a no-op and the journal
+   * simply stays on this device.
+   */
+  const onRecordChanged = useCallback(
+    (entity: string) => (id: string) => {
+      reloadRecords();
+      if (user) void mirrorRecord(user.id, tripId, entity, id);
+    },
+    [reloadRecords, tripId, user]
+  );
 
   useEffect(() => {
     setTrip(getTrip(tripId));
@@ -55,6 +74,25 @@ export function TripJournalView({ tripId }: { tripId: string }) {
       window.removeEventListener("storage", reloadRecords);
     };
   }, [tripId, reloadRecords]);
+
+  // On sign-in (and on arriving signed in), reconcile both entities with the
+  // cloud: pull, last-write-wins merge including tombstones, write back, push
+  // whatever local won. Keyed on user.id so a token refresh doesn't re-run it.
+  useEffect(() => {
+    if (!user) return;
+    const userId = user.id;
+    let cancelled = false;
+    (async () => {
+      for (const entity of [JOURNAL_ENTITY, EXPENSE_ENTITY]) {
+        await syncRecords(userId, tripId, entity);
+        if (cancelled) return;
+      }
+      reloadRecords();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, tripId, reloadRecords]);
 
   // Slim regions only — this is a client route, per the bundle-hygiene rule.
   const { ranges, placeFor } = useMemo(() => {
@@ -113,14 +151,14 @@ export function TripJournalView({ tripId }: { tripId: string }) {
         expenses={expenses}
         defaultDay={defaultDay}
         placeFor={placeFor}
-        onChanged={reloadRecords}
+        onChanged={onRecordChanged(JOURNAL_ENTITY)}
       />
 
       <ExpenseSection
         tripId={tripId}
         expenses={expenses}
         defaultDay={defaultDay}
-        onChanged={reloadRecords}
+        onChanged={onRecordChanged(EXPENSE_ENTITY)}
       />
     </div>
   );

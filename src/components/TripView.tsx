@@ -37,6 +37,7 @@ import { legDateRanges } from "@/lib/season";
 import { resolveStartMonth, seedBookedDates } from "@/lib/trip-plan";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { clearRecords } from "@/lib/trip-records";
+import { deleteRemoteRecords } from "@/lib/supabase/trip-records";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
 
@@ -274,6 +275,9 @@ export function TripView({
     clearRecords(EXPENSE_ENTITY, trip.id);
     if (user && (!trip.ownerId || trip.ownerId === user.id)) {
       void deleteRemoteTrip(trip.id);
+      // trip_records has no FK to trips (a journal write can race ahead of the
+      // trip's own upsert), so nothing cascades — the rows must go explicitly.
+      void deleteRemoteRecords(trip.id);
     }
     // Clear the now-stale active pointer; /trips will repair it on arrival
     // via ensureActiveTripId if other trips remain.

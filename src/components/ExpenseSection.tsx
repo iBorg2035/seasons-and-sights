@@ -32,7 +32,8 @@ export function ExpenseSection({
   tripId: string;
   expenses: Expense[];
   defaultDay: DayStamp;
-  onChanged: () => void;
+  /** Called with the changed row's id so the caller can mirror just that row. */
+  onChanged: (id: string) => void;
 }) {
   const [day, setDay] = useState<DayStamp>(defaultDay);
   const [amount, setAmount] = useState("");
@@ -46,14 +47,15 @@ export function ExpenseSection({
       setError("Enter an amount in USD, like 12.50.");
       return;
     }
-    if (!saveExpense(tripId, { day, amountCents, category, note })) {
+    const saved = saveExpense(tripId, { day, amountCents, category, note });
+    if (!saved) {
       setError("Couldn't save that expense. Check that browser storage is enabled.");
       return;
     }
     setError(null);
     setAmount("");
     setNote("");
-    onChanged();
+    onChanged(saved.id);
   }
 
   function handleRemove(expense: Expense) {
@@ -61,7 +63,7 @@ export function ExpenseSection({
       setError("Couldn't delete that expense.");
       return;
     }
-    onChanged();
+    onChanged(expense.id);
   }
 
   const total = totalCents(expenses);
