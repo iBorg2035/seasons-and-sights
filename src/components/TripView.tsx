@@ -36,6 +36,9 @@ import { TripModeToggle } from "@/components/TripModeToggle";
 import { legDateRanges } from "@/lib/season";
 import { resolveStartMonth, seedBookedDates } from "@/lib/trip-plan";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
+import { clearRecords } from "@/lib/trip-records";
+import { JOURNAL_ENTITY } from "@/lib/journal";
+import { EXPENSE_ENTITY } from "@/lib/expenses";
 
 const SECTIONS = [
   { id: "copilot", label: "Co-pilot" },
@@ -264,6 +267,11 @@ export function TripView({
       return;
     }
     setSaveError(false);
+    // Deleting the trip must take its journal and expenses with it — leaving
+    // personal entries in localStorage under a trip the user just deleted
+    // would be both a leak and a surprise. (Cloud rows: Stage 4.)
+    clearRecords(JOURNAL_ENTITY, trip.id);
+    clearRecords(EXPENSE_ENTITY, trip.id);
     if (user && (!trip.ownerId || trip.ownerId === user.id)) {
       void deleteRemoteTrip(trip.id);
     }
@@ -416,6 +424,14 @@ export function TripView({
         {/* Row 2: section nav */}
         <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4">
           {SECTIONS.map(sectionLink)}
+          {/* A route, not a scroll-spy section — the journal has its own page
+              because it grows without bound as a trip goes on. */}
+          <Link
+            href={`/trips/${tripId}/journal`}
+            className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-500 transition hover:border-slate-300 hover:text-slate-800"
+          >
+            Journal →
+          </Link>
         </nav>
       </div>
 
