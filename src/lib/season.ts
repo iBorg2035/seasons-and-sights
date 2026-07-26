@@ -218,11 +218,19 @@ export interface ItineraryLeg<R extends ClimateRegion = Region> {
   /** Average season fit (0-100) across the stay's months. */
   fit: number;
   /**
-   * Real calendar days, set only for booked legs. Planning legs leave this
-   * absent so their objects stay structurally identical to before booked mode
-   * existed — and so estimateLegCost keeps using the nominal 30-day month.
+   * Days of stay. Booked legs carry the real calendar count; planning legs
+   * carry the nominal `durationMonths × 30`, which is exactly what
+   * estimateLegCost's fallback computed for them before sub-month stays
+   * existed — so whole-month costs are unchanged.
    */
   days?: number;
+  /**
+   * The stay's length in months, possibly fractional (0.5 = a fortnight).
+   * Planning legs only. `months.length` can't stand in for it once stays can
+   * be shorter than a month or straddle a boundary: a fortnight from Sep 25
+   * touches two months but lasts half of one.
+   */
+  durationMonths?: number;
 }
 
 /** A concrete calendar range. `end` is exclusive. */
@@ -237,14 +245,34 @@ export interface PlannerStop<R extends ClimateRegion = Region> {
   durationMonths: number;
 }
 
-/** The 1-based months a stay covers, wrapping the year. */
-function stayMonths(start: number, duration: number): number[] {
-  return Array.from({ length: duration }, (_, k) => wrapMonth(start + k));
+/**
+ * Move a date forward by a duration in months, which may be fractional.
+ *
+ * Whole months advance by CALENDAR month, not by 30 days: a one-month stay
+ * from Jan 1 has to end Feb 1, not Jan 31. That's what keeps every existing
+ * whole-month itinerary byte-identical now that the planner walks dates
+ * instead of month numbers. Only the fractional remainder is counted in days.
+ */
+function advanceByMonths(from: Date, months: number): Date {
+  const whole = Math.floor(months);
+  const days = Math.round((months - whole) * DAYS_PER_MONTH);
+  const next = new Date(from);
+  if (whole) next.setMonth(next.getMonth() + whole);
+  if (days) next.setDate(next.getDate() + days);
+  return next;
 }
 
-/** Average season fit over a stay's months. */
-function stayFit(region: ClimateRegion, start: number, duration: number): number {
-  const months = stayMonths(start, duration);
+/**
+ * Average season fit over the months a stay touches.
+ *
+ * Deliberately unweighted. Weighting by days in each month would be more
+ * precise, but it would also change the score of every existing multi-month
+ * trip — a Sep+Oct stay is 30 days against 31 — and keeping whole-month
+ * itineraries identical is worth more than that precision. A fortnight
+ * straddling a boundary therefore counts both months equally.
+ */
+function fitOverMonths(region: ClimateRegion, months: number[]): number {
+  if (months.length === 0) return 0;
   return (
     months.reduce((sum, m) => sum + seasonFitScore(region, m), 0) /
     months.length
@@ -279,23 +307,37 @@ export function planItinerary<R extends ClimateRegion>(
   const n = stops.length;
   if (n === 0) return [];
 
+  // A notional year to walk dates in. Only the month numbers escape (via
+  // monthsInRange), so which year it is never shows up in the result — but
+  // walking real dates is what lets a stay be shorter than a month.
+  const anchor = new Date(2001, startMonth - 1, 1);
+
   const buildLegs = (
     order: number[]
   ): { legs: ItineraryLeg<R>[]; total: number } => {
     const legs: ItineraryLeg<R>[] = [];
-    let cursor = startMonth;
+    let cursor = anchor;
     let total = 0;
     for (let pos = 0; pos < order.length; pos++) {
       const stop = stops[order[pos]];
-      const fit = stayFit(stop.region, cursor, stop.durationMonths);
+      const end = advanceByMonths(cursor, stop.durationMonths);
+      const months = monthsInRange(cursor, end);
+      const fit = fitOverMonths(stop.region, months);
       legs.push({
         region: stop.region,
         position: pos,
-        months: stayMonths(cursor, stop.durationMonths),
+        months,
         fit,
+        // Only sub-month stays carry an explicit day count. A whole-month leg
+        // leaves it absent so estimateLegCost keeps using months.length × 30 —
+        // the same number, arrived at the same way as before this change.
+        ...(Number.isInteger(stop.durationMonths)
+          ? {}
+          : { days: Math.round(stop.durationMonths * DAYS_PER_MONTH) }),
+        durationMonths: stop.durationMonths,
       });
       total += fit;
-      cursor += stop.durationMonths;
+      cursor = end;
     }
     return { legs, total };
   };
@@ -316,13 +358,16 @@ export function planItinerary<R extends ClimateRegion>(
   // Greedy fallback for large selections: at each step, go where it's best next.
   const remaining = range(n);
   const order: number[] = [];
-  let cursor = startMonth;
+  let cursor = anchor;
   while (remaining.length) {
     let pick = 0;
     let pickFit = -Infinity;
     for (let j = 0; j < remaining.length; j++) {
       const stop = stops[remaining[j]];
-      const fit = stayFit(stop.region, cursor, stop.durationMonths);
+      const fit = fitOverMonths(
+        stop.region,
+        monthsInRange(cursor, advanceByMonths(cursor, stop.durationMonths))
+      );
       if (fit > pickFit) {
         pickFit = fit;
         pick = j;
@@ -330,7 +375,7 @@ export function planItinerary<R extends ClimateRegion>(
     }
     const chosen = remaining.splice(pick, 1)[0];
     order.push(chosen);
-    cursor += stops[chosen].durationMonths;
+    cursor = advanceByMonths(cursor, stops[chosen].durationMonths);
   }
   return buildLegs(order).legs;
 }
@@ -469,8 +514,10 @@ export function legDateRanges(
   let cursor = new Date(year, startMonth - 1, 1);
   return legs.map((l) => {
     const start = new Date(cursor);
-    const end = new Date(cursor);
-    end.setMonth(end.getMonth() + l.months.length);
+    // durationMonths, not months.length: a fortnight from Sep 25 touches two
+    // months but only lasts half of one. Falls back to months.length so a leg
+    // built before this field existed still advances as it always did.
+    const end = advanceByMonths(cursor, l.durationMonths ?? l.months.length);
     cursor = new Date(end);
     return { start, end };
   });

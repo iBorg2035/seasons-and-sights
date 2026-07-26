@@ -57,6 +57,25 @@ export function resolveStartMonth(
   return isFlexibleStart(start) ? monthOf(now) : (start as number);
 }
 
+/** Shortest stay the planner will accept, in months — a single day. */
+const MIN_DURATION_MONTHS = 1 / 30;
+
+/**
+ * Sanitise a stored stay length.
+ *
+ * No longer rounds to whole months: stays can now be a week or a fortnight,
+ * and rounding would turn every one of them into a month. Still rejects the
+ * shapes a corrupt row can produce — NaN, zero, negatives — by falling back to
+ * one day rather than letting them reach the date arithmetic.
+ */
+function clampDuration(duration: number): number {
+  // A corrupt value falls back to a month, not a day: one day is small enough
+  // to be invisible in the UI, so a broken row would silently vanish from the
+  // itinerary instead of showing up as obviously wrong.
+  if (!Number.isFinite(duration) || duration <= 0) return 1;
+  return Math.max(MIN_DURATION_MONTHS, duration);
+}
+
 /**
  * Resolve `[regionId, durationMonths]` pairs against a region lookup, dropping
  * ids the lookup doesn't know (a destination can be retired from the dataset
@@ -71,10 +90,7 @@ export function tripToStops<R extends ClimateRegion>(
   for (const [id, duration] of trip.stops) {
     const region = lookup(id);
     if (!region) continue;
-    stops.push({
-      region,
-      durationMonths: Math.max(1, Math.round(duration) || 1),
-    });
+    stops.push({ region, durationMonths: clampDuration(duration) });
   }
   return stops;
 }

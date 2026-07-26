@@ -69,13 +69,33 @@ describe("tripToStops", () => {
         start: 6,
         stops: [
           ["thailand-bangkok", 0],
-          ["japan-kyoto", 2.4],
           ["peru-cusco", NaN],
+          ["japan-kyoto", -3],
         ],
       },
       lookup
     );
-    expect(stops.map((s) => s.durationMonths)).toEqual([1, 2, 1]);
+    // A corrupt value becomes a month, not a day — a one-day stay is small
+    // enough to be invisible, so a broken row would vanish from the itinerary
+    // rather than look obviously wrong.
+    expect(stops.map((s) => s.durationMonths)).toEqual([1, 1, 1]);
+  });
+
+  it("keeps a fractional duration rather than rounding it to a month", () => {
+    // This assertion used to expect 2.4 → 2. Rounding to whole months is
+    // exactly what sub-month stays remove: a fortnight would have become a
+    // month. Corrupt values are still clamped (above); valid fractions aren't.
+    const stops = tripToStops(
+      {
+        start: 6,
+        stops: [
+          ["japan-kyoto", 2.4],
+          ["peru-cusco", 0.5],
+        ],
+      },
+      lookup
+    );
+    expect(stops.map((s) => s.durationMonths)).toEqual([2.4, 0.5]);
   });
 });
 
