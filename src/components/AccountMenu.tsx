@@ -10,35 +10,11 @@ import {
   getSavedTrips,
   notifySavedTripsChanged,
 } from "@/lib/saved-trips";
-import { buildExportPayload } from "@/lib/data-export";
+import { downloadExport } from "@/lib/data-export";
 import { clearRecords } from "@/lib/trip-records";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
 
-/**
- * Download everything this device holds as a JSON file (their data, on
- * demand). Trips, journal entries and expenses — see buildExportPayload;
- * anything the app starts storing per trip has to be added there, or the
- * export quietly under-reports while looking complete.
- */
-function exportTrips() {
-  let data = "{}";
-  try {
-    data = JSON.stringify(buildExportPayload(), null, 2);
-  } catch {
-    /* ignore */
-  }
-  const url = URL.createObjectURL(
-    new Blob([data], { type: "application/json" })
-  );
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "seasons-and-sights-data.json";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 /** Nav account control. Renders nothing unless Supabase is configured. */
 export function AccountMenu() {
@@ -47,6 +23,7 @@ export function AccountMenu() {
   const [menu, setMenu] = useState(false);
   const [sharesOpen, setSharesOpen] = useState(false);
   const [deleteError, setDeleteError] = useState(false);
+  const [exportError, setExportError] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -94,12 +71,18 @@ export function AccountMenu() {
           <button
             onClick={() => {
               setMenu(false);
-              exportTrips();
+              if (!downloadExport()) setExportError(true);
+              else setExportError(false);
             }}
             className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
           >
-            Export my trips
+            Export my data
           </button>
+          {exportError && (
+            <p className="px-3 py-2 text-xs text-rose-600">
+              Couldn&apos;t build the export. Please try again.
+            </p>
+          )}
           <button
             onClick={() => {
               setMenu(false);

@@ -20,6 +20,37 @@ export interface ExportPayload {
   expenses: Record<string, Expense[]>;
 }
 
+export const EXPORT_FILENAME = "seasons-and-sights-data.json";
+
+/**
+ * Serialize and download the export. The DOM work lives here rather than in
+ * the menu component so it can be tested — otherwise the only thing standing
+ * between the user and a silently empty file is untested wiring.
+ *
+ * Returns false if the payload couldn't be built, so the caller can say so
+ * instead of handing over an empty download.
+ */
+export function downloadExport(now: Date = new Date()): boolean {
+  let json: string;
+  try {
+    json = JSON.stringify(buildExportPayload(now), null, 2);
+  } catch {
+    return false;
+  }
+
+  const url = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = EXPORT_FILENAME;
+  // Same handling as the .ics download: Firefox ignores a detached anchor,
+  // and revoking synchronously can cancel the download before it starts.
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return true;
+}
+
 export function buildExportPayload(now: Date = new Date()): ExportPayload {
   const trips = getSavedTrips();
   const journal: Record<string, JournalEntry[]> = {};
