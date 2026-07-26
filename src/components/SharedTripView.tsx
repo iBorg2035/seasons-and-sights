@@ -21,7 +21,9 @@ function fmtDate(d: Date): string {
   });
 }
 
-type Loaded = { name: string; start: number; stops: [string, number][] };
+/** Exactly what fetchSharedTrip returns, so nothing is quietly dropped on the
+ *  way to createTrip. */
+type Loaded = NonNullable<Awaited<ReturnType<typeof fetchSharedTrip>>>;
 
 export function SharedTripView({ token }: { token: string }) {
   const router = useRouter();
@@ -45,9 +47,14 @@ export function SharedTripView({ token }: { token: string }) {
   /** Import the shared trip as a new trip in this user's list and open it. */
   function importToMyTrips() {
     if (state === "loading" || state === "missing" || state === "error") return;
+    // Carry everything the share holds — a booked trip should arrive booked,
+    // with its dates and interests, not silently downgraded to a bare plan.
     const trip = createTrip(state.name, {
       start: state.start,
       stops: state.stops,
+      interests: state.interests,
+      mode: state.mode,
+      bookedDates: state.bookedDates,
     });
     if (!trip) {
       setSaveError(true);

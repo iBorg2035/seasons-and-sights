@@ -1,5 +1,6 @@
 import { getSupabase } from "@/lib/supabase/client";
 import { recordSyncResult } from "@/lib/sync-status";
+import type { BookedRange } from "@/lib/saved-trips";
 import type { SightType } from "@/types";
 
 export interface SavedTrip {
@@ -10,16 +11,41 @@ export interface SavedTrip {
   start: number;
   stops: [string, number][];
   interests?: SightType[];
+  mode?: "planning" | "booked";
+  bookedDates?: (BookedRange | null)[];
   /** Epoch ms of the last edit; drives last-write-wins on sync. */
   updatedAt?: number;
+}
+
+/** The jsonb payload. Every field past `stops` is optional, so rows written by
+ *  older clients still parse. */
+interface TripData {
+  start: number;
+  stops: [string, number][];
+  interests?: SightType[];
+  mode?: "planning" | "booked";
+  bookedDates?: (BookedRange | null)[];
 }
 
 interface TripRow {
   id: string;
   user_id?: string;
   name: string;
-  data: { start: number; stops: [string, number][]; interests?: SightType[] };
+  data: TripData;
   updated_at?: string;
+}
+
+/**
+ * Re-align a remote row's dates to its stops. A row written by an older
+ * client and then edited elsewhere can arrive with the two out of step;
+ * correcting on read is safer than trusting the wire, since a misaligned
+ * array silently attributes every stay to the wrong destination.
+ */
+function normalizeRemoteDates(data: TripData): (BookedRange | null)[] | undefined {
+  if (!data.bookedDates) return undefined;
+  const n = data.stops?.length ?? 0;
+  const aligned = Array.from({ length: n }, (_, k) => data.bookedDates?.[k] ?? null);
+  return aligned.some((d) => d != null) ? aligned : undefined;
 }
 
 function fromRow(row: TripRow): SavedTrip {
@@ -30,6 +56,8 @@ function fromRow(row: TripRow): SavedTrip {
     start: row.data.start,
     stops: row.data.stops,
     interests: row.data.interests,
+    mode: row.data.mode,
+    bookedDates: normalizeRemoteDates(row.data),
     updatedAt: row.updated_at ? Date.parse(row.updated_at) : 0,
   };
 }
@@ -73,7 +101,13 @@ export async function upsertRemoteTrip(userId: string, trip: SavedTrip): Promise
   const ownerId = trip.ownerId ?? userId;
   const payload = {
     name: trip.name,
-    data: { start: trip.start, stops: trip.stops, interests: trip.interests },
+    data: {
+      start: trip.start,
+      stops: trip.stops,
+      interests: trip.interests,
+      mode: trip.mode,
+      bookedDates: trip.bookedDates,
+    },
     // Preserve the trip's own edit time so last-write-wins stays correct.
     updated_at: new Date(trip.updatedAt ?? Date.now()).toISOString(),
   };
@@ -126,6 +160,9 @@ export async function publishShare(trip: {
   name: string;
   start: number;
   stops: [string, number][];
+  interests?: SightType[];
+  mode?: "planning" | "booked";
+  bookedDates?: (BookedRange | null)[];
 }): Promise<string | null> {
   const sb = await getSupabase();
   if (!sb) return null;
@@ -134,10 +171,23 @@ export async function publishShare(trip: {
   // therefore can't be revoked.
   const { data: auth } = await sb.auth.getUser();
   const token = crypto.randomUUID();
+  const data: TripData = {
+    start: trip.start,
+    stops: trip.stops,
+    interests: trip.interests,
+    mode: trip.mode,
+    bookedDates: trip.bookedDates,
+  };
+
+  // shared_trips.data has a CHECK (length(data::text) < 8192). Refuse rather
+  // than let Postgres reject it opaquely — publishShare's contract is already
+  // "null means it didn't publish", so the caller's error path handles it.
+  if (JSON.stringify(data).length >= 8192) return null;
+
   const { error } = await sb.from("shared_trips").insert({
     token,
     name: trip.name,
-    data: { start: trip.start, stops: trip.stops },
+    data,
     created_by: auth?.user?.id ?? null,
     trip_id: trip.id ?? null,
   });
@@ -209,15 +259,29 @@ export async function deleteAccount(): Promise<boolean> {
 }
 
 /** Read a shared trip by token (via the enumeration-safe RPC). */
-export async function fetchSharedTrip(
-  token: string
-): Promise<{ name: string; start: number; stops: [string, number][] } | null> {
+export async function fetchSharedTrip(token: string): Promise<{
+  name: string;
+  start: number;
+  stops: [string, number][];
+  interests?: SightType[];
+  mode?: "planning" | "booked";
+  bookedDates?: (BookedRange | null)[];
+} | null> {
   const sb = await getSupabase();
   if (!sb) return null;
   const { data, error } = await sb.rpc("get_shared_trip", { p_token: token });
-  const row = (data as { name: string; data: TripRow["data"] }[] | null)?.[0];
+  const row = (data as { name: string; data: TripData }[] | null)?.[0];
   if (error || !row) return null;
-  return { name: row.name, start: row.data.start, stops: row.data.stops };
+  return {
+    name: row.name,
+    start: row.data.start,
+    stops: row.data.stops,
+    interests: row.data.interests,
+    mode: row.data.mode,
+    // Same re-alignment as fromRow: a shared payload is even less trustworthy
+    // than an own-row one, since it was written by someone else's client.
+    bookedDates: normalizeRemoteDates(row.data),
+  };
 }
 
 /**

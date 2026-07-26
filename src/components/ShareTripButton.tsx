@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { publishShare } from "@/lib/supabase/trips";
+import type { SavedTripLite } from "@/lib/saved-trips";
 
 /**
  * One share control for the whole trip. When the backend is configured it
@@ -12,13 +13,15 @@ import { publishShare } from "@/lib/supabase/trips";
 export function ShareTripButton({
   trip,
 }: {
-  trip: {
-    /** Recorded on the share so it can be labelled in the manage-links UI. */
-    id?: string;
-    name: string;
-    start: number;
-    stops: [string, number][];
-  };
+  /**
+   * Derived from SavedTripLite rather than re-listed field by field: an
+   * enumerated shape is how `interests` silently stopped being shared, so
+   * anything added to the trip has to be dealt with here explicitly.
+   */
+  trip: Pick<
+    SavedTripLite,
+    "id" | "name" | "start" | "stops" | "interests" | "mode" | "bookedDates"
+  >;
 }) {
   const [state, setState] = useState<"idle" | "working" | "done" | "error">(
     "idle"

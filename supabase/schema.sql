@@ -5,7 +5,7 @@ create table if not exists public.trips (
   id         text        not null,                -- client-generated trip id
   user_id    uuid        not null references auth.users (id) on delete cascade,
   name       text        not null default 'Trip',
-  data       jsonb       not null,                -- { start, stops }
+  data       jsonb       not null,                -- { start, stops, interests?, mode?, bookedDates? }
   updated_at timestamptz not null default now(),
   primary key (user_id, id)
 );
@@ -29,7 +29,7 @@ create policy "Users manage their own trips"
 create table if not exists public.shared_trips (
   token      uuid        primary key default gen_random_uuid(),
   name       text        not null default 'Trip',
-  data       jsonb       not null,                -- { start, stops }
+  data       jsonb       not null,                -- { start, stops, interests?, mode?, bookedDates? }
   created_at timestamptz not null default now()
 );
 

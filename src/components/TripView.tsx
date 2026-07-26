@@ -363,14 +363,7 @@ export function TripView({
             >
               Rename
             </button>
-            <ShareTripButton
-              trip={{
-                id: trip.id,
-                name: trip.name,
-                start: trip.start,
-                stops: trip.stops,
-              }}
-            />
+            <ShareTripButton trip={trip} />
             <div className="relative" ref={menuRef}>
               <button
                 type="button"
