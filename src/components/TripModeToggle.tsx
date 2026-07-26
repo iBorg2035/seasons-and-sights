@@ -28,7 +28,10 @@ export function TripModeToggle({
   const [confirming, setConfirming] = useState(false);
   const booked = isBooked(trip);
 
-  if (trip.stops.length === 0) return null;
+  // An empty *planning* trip has nothing to lock in yet, so the prompt would
+  // be noise. An empty *booked* trip is the dates-first starting state and
+  // must say so — otherwise the section is blank and the mode is invisible.
+  if (trip.stops.length === 0 && !booked) return null;
 
   if (booked) {
     return (
@@ -37,7 +40,9 @@ export function TripModeToggle({
           📅 Dates locked in
         </span>
         <span className="text-xs text-teal-700">
-          Stays use real dates. Season fit still applies.
+          {trip.stops.length === 0
+            ? "Add stops and set arrival and departure dates for each."
+            : "Stays use real dates. Season fit still applies."}
         </span>
         <button
           type="button"

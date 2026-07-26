@@ -53,8 +53,15 @@ export default function TripsPage() {
     };
   }, [sync]);
 
-  const handleNew = () => {
-    const t = createTrip();
+  /**
+   * Two ways in, because the app had only one and it was the wrong one for
+   * half the cases: month-planning is right when you're choosing *when* to go,
+   * and pure friction when you've already booked. A dates-first trip starts in
+   * booked mode, so stops get arrive/leave pickers immediately instead of
+   * being planned by month and converted afterwards.
+   */
+  const handleNew = (mode?: "booked") => {
+    const t = createTrip(undefined, mode ? { mode } : {});
     if (!t) {
       setSaveError(true);
       return;
@@ -78,12 +85,20 @@ export default function TripsPage() {
               : `${count} ${count === 1 ? "trip" : "trips"}`}
           </p>
         </div>
-        <button
-          onClick={handleNew}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
-        >
-          <span aria-hidden>＋</span> New trip
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => handleNew()}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+          >
+            <span aria-hidden>＋</span> Plan by season
+          </button>
+          <button
+            onClick={() => handleNew("booked")}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+          >
+            <span aria-hidden>📅</span> I know my dates
+          </button>
+        </div>
       </section>
       {saveError && (
         <p className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
@@ -95,10 +110,7 @@ export default function TripsPage() {
       {count === 0 ? (
         // Empty state: a dashed-border card inviting creation, echoing
         // RegionCard's visual language.
-        <button
-          onClick={handleNew}
-          className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-white px-6 py-16 text-slate-500 transition hover:-translate-y-0.5 hover:border-amber-400 hover:text-amber-600"
-        >
+        <div className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-white px-6 py-16 text-center text-slate-500">
           <span className="text-4xl" aria-hidden>
             🧳
           </span>
@@ -106,12 +118,24 @@ export default function TripsPage() {
             Start your first trip
           </span>
           <span className="text-sm">
-            Add destinations and we&apos;ll line up the best season for each.
+            Not sure when to go? We&apos;ll line each stop up with its best
+            season. Already booked? Start from your real dates.
           </span>
-          <span className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white">
-            ＋ New trip
-          </span>
-        </button>
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <button
+              onClick={() => handleNew()}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+            >
+              <span aria-hidden>＋</span> Plan by season
+            </button>
+            <button
+              onClick={() => handleNew("booked")}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              <span aria-hidden>📅</span> I know my dates
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {trips.map((trip) => (

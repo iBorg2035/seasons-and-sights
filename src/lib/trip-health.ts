@@ -108,6 +108,21 @@ export function assessTripHealth<R extends TripHealthRegion>(
     };
   }
 
+  // A booked trip whose stops aren't dated yet — the state a "I know my dates"
+  // trip starts in. Every leg has no months, so fit is 0 across the board and
+  // scoring it would report "terrible weather" when it means "nothing entered
+  // yet". Undiagnosable is not the same as bad.
+  if (legs.every((leg) => leg.months.length === 0)) {
+    return {
+      score: 0,
+      label: "Needs work",
+      summary: "Set arrival and departure dates to diagnose this trip.",
+      metrics: { weather: 0, crowds: 0, pace: 0, prep: 0 },
+      warnings: [],
+      strengths: [],
+    };
+  }
+
   const weather = clampScore(avg(legs.map((leg) => leg.fit)));
   const allMonths = legs.flatMap((leg) =>
     leg.months.map((month) => ({ leg, month }))
