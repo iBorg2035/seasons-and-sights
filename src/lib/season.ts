@@ -203,6 +203,11 @@ function toISODate(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+/** Format a Date as a local "YYYY-MM-DD" day. Inverse of parseDay. */
+export function formatDay(d: Date): string {
+  return toISODate(d);
+}
+
 export interface ItineraryLeg<R extends ClimateRegion = Region> {
   region: R;
   /** 0-based order in the trip. */

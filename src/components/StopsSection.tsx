@@ -5,6 +5,8 @@ import {
   updateTrip,
   moveStop,
   removeStopAt,
+  setStopDates,
+  isBooked,
   type SavedTripLite,
 } from "@/lib/saved-trips";
 import { getSlimRegion } from "@/data/regions-slim";
@@ -14,10 +16,76 @@ import {
   SEASON_META,
 } from "@/lib/season";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
+import { bookingIssues, type BookingIssue } from "@/lib/trip-plan";
 import { AddStopsDialog } from "@/components/AddStopsDialog";
 import { StopDetail } from "@/components/StopDetail";
 
 const DURATIONS = [1, 2, 3] as const;
+
+const ISSUE_TEXT: Record<BookingIssue["kind"], string> = {
+  gap: "Gap before this stop — nothing booked in between.",
+  overlap: "Overlaps the previous stop.",
+  inverted: "Leaves before it arrives.",
+};
+
+/**
+ * Arrive/leave pickers for a committed stay. `leave` is the day you go, which
+ * is exactly the exclusive end BookedRange stores — so what the user types is
+ * what gets saved, with no off-by-one translation.
+ *
+ * Editing one field before the other is normal, so a half-filled pair is held
+ * locally and only committed once both sides are present; clearing either
+ * clears the stay.
+ */
+function BookedDates({
+  range,
+  onChange,
+}: {
+  range: { start: string; end: string } | null;
+  onChange: (next: { start: string; end: string } | null) => void;
+}) {
+  const [start, setStart] = useState(range?.start ?? "");
+  const [end, setEnd] = useState(range?.end ?? "");
+
+  function commit(nextStart: string, nextEnd: string) {
+    setStart(nextStart);
+    setEnd(nextEnd);
+    if (nextStart && nextEnd) onChange({ start: nextStart, end: nextEnd });
+    else if (!nextStart && !nextEnd) onChange(null);
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <label className="text-xs font-medium text-slate-700">
+        <span className="sr-only">Arrive</span>
+        <input
+          type="date"
+          value={start}
+          onChange={(e) => commit(e.target.value, end)}
+          aria-label="Arrive"
+          className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-xs text-slate-800"
+        />
+      </label>
+      <span className="text-xs text-slate-400" aria-hidden>
+        →
+      </span>
+      <label className="text-xs font-medium text-slate-700">
+        <span className="sr-only">Leave</span>
+        <input
+          type="date"
+          value={end}
+          min={start || undefined}
+          onChange={(e) => commit(start, e.target.value)}
+          aria-label="Leave"
+          className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-xs text-slate-800"
+        />
+      </label>
+      {!range && (
+        <span className="text-xs text-slate-400">Dates TBD</span>
+      )}
+    </div>
+  );
+}
 
 export function StopsSection({
   trip,
@@ -49,6 +117,16 @@ export function StopsSection({
   const legs = tripSlimLegs(trip);
   // planItinerary reorders for best fit; map region id → leg for the label.
   const legByRegion = new Map(legs.map((l) => [l.region.id, l]));
+
+  const booked = isBooked(trip);
+  // Advisory only — gaps and overlaps are both legitimate (going home in
+  // between; keeping the old flat a few days). Shown, never blocking.
+  const issuesByStop = new Map<number, BookingIssue[]>();
+  for (const issue of bookingIssues(trip)) {
+    const list = issuesByStop.get(issue.index) ?? [];
+    list.push(issue);
+    issuesByStop.set(issue.index, list);
+  }
 
   if (resolved.length === 0) {
     return (
@@ -162,6 +240,15 @@ export function StopsSection({
 
             {/* Controls row — always visible */}
             <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-white px-4 py-2">
+              {booked ? (
+                <BookedDates
+                  range={trip.bookedDates?.[i] ?? null}
+                  onChange={(next) =>
+                    mutate((t) => setStopDates(t, i, next))
+                  }
+                />
+              ) : (
+                <>
               <span className="text-xs font-medium text-slate-700">Stay:</span>
               {DURATIONS.map((d) => (
                 <button
@@ -183,6 +270,8 @@ export function StopsSection({
                   {d}m
                 </button>
               ))}
+                </>
+              )}
               <span className="mx-1 h-4 w-px bg-slate-200" aria-hidden />
               <button
                 type="button"
@@ -227,6 +316,14 @@ export function StopsSection({
                 ✕ Remove
               </button>
             </div>
+            {(issuesByStop.get(i) ?? []).map((issue) => (
+              <p
+                key={issue.kind}
+                className="border-t border-amber-200 bg-amber-50 px-4 py-1.5 text-xs text-amber-800"
+              >
+                {ISSUE_TEXT[issue.kind]}
+              </p>
+            ))}
           </li>
         );
       })}

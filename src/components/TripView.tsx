@@ -32,6 +32,10 @@ import { StopsSection } from "@/components/StopsSection";
 import { PrepSection } from "@/components/PrepSection";
 import { MapSection } from "@/components/MapSection";
 import { TripCopilot } from "@/components/TripCopilot";
+import { TripModeToggle } from "@/components/TripModeToggle";
+import { legDateRanges } from "@/lib/season";
+import { resolveStartMonth, seedBookedDates } from "@/lib/trip-plan";
+import { tripSlimLegs } from "@/lib/trip-plan-slim";
 
 const SECTIONS = [
   { id: "copilot", label: "Co-pilot" },
@@ -457,6 +461,37 @@ export function TripView({
         </section>
 
         <section id="stops" className="scroll-mt-32">
+          <TripModeToggle
+            trip={trip}
+            onSwitch={(next) => {
+              if (next === "planning") {
+                // Keep bookedDates in storage so switching back restores the
+                // dates rather than making the user re-enter them.
+                persistTripEdit(trip.id, (t) => {
+                  t.mode = "planning";
+                });
+                return;
+              }
+              persistTripEdit(trip.id, (t) => {
+                // Already has dates (switched back and forth) — keep the
+                // user's edits rather than overwriting from the plan.
+                if (t.bookedDates?.some((d) => d != null)) {
+                  t.mode = "booked";
+                  return;
+                }
+                // Plan BEFORE flipping the mode: tripSlimLegs dispatches on
+                // mode, so a trip already marked booked would be planned from
+                // its (still empty) dates — yielding zero-length stays and no
+                // reorder, instead of the derived plan we mean to commit.
+                const legs = tripSlimLegs(t);
+                const ranges = legDateRanges(resolveStartMonth(t.start), legs);
+                const seeded = seedBookedDates(t.stops, legs, ranges);
+                t.stops = seeded.stops;
+                t.bookedDates = seeded.bookedDates;
+                t.mode = "booked";
+              });
+            }}
+          />
           <h2 className="mb-4 text-lg font-semibold text-slate-900">
             Stops{" "}
             <span className="text-sm font-normal text-slate-400">

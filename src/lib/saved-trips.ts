@@ -155,6 +155,26 @@ export function moveStop(trip: SavedTripLite, from: number, to: number): void {
   }
 }
 
+/**
+ * Set (or clear, with null) one stop's committed dates, materialising the
+ * index-aligned array first so callers never build it by hand. Clearing the
+ * last remaining date drops the array entirely, via updateTrip's normalise.
+ * Call inside an `updateTrip` mutation.
+ */
+export function setStopDates(
+  trip: SavedTripLite,
+  index: number,
+  range: BookedRange | null
+): void {
+  if (index < 0 || index >= trip.stops.length) return;
+  const next: (BookedRange | null)[] = Array.from(
+    { length: trip.stops.length },
+    (_, k) => trip.bookedDates?.[k] ?? null
+  );
+  next[index] = range;
+  trip.bookedDates = next;
+}
+
 /** Remove a stop and its committed date together. See moveStop. */
 export function removeStopAt(trip: SavedTripLite, index: number): void {
   if (index < 0 || index >= trip.stops.length) return;

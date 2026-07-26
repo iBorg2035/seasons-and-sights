@@ -1,5 +1,6 @@
 import {
   bookedLegs,
+  formatDay,
   legDateRanges,
   monthOf,
   parseDay,
@@ -9,7 +10,11 @@ import {
   type ItineraryLeg,
   type PlannerStop,
 } from "@/lib/season";
-import { isBooked, type SavedTripLite } from "@/lib/saved-trips";
+import {
+  isBooked,
+  type BookedRange,
+  type SavedTripLite,
+} from "@/lib/saved-trips";
 
 /**
  * Turning a saved trip into planner stops and itinerary legs used to be
@@ -112,6 +117,50 @@ export function tripDateRanges(
 ): (DateRange | null)[] {
   if (isBooked(trip)) return bookedRanges(trip);
   return legDateRanges(resolveStartMonth(trip.start, from), legs, from);
+}
+
+/**
+ * Turn a planned trip into a booked one: commit the derived dates.
+ *
+ * The subtlety worth naming — `planItinerary` REORDERS stops for season fit,
+ * so `ranges[i]` belongs to `legs[i]`, not to `stops[i]`. Seeding
+ * index-aligned against the raw stops would hang every date on the wrong
+ * destination. So the stops are rewritten into the planner's order, which is
+ * also the honest reading of "lock in this plan": the order IS part of what
+ * was planned. Callers must make that visible rather than silent — see
+ * `wouldReorder`.
+ *
+ * Durations are carried across so switching back to planning restores the
+ * original month-based trip intact.
+ */
+export function seedBookedDates<R extends ClimateRegion & { id: string }>(
+  stops: [string, number][],
+  legs: ItineraryLeg<R>[],
+  ranges: DateRange[]
+): { stops: [string, number][]; bookedDates: BookedRange[] } {
+  const durationById = new Map(stops);
+  const nextStops: [string, number][] = [];
+  const bookedDates: BookedRange[] = [];
+
+  legs.forEach((leg, i) => {
+    const id = leg.region.id;
+    nextStops.push([id, durationById.get(id) ?? leg.months.length ?? 1]);
+    const r = ranges[i];
+    if (r) {
+      bookedDates.push({ start: formatDay(r.start), end: formatDay(r.end) });
+    }
+  });
+
+  return { stops: nextStops, bookedDates };
+}
+
+/** Whether committing the plan would visibly rearrange the user's stop list. */
+export function wouldReorder<R extends ClimateRegion & { id: string }>(
+  stops: [string, number][],
+  legs: ItineraryLeg<R>[]
+): boolean {
+  if (legs.length !== stops.length) return false;
+  return legs.some((leg, i) => leg.region.id !== stops[i][0]);
 }
 
 export type BookingIssue = {
