@@ -7,14 +7,24 @@ import { SharedLinksDialog } from "@/components/SharedLinksDialog";
 import { deleteAccount } from "@/lib/supabase/trips";
 import {
   SAVED_TRIPS_KEY as SAVED_KEY,
+  getSavedTrips,
   notifySavedTripsChanged,
 } from "@/lib/saved-trips";
+import { buildExportPayload } from "@/lib/data-export";
+import { clearRecords } from "@/lib/trip-records";
+import { JOURNAL_ENTITY } from "@/lib/journal";
+import { EXPENSE_ENTITY } from "@/lib/expenses";
 
-/** Download the user's saved trips as a JSON file (their data, on demand). */
+/**
+ * Download everything this device holds as a JSON file (their data, on
+ * demand). Trips, journal entries and expenses — see buildExportPayload;
+ * anything the app starts storing per trip has to be added there, or the
+ * export quietly under-reports while looking complete.
+ */
 function exportTrips() {
-  let data = "[]";
+  let data = "{}";
   try {
-    data = localStorage.getItem(SAVED_KEY) || "[]";
+    data = JSON.stringify(buildExportPayload(), null, 2);
   } catch {
     /* ignore */
   }
@@ -23,9 +33,11 @@ function exportTrips() {
   );
   const a = document.createElement("a");
   a.href = url;
-  a.download = "seasons-and-sights-trips.json";
+  a.download = "seasons-and-sights-data.json";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /** Nav account control. Renders nothing unless Supabase is configured. */
@@ -122,6 +134,13 @@ export function AccountMenu() {
               setDeleteError(false);
               setMenu(false);
               try {
+                // Cloud rows cascade off auth.users; local ones don't cascade
+                // off anything. Clear every per-trip entity too, or deleting
+                // the account would leave the diary sitting in localStorage.
+                for (const trip of getSavedTrips()) {
+                  clearRecords(JOURNAL_ENTITY, trip.id);
+                  clearRecords(EXPENSE_ENTITY, trip.id);
+                }
                 localStorage.removeItem(SAVED_KEY);
                 notifySavedTripsChanged();
               } catch {

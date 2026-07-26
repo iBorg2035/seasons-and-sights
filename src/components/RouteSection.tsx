@@ -19,6 +19,10 @@ import {
   tripIcsEvents,
 } from "@/lib/trip-plan";
 import { buildIcs } from "@/lib/ics";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { formatCents, listExpenses, totalCents } from "@/lib/expenses";
+import { TRIP_RECORDS_EVENT } from "@/lib/trip-records";
 import { tripSlimLegs, tripToSlimStops } from "@/lib/trip-plan-slim";
 import type { SavedTripLite } from "@/lib/saved-trips";
 import { assessTripHealth } from "@/lib/trip-health";
@@ -45,6 +49,22 @@ export function RouteSection({
   /** Called when the user toggles a travel-interest chip. */
   onInterestsChange?: (interests: SightType[]) => void;
 }) {
+  // What the user has actually logged, against the curated estimate below.
+  // Read in an effect rather than during render: TripView holds this behind a
+  // `loaded` gate, but an effect keeps it correct if that ever changes, and it
+  // lets another tab's journal edits refresh this line.
+  const [loggedCents, setLoggedCents] = useState(0);
+  useEffect(() => {
+    const reload = () => setLoggedCents(totalCents(listExpenses(trip.id)));
+    reload();
+    window.addEventListener(TRIP_RECORDS_EVENT, reload);
+    window.addEventListener("storage", reload);
+    return () => {
+      window.removeEventListener(TRIP_RECORDS_EVENT, reload);
+      window.removeEventListener("storage", reload);
+    };
+  }, [trip.id]);
+
   const stops = tripToSlimStops(trip);
   // `start` is 1-based; anything outside 1-12 falls back to the current month.
   const start = resolveStartMonth(trip.start);
@@ -71,6 +91,22 @@ export function RouteSection({
   const interests = trip.interests ?? [];
   const totalCost = estimateTripCost(legs);
   const spendSoFar = active ? estimateSpendSoFar(legs, ranges, now) : 0;
+
+  /**
+   * The reconciliation the estimator has been missing. Compared against the
+   * estimate for the days *elapsed*, not the whole trip — measuring what
+   * you've spent in Peru so far against the cost of the entire itinerary
+   * would show everyone wildly "under budget" until the last day.
+   *
+   * Computed unconditionally, unlike `spendSoFar` above: a finished trip is
+   * exactly when this comparison is most worth seeing.
+   */
+  const estimatedToDate = estimateSpendSoFar(legs, ranges, now);
+  const loggedUsd = loggedCents / 100;
+  // A trip entirely in the future has nothing elapsed to compare against, so
+  // the total is shown on its own rather than against a meaningless zero.
+  const hasComparison = loggedCents > 0 && estimatedToDate > 0;
+  const varianceUsd = loggedUsd - estimatedToDate;
 
   // Works in both modes: planning exports the derived months, booked exports
   // the committed dates. Undated stops simply don't appear.
@@ -117,10 +153,43 @@ export function RouteSection({
           {totalCost > 0 && (
             <p className="mt-1 text-xs font-normal text-teal-700">
               Est. ~{formatUsd(spendSoFar)} of ~{formatUsd(totalCost)} spent so
-              far ({formatUsd(totalCost - spendSoFar)} left) — based on
-              curated daily-budget estimates, not tracked expenses
+              far ({formatUsd(totalCost - spendSoFar)} left) — curated
+              daily-budget estimates
             </p>
           )}
+        </div>
+      )}
+
+      {/* Estimate vs what's actually been logged. */}
+      {loggedCents > 0 && (
+        <div className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm">
+          <p className="font-medium text-slate-800">
+            💵 {formatCents(loggedCents)} logged
+            {hasComparison && (
+              <>
+                {" "}
+                vs ~{formatUsd(estimatedToDate)} estimated for the days so far —{" "}
+                <span
+                  className={
+                    varianceUsd > 0 ? "text-rose-700" : "text-emerald-700"
+                  }
+                >
+                  {formatUsd(Math.abs(varianceUsd))}{" "}
+                  {varianceUsd > 0 ? "over" : "under"}
+                </span>
+              </>
+            )}
+          </p>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Only counts what you&apos;ve entered in the{" "}
+            <Link
+              href={`/trips/${trip.id}/journal`}
+              className="font-medium text-teal-700 hover:underline"
+            >
+              journal
+            </Link>
+            .
+          </p>
         </div>
       )}
 

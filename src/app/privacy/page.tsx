@@ -40,6 +40,14 @@ export default function PrivacyPage() {
             there unless you sign in.
           </li>
           <li>
+            <strong>Journal entries and expenses</strong> — anything you write
+            in a trip&apos;s journal, and the amounts you log. These stay on
+            your device unless you sign in, in which case they sync to your
+            account so they&apos;re on your other devices too. They are never
+            part of a share link, and inviting someone to co-edit a trip does
+            not give them access to its journal.
+          </li>
+          <li>
             <strong>Trip co-pilot conversations</strong> — if you use the
             assistant, what you type and the trip it&apos;s looking at (its
             destinations, dates and interests) are sent to an AI provider to
