@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/contexts/auth-context";
+import {
+  fetchEnabledProviders,
+  isProviderEnabled,
+} from "@/lib/supabase/auth-providers";
 
 /** Google's four-colour "G", inlined so the dialog needs no network request. */
 function GoogleMark() {
@@ -37,6 +41,18 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
+  // Undefined until the probe answers, so the button doesn't flash in and out.
+  const [googleOn, setGoogleOn] = useState<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    let active = true;
+    fetchEnabledProviders().then((p) => {
+      if (active) setGoogleOn(isProviderEnabled(p, "google"));
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Close on Escape and lock background scroll while the modal is open.
   useEffect(() => {
@@ -87,7 +103,13 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
     );
     // A success redirects away, so reaching here at all means it didn't start.
     setBusy(false);
-    setError(res.error ?? "Couldn't start Google sign-in.");
+    // Supabase says "Unsupported provider: provider is not enabled", which
+    // reads to a user as though the app is broken rather than unconfigured.
+    setError(
+      /provider is not enabled/i.test(res.error ?? "")
+        ? "Google sign-in isn't set up on this site yet — use email for now."
+        : (res.error ?? "Couldn't start Google sign-in.")
+    );
   }
 
   return createPortal(
@@ -134,21 +156,27 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
             </p>
 
             {/* Above the form: it's the faster path, and burying it under a
-                password field is what makes people type a password instead. */}
-            <button
-              type="button"
-              onClick={google}
-              disabled={busy}
-              className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
-            >
-              <GoogleMark />
-              Continue with Google
-            </button>
-            <div className="my-4 flex items-center gap-3">
-              <span className="h-px flex-1 bg-slate-200" />
-              <span className="text-xs text-slate-400">or</span>
-              <span className="h-px flex-1 bg-slate-200" />
-            </div>
+                password field is what makes people type a password instead.
+                Only shown when the project actually has Google enabled — a
+                button that always errors reads as a broken app. */}
+            {googleOn && (
+              <>
+                <button
+                  type="button"
+                  onClick={google}
+                  disabled={busy}
+                  className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                >
+                  <GoogleMark />
+                  Continue with Google
+                </button>
+                <div className="my-4 flex items-center gap-3">
+                  <span className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs text-slate-400">or</span>
+                  <span className="h-px flex-1 bg-slate-200" />
+                </div>
+              </>
+            )}
 
             <form onSubmit={submit} className="space-y-3">
               <input

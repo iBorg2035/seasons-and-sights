@@ -39,9 +39,18 @@ Environment Variables**, then redeploy.
 
 ## 4. (Optional) Google Sign-In
 
-The "Continue with Google" button is always in the sign-in dialog, but it only
-works once Google is enabled on the project — until then it returns Supabase's
-"provider is not enabled" error rather than doing nothing silently.
+The sign-in dialog shows "Continue with Google" **only when the provider is
+actually enabled** on your project — the app checks `/auth/v1/settings` at open
+time, so there's never a button that errors. Enable it below and the button
+appears on its own; no redeploy needed.
+
+You can check the current state any time:
+
+```bash
+curl -s "https://<your-project-ref>.supabase.co/auth/v1/settings" -H "apikey: <anon-key>"
+```
+
+`"google": false` in the `external` block means the steps below aren't done yet.
 
 **In Google Cloud Console** (console.cloud.google.com):
 
