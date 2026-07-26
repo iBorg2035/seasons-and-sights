@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  planItinerary,
-  legDateRanges,
   findActiveLeg,
   fitQuality,
   climateForMonth,
@@ -14,8 +12,14 @@ import {
   estimateSpendSoFar,
   formatUsd,
 } from "@/lib/season";
-import { isFlexibleStart, resolveStartMonth } from "@/lib/trip-plan";
-import { tripToSlimStops } from "@/lib/trip-plan-slim";
+import {
+  isFlexibleStart,
+  resolveStartMonth,
+  tripDateRanges,
+  tripIcsEvents,
+} from "@/lib/trip-plan";
+import { buildIcs } from "@/lib/ics";
+import { tripSlimLegs, tripToSlimStops } from "@/lib/trip-plan-slim";
 import type { SavedTripLite } from "@/lib/saved-trips";
 import { assessTripHealth } from "@/lib/trip-health";
 import type { SightType } from "@/types";
@@ -55,8 +59,10 @@ export function RouteSection({
   }
 
   const now = new Date();
-  const legs = planItinerary(stops, start);
-  const ranges = legDateRanges(start, legs);
+  const legs = tripSlimLegs(trip, now);
+  // tripDateRanges, not legDateRanges: a booked trip must show the dates the
+  // user committed, not ones re-derived from its start month.
+  const ranges = tripDateRanges(trip, legs, now);
   const active = findActiveLeg(ranges, now);
   const health = assessTripHealth(legs, {
     isFlexibleStart: isFlexible,
@@ -65,6 +71,26 @@ export function RouteSection({
   const interests = trip.interests ?? [];
   const totalCost = estimateTripCost(legs);
   const spendSoFar = active ? estimateSpendSoFar(legs, ranges, now) : 0;
+
+  // Works in both modes: planning exports the derived months, booked exports
+  // the committed dates. Undated stops simply don't appear.
+  const icsEvents = tripIcsEvents(legs, ranges);
+
+  function downloadIcs() {
+    const blob = new Blob([buildIcs(icsEvents, trip.name, trip.id)], {
+      type: "text/calendar;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${trip.name.replace(/[^\w-]+/g, "-").toLowerCase() || "trip"}.ics`;
+    // Firefox ignores clicks on a detached anchor, and revoking synchronously
+    // can cancel the download before it starts — hence the append and defer.
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 
   function toggleInterest(type: SightType) {
     if (!onInterestsChange) return;
@@ -149,7 +175,8 @@ export function RouteSection({
                 className={`h-2 w-2 rounded-full ${SEASON_META[fitQuality(leg.fit).season].dot}`}
                 aria-hidden
               />
-              {i + 1}. {leg.region.name} — {fmtDate(ranges[i].start)}
+              {i + 1}. {leg.region.name}
+              {ranges[i] ? ` — ${fmtDate(ranges[i]!.start)}` : " — dates TBD"}
             </span>
           ))}
         </div>
@@ -335,6 +362,16 @@ export function RouteSection({
           {fitSummary}
           {totalCost > 0 && <> · ~{formatUsd(totalCost)} estimated</>}
         </p>
+        {icsEvents.length > 0 && (
+          <button
+            type="button"
+            onClick={downloadIcs}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+          >
+            📅 Add to calendar ({icsEvents.length}{" "}
+            {icsEvents.length === 1 ? "stop" : "stops"})
+          </button>
+        )}
       </div>
 
       {/* Per-leg detail rows */}
@@ -342,7 +379,10 @@ export function RouteSection({
         {legs.map((leg, i) => {
           const q = fitQuality(leg.fit);
           const meta = SEASON_META[q.season];
-          const end = new Date(ranges[i].end.getTime() - 86400000);
+          const range = ranges[i];
+          const end = range
+            ? new Date(range.end.getTime() - 86400000)
+            : null;
           return (
             <li key={leg.region.id} className="flex items-center gap-3 px-4 py-3">
               <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
@@ -357,7 +397,9 @@ export function RouteSection({
                   </span>
                 </p>
                 <p className="text-xs text-slate-500">
-                  {fmtDate(ranges[i].start)} → {fmtDate(end)} ·{" "}
+                  {range && end
+                    ? `${fmtDate(range.start)} → ${fmtDate(end)}`
+                    : "Dates TBD"}{" · "}
                   {leg.months
                     .map((m) => climateForMonth(leg.region, m).season)
                     .join("/")}{" "}

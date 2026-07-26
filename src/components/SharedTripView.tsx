@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchSharedTrip } from "@/lib/supabase/trips";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
-import { legDateRanges, climateForMonth } from "@/lib/season";
-import { resolveStartMonth } from "@/lib/trip-plan";
+import { climateForMonth } from "@/lib/season";
+import { tripDateRanges } from "@/lib/trip-plan";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { SeasonBadge } from "@/components/SeasonBadge";
 import { DestinationImage } from "@/components/DestinationImage";
@@ -104,11 +104,10 @@ export function SharedTripView({ token }: { token: string }) {
     );
   }
 
-  // resolveStartMonth matters here: a trip shared with a flexible start
-  // arrives as `start: 0`, which is not a month the planner can index.
-  const start = resolveStartMonth(state.start);
+  // tripSlimLegs/tripDateRanges both normalise the start month internally, so
+  // a trip shared with a flexible start (`start: 0`) is handled for free.
   const legs = tripSlimLegs(state);
-  const ranges = legDateRanges(start, legs);
+  const ranges = tripDateRanges(state, legs);
 
   return (
     <div className="space-y-6">
@@ -165,8 +164,9 @@ export function SharedTripView({ token }: { token: string }) {
                   </div>
                   <p className="text-sm text-slate-500">
                     {leg.region.country} ·{" "}
-                    {fmtDate(ranges[i].start)} →{" "}
-                    {fmtDate(new Date(ranges[i].end.getTime() - 86400000))}
+                    {ranges[i]
+                      ? `${fmtDate(ranges[i]!.start)} → ${fmtDate(new Date(ranges[i]!.end.getTime() - 86400000))}`
+                      : "Dates TBD"}
                   </p>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import {
   bookedLegs,
+  fitQuality,
   formatDay,
   legDateRanges,
   monthOf,
@@ -10,6 +11,7 @@ import {
   type ItineraryLeg,
   type PlannerStop,
 } from "@/lib/season";
+import type { IcsEvent } from "@/lib/ics";
 import {
   isBooked,
   type BookedRange,
@@ -161,6 +163,35 @@ export function wouldReorder<R extends ClimateRegion & { id: string }>(
 ): boolean {
   if (legs.length !== stops.length) return false;
   return legs.some((leg, i) => leg.region.id !== stops[i][0]);
+}
+
+/**
+ * Calendar events for a trip's stays, one per dated leg.
+ *
+ * Works in both modes: planning exports the derived month ranges (genuinely
+ * useful for blocking out a rough trip), booked exports the committed dates.
+ * Undated stops are skipped — there's nothing to put on a calendar — so the
+ * export can be shorter than the stop list, which is correct rather than an
+ * error worth surfacing.
+ *
+ * `buildIcs` already emits end-exclusive all-day events, matching DateRange,
+ * so no date translation happens here.
+ */
+export function tripIcsEvents<
+  R extends ClimateRegion & { name: string; country: string },
+>(legs: ItineraryLeg<R>[], ranges: (DateRange | null)[]): IcsEvent[] {
+  const events: IcsEvent[] = [];
+  legs.forEach((leg, i) => {
+    const range = ranges[i];
+    if (!range) return;
+    events.push({
+      title: `${leg.region.name}, ${leg.region.country}`,
+      start: range.start,
+      end: range.end,
+      description: fitQuality(leg.fit).label,
+    });
+  });
+  return events;
 }
 
 export type BookingIssue = {

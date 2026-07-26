@@ -1,12 +1,11 @@
 "use client";
 
 import {
-  legDateRanges,
   fitQuality,
   MONTH_NAMES,
   SEASON_META,
 } from "@/lib/season";
-import { resolveStartMonth } from "@/lib/trip-plan";
+import { resolveStartMonth, tripDateRanges } from "@/lib/trip-plan";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import type { SavedTripLite } from "@/lib/saved-trips";
 import { RouteMap } from "@/components/RouteMap";
@@ -18,7 +17,7 @@ function fmtDate(d: Date): string {
 export function MapSection({ trip }: { trip: SavedTripLite }) {
   const start = resolveStartMonth(trip.start);
   const legs = tripSlimLegs(trip);
-  const ranges = legDateRanges(start, legs);
+  const ranges = tripDateRanges(trip, legs);
   const totalMonths = legs.reduce((sum, l) => sum + l.months.length, 0);
 
   if (legs.length === 0) {
@@ -68,7 +67,7 @@ export function MapSection({ trip }: { trip: SavedTripLite }) {
               </span>
               <span className="text-slate-400">·</span>
               <span>
-                {fmtDate(ranges[i].start)} —{" "}
+                {ranges[i] ? fmtDate(ranges[i]!.start) : "Dates TBD"} —{" "}
                 {leg.months
                   .map((m) => MONTH_NAMES[m - 1])
                   .join("/")}{" "}

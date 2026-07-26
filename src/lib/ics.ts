@@ -19,11 +19,26 @@ function escape(s: string): string {
   return s.replace(/([\\,;])/g, "\\$1").replace(/\n/g, "\\n");
 }
 
-/** Build an iCalendar (.ics) document from a list of all-day events. */
+/** Only `A-Za-z0-9-` survives, so an arbitrary trip id is UID-safe. */
+function uidToken(s: string): string {
+  const cleaned = s.replace(/[^A-Za-z0-9-]/g, "").slice(0, 32);
+  return cleaned || "trip";
+}
+
+/**
+ * Build an iCalendar (.ics) document from a list of all-day events.
+ *
+ * `uidNamespace` should be stable and unique per trip (the trip id). Calendar
+ * apps key on UID: re-importing the same trip must update its events rather
+ * than duplicate them, and two different trips that happen to start on the
+ * same day must not overwrite each other.
+ */
 export function buildIcs(
   events: IcsEvent[],
-  calName = "Seasons & Sights trip"
+  calName = "Seasons & Sights trip",
+  uidNamespace = calName
 ): string {
+  const ns = uidToken(uidNamespace);
   const stamp = `${icsDate(new Date())}T000000Z`;
   const lines = [
     "BEGIN:VCALENDAR",
@@ -35,7 +50,7 @@ export function buildIcs(
   events.forEach((e, i) => {
     lines.push(
       "BEGIN:VEVENT",
-      `UID:trip-${i}-${icsDate(e.start)}@seasons-and-sights`,
+      `UID:trip-${ns}-${i}-${icsDate(e.start)}@seasons-and-sights`,
       `DTSTAMP:${stamp}`,
       `DTSTART;VALUE=DATE:${icsDate(e.start)}`,
       `DTEND;VALUE=DATE:${icsDate(e.end)}`,
