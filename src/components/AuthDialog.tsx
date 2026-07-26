@@ -4,9 +4,33 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/contexts/auth-context";
 
-/** Email/password sign-in & sign-up modal. */
+/** Google's four-colour "G", inlined so the dialog needs no network request. */
+function GoogleMark() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden focusable="false">
+      <path
+        fill="#4285F4"
+        d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.7-2 5-4.4 6.6v5.5h7.1c4.1-3.8 6.6-9.5 6.6-16.1z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7C8.1 41.1 15.5 46 24 46z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M11.8 28.2c-.4-1.3-.7-2.7-.7-4.2s.2-2.9.7-4.2v-5.7H4.5A22 22 0 0 0 2 24c0 3.6.9 6.9 2.5 9.9l7.3-5.7z"
+      />
+      <path
+        fill="#EA4335"
+        d="M24 10.4c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 3.9 29.9 2 24 2 15.5 2 8.1 6.9 4.5 14.1l7.3 5.7c1.7-5.2 6.5-9.4 12.2-9.4z"
+      />
+    </svg>
+  );
+}
+
+/** Sign-in & sign-up modal: Google, or email/password. */
 export function AuthDialog({ onClose }: { onClose: () => void }) {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,6 +78,18 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
     onClose();
   }
 
+  async function google() {
+    setBusy(true);
+    setError(null);
+    // Come back to wherever the dialog was opened from.
+    const res = await signInWithGoogle(
+      window.location.pathname + window.location.search
+    );
+    // A success redirects away, so reaching here at all means it didn't start.
+    setBusy(false);
+    setError(res.error ?? "Couldn't start Google sign-in.");
+  }
+
   return createPortal(
     <div
       className="fixed inset-0 z-[3000] overflow-y-auto bg-black/40"
@@ -96,6 +132,24 @@ export function AuthDialog({ onClose }: { onClose: () => void }) {
             <p className="mb-4 text-sm text-slate-500">
               Sync your saved trips across devices.
             </p>
+
+            {/* Above the form: it's the faster path, and burying it under a
+                password field is what makes people type a password instead. */}
+            <button
+              type="button"
+              onClick={google}
+              disabled={busy}
+              className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+            >
+              <GoogleMark />
+              Continue with Google
+            </button>
+            <div className="my-4 flex items-center gap-3">
+              <span className="h-px flex-1 bg-slate-200" />
+              <span className="text-xs text-slate-400">or</span>
+              <span className="h-px flex-1 bg-slate-200" />
+            </div>
+
             <form onSubmit={submit} className="space-y-3">
               <input
                 type="email"

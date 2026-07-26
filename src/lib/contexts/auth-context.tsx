@@ -20,7 +20,22 @@ interface AuthState {
     email: string,
     password: string
   ) => Promise<{ error?: string; needsConfirm?: boolean }>;
+  /**
+   * Starts the Google OAuth redirect. On success the browser leaves the page,
+   * so this only ever *returns* when something went wrong.
+   */
+  signInWithGoogle: (next?: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
+}
+
+/**
+ * Where to send the user after the OAuth round trip. Only same-origin paths
+ * are allowed through: `next` ends up in a URL the provider redirects to, so
+ * accepting an absolute URL would turn sign-in into an open redirect.
+ */
+export function safeNext(next: string | null | undefined): string {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return "/trips";
+  return next;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -79,6 +94,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { needsConfirm: !data.session };
   };
 
+  const signInWithGoogle: AuthState["signInWithGoogle"] = async (next) => {
+    const sb = await getSupabase();
+    if (!sb) return { error: "Accounts aren't configured." };
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+          safeNext(next)
+        )}`,
+      },
+    });
+    // Only reached on failure — a success navigates away from this page.
+    return { error: error?.message };
+  };
+
   const signOut: AuthState["signOut"] = async () => {
     const sb = await getSupabase();
     await sb?.auth.signOut();
@@ -92,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         configured: isSupabaseConfigured,
         signIn,
         signUp,
+        signInWithGoogle,
         signOut,
       }}
     >
