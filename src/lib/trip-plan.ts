@@ -99,13 +99,13 @@ export function tripToStops<R extends ClimateRegion>(
  * The trip's itinerary legs. Note `planItinerary` reorders stops for best
  * season fit, so leg order is not `trip.stops` order — match on `region.id`.
  */
-export function tripLegs<R extends ClimateRegion>(
+export function tripLegs<R extends ClimateRegion & { id: string }>(
   trip: PlannableTrip,
   lookup: (id: string) => R | undefined,
   now: Date = new Date()
 ): ItineraryLeg<R>[] {
   const stops = tripToStops(trip, lookup);
-  if (isBooked(trip)) return bookedLegs(stops, bookedRanges(trip));
+  if (isBooked(trip)) return bookedLegs(stops, bookedRangesFor(trip, stops));
   return planItinerary(stops, resolveStartMonth(trip.start, now));
 }
 
@@ -116,6 +116,32 @@ function bookedRanges(trip: PlannableTrip): (DateRange | null)[] {
     if (!r) return null;
     return { start: parseDay(r.start), end: parseDay(r.end) };
   });
+}
+
+/**
+ * The committed ranges lined up with a FILTERED sequence — resolved stops or
+ * legs — rather than with `trip.stops`.
+ *
+ * This distinction is load-bearing. `tripToStops` drops region ids the dataset
+ * no longer knows, so the moment a trip references a retired destination the
+ * stops array is shorter than `bookedDates`, and pairing them positionally
+ * hands every leg the dates belonging to a different one. Matching on region
+ * id fixes that; the per-id queue keeps it correct even if the same
+ * destination were ever listed twice.
+ */
+function bookedRangesFor(
+  trip: PlannableTrip,
+  items: { region: { id: string } }[]
+): (DateRange | null)[] {
+  const queues = new Map<string, (DateRange | null)[]>();
+  trip.stops.forEach(([id], i) => {
+    const r = trip.bookedDates?.[i];
+    const range = r ? { start: parseDay(r.start), end: parseDay(r.end) } : null;
+    const q = queues.get(id) ?? [];
+    q.push(range);
+    queues.set(id, q);
+  });
+  return items.map((it) => queues.get(it.region.id)?.shift() ?? null);
 }
 
 /**
@@ -131,10 +157,10 @@ function bookedRanges(trip: PlannableTrip): (DateRange | null)[] {
  */
 export function tripDateRanges(
   trip: PlannableTrip,
-  legs: ItineraryLeg<ClimateRegion>[],
+  legs: ItineraryLeg<ClimateRegion & { id: string }>[],
   from: Date = new Date()
 ): (DateRange | null)[] {
-  if (isBooked(trip)) return bookedRanges(trip);
+  if (isBooked(trip)) return bookedRangesFor(trip, legs);
   return legDateRanges(resolveStartMonth(trip.start, from), legs, from);
 }
 

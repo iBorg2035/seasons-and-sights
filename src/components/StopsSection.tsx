@@ -145,10 +145,15 @@ export function StopsSection({
 
   // Rows for the stop list, in the trip's own order (the planner reorders, but
   // the editable list must stay in the order the user arranged).
+  // stopIndex is the position in `trip.stops`, carried through because this
+  // list is FILTERED: a region retired from the dataset is dropped from the
+  // view but still occupies a slot in stops and bookedDates. Indexing those by
+  // the visible position would hang every date on the wrong destination — the
+  // same misalignment moveStop/removeStopAt already guard against.
   const resolved = trip.stops
-    .map(([id, duration]) => {
+    .map(([id, duration], stopIndex) => {
       const region = getSlimRegion(id);
-      return region ? { id, duration, region } : null;
+      return region ? { id, duration, region, stopIndex } : null;
     })
     .filter((s): s is NonNullable<typeof s> => s !== null);
 
@@ -315,7 +320,7 @@ export function StopsSection({
                           // on real dates — otherwise they'd be written and
                           // then ignored, since tripLegs dispatches on mode.
                           t.mode = "booked";
-                          setStopDates(t, i, range);
+                          setStopDates(t, s.stopIndex, range);
                         })
                       }
                     />
@@ -328,9 +333,9 @@ export function StopsSection({
             <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-white px-4 py-2">
               {booked ? (
                 <BookedDates
-                  range={trip.bookedDates?.[i] ?? null}
+                  range={trip.bookedDates?.[s.stopIndex] ?? null}
                   onChange={(next) =>
-                    mutate((t) => setStopDates(t, i, next))
+                    mutate((t) => setStopDates(t, s.stopIndex, next))
                   }
                 />
               ) : (
@@ -402,7 +407,7 @@ export function StopsSection({
                 ✕ Remove
               </button>
             </div>
-            {(issuesByStop.get(i) ?? []).map((issue) => (
+            {(issuesByStop.get(s.stopIndex) ?? []).map((issue) => (
               <p
                 key={issue.kind}
                 className="border-t border-amber-200 bg-amber-50 px-4 py-1.5 text-xs text-amber-800"
