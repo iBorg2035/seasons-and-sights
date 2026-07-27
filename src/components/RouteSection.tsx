@@ -23,6 +23,7 @@ import { buildIcs } from "@/lib/ics";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatCents, listExpenses, totalCents } from "@/lib/expenses";
+import { listReservations, reservationTotalCents } from "@/lib/reservations";
 import { TRIP_RECORDS_EVENT } from "@/lib/trip-records";
 import { tripSlimLegs, tripToSlimStops } from "@/lib/trip-plan-slim";
 import type { SavedTripLite } from "@/lib/saved-trips";
@@ -55,8 +56,12 @@ export function RouteSection({
   // `loaded` gate, but an effect keeps it correct if that ever changes, and it
   // lets another tab's journal edits refresh this line.
   const [loggedCents, setLoggedCents] = useState(0);
+  const [bookedCents, setBookedCents] = useState(0);
   useEffect(() => {
-    const reload = () => setLoggedCents(totalCents(listExpenses(trip.id)));
+    const reload = () => {
+      setLoggedCents(totalCents(listExpenses(trip.id)));
+      setBookedCents(reservationTotalCents(listReservations(trip.id)));
+    };
     reload();
     window.addEventListener(TRIP_RECORDS_EVENT, reload);
     window.addEventListener("storage", reload);
@@ -103,10 +108,15 @@ export function RouteSection({
    * exactly when this comparison is most worth seeing.
    */
   const estimatedToDate = estimateSpendSoFar(legs, ranges, now);
-  const loggedUsd = loggedCents / 100;
+  // Reservations count as money spent — you paid it — but are shown apart from
+  // logged expenses so it's clear which is a booking and which is day-to-day.
+  // Without this, anyone who records a hotel as a reservation would have to
+  // re-enter it as an expense, and most wouldn't, so the total would read low.
+  const spentCents = loggedCents + bookedCents;
+  const loggedUsd = spentCents / 100;
   // A trip entirely in the future has nothing elapsed to compare against, so
   // the total is shown on its own rather than against a meaningless zero.
-  const hasComparison = loggedCents > 0 && estimatedToDate > 0;
+  const hasComparison = spentCents > 0 && estimatedToDate > 0;
   const varianceUsd = loggedUsd - estimatedToDate;
 
   // Works in both modes: planning exports the derived months, booked exports
@@ -162,10 +172,10 @@ export function RouteSection({
       )}
 
       {/* Estimate vs what's actually been logged. */}
-      {loggedCents > 0 && (
+      {spentCents > 0 && (
         <div className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm">
           <p className="font-medium text-slate-800">
-            💵 {formatCents(loggedCents)} logged
+            💵 {formatCents(spentCents)} spent
             {hasComparison && (
               <>
                 {" "}
@@ -182,6 +192,12 @@ export function RouteSection({
             )}
           </p>
           <p className="mt-0.5 text-xs text-slate-500">
+            {bookedCents > 0 && (
+              <>
+                {formatCents(bookedCents)} from reservations
+                {loggedCents > 0 && ` · ${formatCents(loggedCents)} logged`}.{" "}
+              </>
+            )}
             Only counts what you&apos;ve entered in the{" "}
             <Link
               href={`/trips/${trip.id}/journal`}

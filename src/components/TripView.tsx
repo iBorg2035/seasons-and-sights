@@ -43,11 +43,19 @@ import {
   wouldReorder,
 } from "@/lib/trip-plan";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
-import { clearRecords } from "@/lib/trip-records";
-import { deleteRemoteRecords } from "@/lib/supabase/trip-records";
+import { clearRecords, TRIP_RECORDS_EVENT } from "@/lib/trip-records";
+import {
+  deleteRemoteRecords,
+  mirrorRecord,
+  syncRecords,
+} from "@/lib/supabase/trip-records";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
-import { RESERVATION_ENTITY } from "@/lib/reservations";
+import {
+  RESERVATION_ENTITY,
+  listReservations,
+  type Reservation,
+} from "@/lib/reservations";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 
 const SECTIONS = [
@@ -73,6 +81,7 @@ export function TripView({
   const [trip, setTrip] = useState<SavedTripLite | undefined>(undefined);
   const [saved, setSaved] = useState<SavedTripLite | undefined>(undefined);
   const [saving, setSaving] = useState(false);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   // `undefined` = not yet loaded (distinguish from a confirmed "missing" trip).
   const [loaded, setLoaded] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -167,6 +176,38 @@ export function TripView({
     setTrip(structuredClone(saved));
     setSaveError(false);
   }, [saved]);
+
+  const reloadReservations = useCallback(() => {
+    setReservations(listReservations(tripId));
+  }, [tripId]);
+
+  // Reservations save on write, like the journal and expenses — they're a
+  // record of something that already happened, not part of the trip draft the
+  // Save button commits.
+  useEffect(() => {
+    reloadReservations();
+    window.addEventListener(TRIP_RECORDS_EVENT, reloadReservations);
+    window.addEventListener("storage", reloadReservations);
+    return () => {
+      window.removeEventListener(TRIP_RECORDS_EVENT, reloadReservations);
+      window.removeEventListener("storage", reloadReservations);
+    };
+  }, [reloadReservations]);
+
+  // Pull them down on sign-in, the same reconcile the journal page does for
+  // its own entities — otherwise a reservation saved on your phone never
+  // reaches the laptop unless you happen to open the journal.
+  useEffect(() => {
+    if (!user) return;
+    const userId = user.id;
+    let cancelled = false;
+    void syncRecords(userId, tripId, RESERVATION_ENTITY).then(() => {
+      if (!cancelled) reloadReservations();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, tripId, reloadReservations]);
 
   // Load + mark this trip active + subscribe to change events.
   useEffect(() => {
@@ -664,6 +705,11 @@ export function TripView({
             trip={trip}
             onEdit={editDraft}
             onLockInDates={() => switchMode("booked")}
+            reservations={reservations}
+            onReservationChanged={(id) => {
+              reloadReservations();
+              if (user) void mirrorRecord(user.id, trip.id, RESERVATION_ENTITY, id);
+            }}
           />
         </section>
 

@@ -24,6 +24,8 @@ import {
 } from "@/lib/trip-plan";
 import { AddStopsDialog } from "@/components/AddStopsDialog";
 import { StopDetail } from "@/components/StopDetail";
+import { ReservationsBlock } from "@/components/ReservationsBlock";
+import type { Reservation } from "@/lib/reservations";
 
 /** Stay lengths offered per stop. Weeks first — a fortnight in one place is a
  *  far more common trip than three months in one. */
@@ -120,6 +122,8 @@ export function StopsSection({
   trip,
   onEdit,
   onLockInDates,
+  reservations,
+  onReservationChanged,
 }: {
   trip: SavedTripLite;
   /** Apply an edit to the trip page's working copy. */
@@ -127,6 +131,9 @@ export function StopsSection({
   /** Switch the trip onto real dates — the same action as the mode toggle,
    *  surfaced where someone asks "can I just pick the dates?". */
   onLockInDates?: () => void;
+  /** This trip's saved reservations, grouped onto stops below. */
+  reservations?: Reservation[];
+  onReservationChanged?: (id: string) => void;
 }) {
   // Stops expand to show full destination detail by default — the rich local
   // info (climate, sights, map, toolkit) is the point of the trip page, so it
@@ -152,6 +159,12 @@ export function StopsSection({
   const legRanges = tripDateRanges(trip, legs);
   // planItinerary reorders for best fit; map region id → leg for the label.
   const legByRegion = new Map(legs.map((l) => [l.region.id, l]));
+  const reservationsByRegion = new Map<string, Reservation[]>();
+  for (const r of reservations ?? []) {
+    const list = reservationsByRegion.get(r.regionId) ?? [];
+    list.push(r);
+    reservationsByRegion.set(r.regionId, list);
+  }
   const rangeByRegion = new Map(
     legs.map((l, k) => [l.region.id, legRanges[k] ?? null])
   );
@@ -290,6 +303,23 @@ export function StopsSection({
                   stayRange={rangeByRegion.get(region.id) ?? null}
                   stayLabel={booked ? "your booked stay" : "your planned stay"}
                   onSetExactDates={booked ? undefined : onLockInDates}
+                  reservationSlot={
+                    <ReservationsBlock
+                      tripId={trip.id}
+                      regionId={region.id}
+                      reservations={reservationsByRegion.get(region.id) ?? []}
+                      onChanged={(rid) => onReservationChanged?.(rid)}
+                      onUseDates={(range) =>
+                        mutate((t) => {
+                          // Committing dates from a booking implies the trip is
+                          // on real dates — otherwise they'd be written and
+                          // then ignored, since tripLegs dispatches on mode.
+                          t.mode = "booked";
+                          setStopDates(t, i, range);
+                        })
+                      }
+                    />
+                  }
                 />
               </div>
             )}

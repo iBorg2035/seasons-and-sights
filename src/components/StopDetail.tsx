@@ -61,6 +61,7 @@ export function StopDetail({
   stayRange,
   stayLabel,
   onSetExactDates,
+  reservationSlot,
 }: {
   region: SlimRegion;
   /** The previous stop's region (for the getting-there line), or undefined. */
@@ -78,6 +79,9 @@ export function StopDetail({
   /** Offered when the trip isn't on real dates yet, so "I want to choose the
    *  dates" has an answer on the screen where the question comes up. */
   onSetExactDates?: () => void;
+  /** The stop's saved bookings. Passed in rather than fetched here so this
+   *  component stays presentational and usable outside a trip. */
+  reservationSlot?: React.ReactNode;
 }) {
   const [detail, setDetail] = useState<RegionDetail | null>(null);
   // A failed fetch must surface (retryable), never leave skeletons spinning —
@@ -363,6 +367,8 @@ export function StopDetail({
           />
         );
       })()}
+
+      {reservationSlot}
 
       <Link
         href={`/regions/${region.id}`}
