@@ -509,9 +509,20 @@ export function TripView({
           )}
           <div className="flex flex-none items-center gap-2">
             <SyncBadge />
+            {/* Saving is explicit now, so whether there are pending changes is
+                the most important state on this page — and it changes without
+                anyone moving focus. Announced politely so it lands between
+                edits rather than interrupting each keystroke. */}
+            <span role="status" aria-live="polite" className="sr-only">
+              {saving
+                ? "Saving trip"
+                : dirty
+                  ? "Trip has unsaved changes"
+                  : "Trip saved"}
+            </span>
             {dirty && (
               <>
-                <span className="text-xs font-medium text-amber-700">
+                <span aria-hidden className="text-xs font-medium text-amber-700">
                   Unsaved
                 </span>
                 <button

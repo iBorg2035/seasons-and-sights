@@ -22,7 +22,11 @@ export function SyncBadge() {
 
   if (status === "synced") {
     return (
-      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+      <span
+        role="status"
+        aria-live="polite"
+        className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700"
+      >
         Synced ✓
       </span>
     );
@@ -31,6 +35,10 @@ export function SyncBadge() {
     return (
       <a
         href="/debug-sync"
+        // A failed sync is the one outcome someone must not miss, and nothing
+        // moves focus to announce it — assertive rather than polite.
+        role="alert"
+        aria-live="assertive"
         title={getLastErrorMessage() ?? undefined}
         className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700 hover:underline"
       >
