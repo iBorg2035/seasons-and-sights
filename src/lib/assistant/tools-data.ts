@@ -362,7 +362,3 @@ export function listKnownContinents() {
 export function destinationCatalogSize() {
   return REGIONS.length;
 }
-
-export function resolveDestinationSummary(id: string) {
-  return summarizeRegion(id);
-}

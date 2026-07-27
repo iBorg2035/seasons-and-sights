@@ -21,10 +21,3 @@ export const REGIONS: Region[] = REGIONS_CORE.map((region) => ({
 export function getRegion(id: string): Region | undefined {
   return REGIONS.find((r) => r.id === id);
 }
-
-/** Every festival across all regions, paired with its region, sorted by month. */
-export function getAllEvents(): { event: Event; region: Region }[] {
-  return REGIONS.flatMap((region) =>
-    (region.events ?? []).map((event) => ({ event, region }))
-  ).sort((a, b) => a.event.month - b.event.month);
-}

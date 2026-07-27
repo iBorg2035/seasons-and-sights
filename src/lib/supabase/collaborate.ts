@@ -71,18 +71,3 @@ export async function listEditors(
     return editors;
   }
 }
-
-/** Fetch trips shared with the current user (as an editor). */
-export async function fetchSharedWithMe(): Promise<
-  { tripId: string; ownerId: string }[]
-> {
-  const sb = await getSupabase();
-  if (!sb) return [];
-  const { data } = await sb
-    .from("trip_editors")
-    .select("trip_id, owner_id");
-  return (data ?? []).map((r) => ({
-    tripId: r.trip_id,
-    ownerId: r.owner_id,
-  }));
-}

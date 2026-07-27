@@ -79,7 +79,3 @@ export const ADVISORY: Record<string, AdvisoryNote> = {
 export function advisoryFor(country: string): AdvisoryNote {
   return ADVISORY[country] ?? FALLBACK;
 }
-
-export function advisoryDot(level: AdvisoryLevel): string {
-  return DOT[level];
-}

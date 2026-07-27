@@ -91,24 +91,6 @@ export function deleteSavedTrip(id: string): boolean {
   return writeSavedTrips(getSavedTrips().filter((t) => t.id !== id));
 }
 
-/** Rename a saved trip locally (bumps updatedAt so cloud last-write-wins picks
- *  it up). Returns the updated trip for callers that mirror it to the cloud. */
-export function renameSavedTrip(
-  id: string,
-  name: string
-): SavedTripLite | null {
-  const trimmed = name.trim();
-  if (!trimmed) return null;
-  let renamed: SavedTripLite | null = null;
-  const next = getSavedTrips().map((t) => {
-    if (t.id !== id) return t;
-    renamed = { ...t, name: trimmed, updatedAt: Date.now() };
-    return renamed;
-  });
-  if (!renamed || !writeSavedTrips(next)) return null;
-  return renamed;
-}
-
 /** Create a fresh trip, persist it, and return it only after it sticks. */
 export function createTrip(
   name = "Untitled trip",
@@ -188,11 +170,6 @@ export function getTrip(id: string): SavedTripLite | undefined {
 }
 
 /**
- * Apply a mutation to a trip in place. Bumps `updatedAt` so cloud
- * last-write-wins picks up the edit. No-op (returns false) if the id is gone.
- * Does NOT auto-sync to the cloud — callers mirror remote if signed in.
- */
-/**
  * Apply an edit in memory, with the same invariants updateTrip enforces but
  * no storage write — the working copy behind the trip page's explicit Save.
  *
@@ -229,6 +206,11 @@ export function hasUnsavedChanges(
   return JSON.stringify(strip(draft)) !== JSON.stringify(strip(saved));
 }
 
+/**
+ * Apply a mutation to a trip in place. Bumps `updatedAt` so cloud
+ * last-write-wins picks up the edit. No-op (returns false) if the id is gone.
+ * Does NOT auto-sync to the cloud — callers mirror remote if signed in.
+ */
 export function updateTrip(
   id: string,
   mutate: (trip: SavedTripLite) => void
