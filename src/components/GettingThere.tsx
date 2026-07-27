@@ -1,5 +1,5 @@
 import { flightHop } from "@/lib/transport";
-import { buildRome2RioUrl } from "@/lib/booking";
+import { buildFlightsUrl, buildRome2RioUrl } from "@/lib/booking";
 
 /**
  * Transport line for reaching this stop from the previous one (or from home
@@ -18,11 +18,21 @@ export function GettingThere({
   isFirst: boolean;
   regionName: string;
 }) {
+  const flightsUrl = buildFlightsUrl(to.dest ?? to.name);
+
   if (isFirst) {
     return (
       <p className="text-sm text-slate-600">
         <span className="font-medium text-slate-700">Getting there:</span>{" "}
-        {note ? note : `Fly into ${regionName} — search flights for your dates.`}
+        {note ?? `Fly into ${regionName}.`}{" "}
+        <a
+          href={flightsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-teal-700 hover:underline"
+        >
+          Search flights ↗
+        </a>
       </p>
     );
   }
@@ -46,6 +56,21 @@ export function GettingThere({
       >
         Compare routes ↗
       </a>
+      {/* Only when it's actually a flight — offering a flight search for a
+          four-hour bus hop is noise. */}
+      {!hop.overland && (
+        <>
+          {" · "}
+          <a
+            href={flightsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-teal-700 hover:underline"
+          >
+            Flights ↗
+          </a>
+        </>
+      )}
     </p>
   );
 }
