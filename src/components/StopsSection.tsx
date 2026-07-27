@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   updateTrip,
   moveStop,
@@ -42,9 +42,10 @@ const ISSUE_TEXT: Record<BookingIssue["kind"], string> = {
  * is exactly the exclusive end BookedRange stores — so what the user types is
  * what gets saved, with no off-by-one translation.
  *
- * Editing one field before the other is normal, so a half-filled pair is held
- * locally and only committed once both sides are present; clearing either
- * clears the stay.
+ * A stay needs both halves to exist, so a half-filled pair can't be committed.
+ * It is held locally AND said out loud: silently keeping a date the user can
+ * see in the field, but which vanishes on the next reload, is the single most
+ * confusing thing this control did.
  */
 function BookedDates({
   range,
@@ -56,12 +57,24 @@ function BookedDates({
   const [start, setStart] = useState(range?.start ?? "");
   const [end, setEnd] = useState(range?.end ?? "");
 
+  // Re-sync when the stay changes underneath us — a cloud sync, another tab,
+  // or a mode switch. Without this the fields keep their first value while the
+  // rest of the page shows the new one, so the same stop reads two ways at
+  // once. Keyed on the values, so an uncommitted half-filled draft is left
+  // alone (it hasn't changed `range`).
+  useEffect(() => {
+    setStart(range?.start ?? "");
+    setEnd(range?.end ?? "");
+  }, [range?.start, range?.end]);
+
   function commit(nextStart: string, nextEnd: string) {
     setStart(nextStart);
     setEnd(nextEnd);
     if (nextStart && nextEnd) onChange({ start: nextStart, end: nextEnd });
     else if (!nextStart && !nextEnd) onChange(null);
   }
+
+  const halfFilled = Boolean(start) !== Boolean(end);
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
@@ -89,8 +102,12 @@ function BookedDates({
           className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-xs text-slate-800"
         />
       </label>
-      {!range && (
-        <span className="text-xs text-slate-400">Dates TBD</span>
+      {halfFilled ? (
+        <span role="status" className="text-xs font-medium text-amber-700">
+          Add {start ? "a leave" : "an arrive"} date to save this stay
+        </span>
+      ) : (
+        !range && <span className="text-xs text-slate-400">Dates TBD</span>
       )}
     </div>
   );

@@ -255,6 +255,13 @@ export function TripView({
       t.name = saved.name;
       t.start = saved.start;
       t.stops = saved.stops.map((s) => [s[0], s[1]] as [string, number]);
+      // Everything the snapshot holds, not just the stop list. bookedDates is
+      // index-aligned with stops, so restoring one without the other silently
+      // re-attributes every date to the wrong destination — remove a stop,
+      // hit reset, and each stay shifts up one place.
+      t.mode = saved.mode;
+      t.bookedDates = saved.bookedDates?.map((d) => (d ? { ...d } : null));
+      t.interests = saved.interests ? [...saved.interests] : undefined;
     });
     if (ok) setMenuOpen(false);
   }
