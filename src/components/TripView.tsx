@@ -47,6 +47,7 @@ import { clearRecords } from "@/lib/trip-records";
 import { deleteRemoteRecords } from "@/lib/supabase/trip-records";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
+import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 
 const SECTIONS = [
   { id: "copilot", label: "Co-pilot" },
@@ -84,6 +85,10 @@ export function TripView({
   // last saved" escape hatch. In-memory only (per page session); reloading
   // makes the last auto-saved state the new baseline, which is correct.
   const dirty = !!trip && !!saved && hasUnsavedChanges(trip, saved);
+
+  // Covers tab close, reload, and every in-app link — including the global
+  // header, which this page doesn't render and so can't guard link by link.
+  useUnsavedGuard(dirty, "This trip has unsaved changes. Leave without saving?");
   const canManageEditors =
     !!user && !!trip && (!trip.ownerId || trip.ownerId === user.id);
 
@@ -242,34 +247,6 @@ export function TripView({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded, trip?.name]);
-
-  // Tab close or reload with unsaved edits. Covers the browser-level exits;
-  // the in-page "← Trips" and "Journal" links are guarded separately below.
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      // Chrome requires returnValue to be set for the prompt to show.
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
-
-  /** Guard an in-app navigation away from unsaved edits. */
-  const confirmLeave = useCallback(
-    (e: React.MouseEvent) => {
-      if (!dirty) return;
-      if (
-        !window.confirm(
-          "This trip has unsaved changes. Leave without saving?"
-        )
-      ) {
-        e.preventDefault();
-      }
-    },
-    [dirty]
-  );
 
   // Scroll-spy: highlight the section currently in view.
   useEffect(() => {
@@ -453,7 +430,6 @@ export function TripView({
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2.5">
           <Link
             href="/trips"
-            onClick={confirmLeave}
             className="flex-none text-sm font-medium text-slate-500 transition hover:text-slate-800"
           >
             ← Trips
@@ -582,7 +558,6 @@ export function TripView({
               because it grows without bound as a trip goes on. */}
           <Link
             href={`/trips/${tripId}/journal`}
-            onClick={confirmLeave}
             className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-500 transition hover:border-slate-300 hover:text-slate-800"
           >
             Journal →
