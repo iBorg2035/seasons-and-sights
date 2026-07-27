@@ -12,12 +12,15 @@ export function BookingCard({
   checkin,
   checkout,
   monthLabel,
+  onSetExactDates,
 }: {
   region: Region;
   checkin: string;
   checkout: string;
-  /** e.g. "June" or "Cusco's best season" — describes why these dates. */
+  /** e.g. "June" or "your booked dates" — describes why these dates. */
   monthLabel: string;
+  /** Shown when the trip isn't on real dates yet. */
+  onSetExactDates?: () => void;
 }) {
   const url = buildBookingUrl({
     dest: region.bookingDest,
@@ -52,6 +55,15 @@ export function BookingCard({
         Search stays on Booking.com
         <span aria-hidden>↗</span>
       </a>
+      {onSetExactDates && (
+        <button
+          type="button"
+          onClick={onSetExactDates}
+          className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          📅 Set exact dates
+        </button>
+      )}
     </div>
   );
 }

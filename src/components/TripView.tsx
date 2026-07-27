@@ -34,7 +34,11 @@ import { MapSection } from "@/components/MapSection";
 import { TripCopilot } from "@/components/TripCopilot";
 import { TripModeToggle } from "@/components/TripModeToggle";
 import { legDateRanges } from "@/lib/season";
-import { resolveStartMonth, seedBookedDates } from "@/lib/trip-plan";
+import {
+  resolveStartMonth,
+  seedBookedDates,
+  wouldReorder,
+} from "@/lib/trip-plan";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { clearRecords } from "@/lib/trip-records";
 import { deleteRemoteRecords } from "@/lib/supabase/trip-records";
@@ -266,6 +270,60 @@ export function TripView({
     if (ok) setMenuOpen(false);
   }
 
+  /**
+   * Put the trip onto real dates. Shared by the mode toggle and the "Set
+   * exact dates" button on a stop's booking card — one implementation, so the
+   * plan-before-flip ordering below can't be got right in one place and wrong
+   * in the other.
+   */
+  const switchMode = useCallback(
+    (next: "planning" | "booked", alreadyConfirmed = false) => {
+      if (!trip) return;
+      if (next === "planning") {
+        // Keep bookedDates in storage so switching back restores the dates
+        // rather than making the user re-enter them.
+        persistTripEdit(trip.id, (t) => {
+          t.mode = "planning";
+        });
+        return;
+      }
+      // Committing the plan also adopts the planner's ORDER. TripModeToggle
+      // asks first and passes alreadyConfirmed; any other entry point (the
+      // booking card's "Set exact dates") has to ask here, or stops would
+      // rearrange with no warning.
+      if (
+        !alreadyConfirmed &&
+        !trip.bookedDates?.some((d) => d != null) &&
+        wouldReorder(trip.stops, tripSlimLegs(trip)) &&
+        !window.confirm(
+          "Setting exact dates will also reorder your stops into the sequence " +
+            "that suits the seasons. Continue?"
+        )
+      ) {
+        return;
+      }
+      persistTripEdit(trip.id, (t) => {
+        // Already has dates (switched back and forth) — keep the user's edits
+        // rather than overwriting from the plan.
+        if (t.bookedDates?.some((d) => d != null)) {
+          t.mode = "booked";
+          return;
+        }
+        // Plan BEFORE flipping the mode: tripSlimLegs dispatches on mode, so a
+        // trip already marked booked would be planned from its (still empty)
+        // dates — yielding zero-length stays and no reorder, instead of the
+        // derived plan we mean to commit.
+        const legs = tripSlimLegs(t);
+        const ranges = legDateRanges(resolveStartMonth(t.start), legs);
+        const seeded = seedBookedDates(t.stops, legs, ranges);
+        t.stops = seeded.stops;
+        t.bookedDates = seeded.bookedDates;
+        t.mode = "booked";
+      });
+    },
+    [trip, persistTripEdit]
+  );
+
   function handleDelete() {
     if (!trip) return;
     const ok = window.confirm(`Delete "${trip.name}"? This can't be undone.`);
@@ -483,6 +541,27 @@ export function TripView({
         <section id="stops" className="scroll-mt-32">
           <TripModeToggle
             trip={trip}
+            onSwitch={(next) => switchMode(next, true)}
+          />
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">Route</h2>
+          <RouteSection
+            trip={trip}
+            onStartChange={(month) => {
+              persistTripEdit(trip.id, (t) => {
+                t.start = month;
+              });
+            }}
+            onInterestsChange={(interests) => {
+              persistTripEdit(trip.id, (t) => {
+                t.interests = interests;
+              });
+            }}
+          />
+        </section>
+
+        <section id="stops" className="scroll-mt-32">
+          <TripModeToggle
+            trip={trip}
             onSwitch={(next) => {
               if (next === "planning") {
                 // Keep bookedDates in storage so switching back restores the
@@ -526,6 +605,7 @@ export function TripView({
               mirrorToCloud(trip.id);
             }}
             onSaveFailure={() => setSaveError(true)}
+            onLockInDates={() => switchMode("booked")}
           />
         </section>
 

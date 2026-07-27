@@ -18,7 +18,13 @@ import { RegionMap } from "@/components/RegionMap";
 import { TravelEssentials } from "@/components/TravelEssentials";
 import { TravelToolkit } from "@/components/TravelToolkit";
 import { BookingCard } from "@/components/BookingCard";
-import { monthOf, MONTH_NAMES, MONTH_NAMES_LONG, datesForMonth } from "@/lib/season";
+import {
+  monthOf,
+  MONTH_NAMES,
+  MONTH_NAMES_LONG,
+  datesForMonth,
+  formatDay,
+} from "@/lib/season";
 import type { Sight, TravelToolkit as Toolkit } from "@/types";
 
 interface RegionDetail {
@@ -52,6 +58,9 @@ export function StopDetail({
   prevStop,
   stayMonth,
   stayMonths,
+  stayRange,
+  stayLabel,
+  onSetExactDates,
 }: {
   region: SlimRegion;
   /** The previous stop's region (for the getting-there line), or undefined. */
@@ -61,6 +70,14 @@ export function StopDetail({
   /** All 1-based months this stay spans (the planned leg's full `months`),
    *  used to highlight festivals that actually fall during the visit. */
   stayMonths?: number[];
+  /** This stop's actual window — committed dates when booked, the planned
+   *  range otherwise. Absent outside a trip (the region page). */
+  stayRange?: { start: Date; end: Date } | null;
+  /** How to describe where stayRange came from, e.g. "your booked dates". */
+  stayLabel?: string;
+  /** Offered when the trip isn't on real dates yet, so "I want to choose the
+   *  dates" has an answer on the screen where the question comes up. */
+  onSetExactDates?: () => void;
 }) {
   const [detail, setDetail] = useState<RegionDetail | null>(null);
   // A failed fetch must surface (retryable), never leave skeletons spinning —
@@ -318,8 +335,22 @@ export function StopDetail({
         />
       )}
 
-      {/* Season-aware Booking link for this stay's month */}
+      {/* Booking link for this stay. Prefers the stop's own dates — committed
+          ones when the trip is booked, the planned window otherwise — so the
+          card agrees with the rest of the page and reflects the stay length.
+          Falls back to a month sample only outside a trip (the region page). */}
       {(() => {
+        if (stayRange) {
+          return (
+            <BookingCard
+              region={region}
+              checkin={formatDay(stayRange.start)}
+              checkout={formatDay(stayRange.end)}
+              monthLabel={stayLabel ?? "your stay"}
+              onSetExactDates={onSetExactDates}
+            />
+          );
+        }
         const m = stayMonth ?? now;
         const { checkin, checkout } = datesForMonth(m);
         return (
@@ -328,6 +359,7 @@ export function StopDetail({
             checkin={checkin}
             checkout={checkout}
             monthLabel={MONTH_NAMES_LONG[m - 1]}
+            onSetExactDates={onSetExactDates}
           />
         );
       })()}

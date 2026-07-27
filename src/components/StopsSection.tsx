@@ -18,7 +18,11 @@ import {
   WEEK_MONTHS,
 } from "@/lib/season";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
-import { bookingIssues, type BookingIssue } from "@/lib/trip-plan";
+import {
+  bookingIssues,
+  tripDateRanges,
+  type BookingIssue,
+} from "@/lib/trip-plan";
 import { AddStopsDialog } from "@/components/AddStopsDialog";
 import { StopDetail } from "@/components/StopDetail";
 
@@ -117,11 +121,15 @@ export function StopsSection({
   trip,
   onChange,
   onSaveFailure,
+  onLockInDates,
 }: {
   trip: SavedTripLite;
   /** Re-read the trip after a mutation so the parent stays in sync. */
   onChange: () => void;
   onSaveFailure?: () => void;
+  /** Switch the trip onto real dates — the same action as the mode toggle,
+   *  surfaced where someone asks "can I just pick the dates?". */
+  onLockInDates?: () => void;
 }) {
   // Stops expand to show full destination detail by default — the rich local
   // info (climate, sights, map, toolkit) is the point of the trip page, so it
@@ -141,8 +149,15 @@ export function StopsSection({
     .filter((s): s is NonNullable<typeof s> => s !== null);
 
   const legs = tripSlimLegs(trip);
+  // The stop's real window: committed dates when booked, the planned range
+  // otherwise. Indexed by leg, and legs are in stops order only when booked —
+  // so look it up by region below rather than by row index.
+  const legRanges = tripDateRanges(trip, legs);
   // planItinerary reorders for best fit; map region id → leg for the label.
   const legByRegion = new Map(legs.map((l) => [l.region.id, l]));
+  const rangeByRegion = new Map(
+    legs.map((l, k) => [l.region.id, legRanges[k] ?? null])
+  );
 
   const booked = isBooked(trip);
   // Advisory only — gaps and overlaps are both legitimate (going home in
@@ -260,6 +275,9 @@ export function StopsSection({
                   prevStop={i > 0 ? resolved[i - 1]?.region : undefined}
                   stayMonth={leg?.months[0]}
                   stayMonths={leg?.months}
+                  stayRange={rangeByRegion.get(region.id) ?? null}
+                  stayLabel={booked ? "your booked stay" : "your planned stay"}
+                  onSetExactDates={booked ? undefined : onLockInDates}
                 />
               </div>
             )}

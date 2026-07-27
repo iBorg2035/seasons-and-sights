@@ -7,6 +7,7 @@ import {
   removeStopAt,
   type SavedTripLite,
 } from "@/lib/saved-trips";
+import { datesForMonth } from "@/lib/season";
 
 /**
  * Editing committed dates. `bookedDates` is index-aligned with `stops`, so any
@@ -121,5 +122,28 @@ describe("reset to last saved", () => {
     resetTo(trip.id, snapshot);
 
     expect(getTrip(trip.id)!.interests).toEqual(["beach"]);
+  });
+});
+
+describe("datesForMonth label honesty", () => {
+  it("does not hand back next month's dates under this month's label", () => {
+    // Late July: "+14 days" lands on Aug 10, but the card says "Dates set for
+    // July". Reproduced from a real screenshot showing exactly that.
+    const lateJuly = new Date(2026, 6, 27);
+    const { checkin } = datesForMonth(7, lateJuly);
+    expect(checkin.slice(0, 7)).toBe("2027-07");
+  });
+
+  it("still nudges out when the month has room left", () => {
+    const earlyJuly = new Date(2026, 6, 2);
+    const { checkin, checkout } = datesForMonth(7, earlyJuly);
+    expect(checkin).toBe("2026-07-16");
+    expect(checkout).toBe("2026-07-31");
+  });
+
+  it("keeps a future month on its own next occurrence", () => {
+    const july = new Date(2026, 6, 27);
+    expect(datesForMonth(9, july).checkin).toBe("2026-09-10");
+    expect(datesForMonth(3, july).checkin).toBe("2027-03-10");
   });
 });

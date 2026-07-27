@@ -621,6 +621,13 @@ export function datesForMonth(
   if (month === current) {
     checkin = new Date(from);
     checkin.setDate(checkin.getDate() + 14);
+    // Late in the month that nudge lands in the NEXT month, and the caller has
+    // already told the user these dates are for `month` — so it would promise
+    // July and hand back August. If the month has no room left, roll to its
+    // next occurrence instead of quietly changing which month this is.
+    if (monthOf(checkin) !== month) {
+      checkin = new Date(from.getFullYear() + 1, month - 1, 10);
+    }
   } else {
     const year =
       month > current ? from.getFullYear() : from.getFullYear() + 1;
