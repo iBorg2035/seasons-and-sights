@@ -192,6 +192,43 @@ export function getTrip(id: string): SavedTripLite | undefined {
  * last-write-wins picks up the edit. No-op (returns false) if the id is gone.
  * Does NOT auto-sync to the cloud — callers mirror remote if signed in.
  */
+/**
+ * Apply an edit in memory, with the same invariants updateTrip enforces but
+ * no storage write — the working copy behind the trip page's explicit Save.
+ *
+ * Deliberately does NOT stamp `updatedAt`: that marks when the trip was
+ * *saved*, and stamping it per keystroke would also make every draft differ
+ * from its saved copy, so nothing could tell whether there were real changes.
+ */
+export function editedTrip(
+  trip: SavedTripLite,
+  mutate: (trip: SavedTripLite) => void
+): SavedTripLite {
+  const next = structuredClone(trip);
+  mutate(next);
+  normalizeBookedDates(next);
+  return next;
+}
+
+/** Commit a working copy, stamping the save time for last-write-wins sync. */
+export function saveTrip(trip: SavedTripLite): boolean {
+  const trips = getSavedTrips();
+  const i = trips.findIndex((t) => t.id === trip.id);
+  if (i === -1) return false;
+  trips[i] = { ...structuredClone(trip), updatedAt: Date.now() };
+  return writeSavedTrips(trips);
+}
+
+/** Whether a working copy differs from its saved counterpart, ignoring the
+ *  save timestamp (which only moves when something is actually saved). */
+export function hasUnsavedChanges(
+  draft: SavedTripLite,
+  saved: SavedTripLite
+): boolean {
+  const strip = ({ updatedAt: _drop, ...rest }: SavedTripLite) => rest;
+  return JSON.stringify(strip(draft)) !== JSON.stringify(strip(saved));
+}
+
 export function updateTrip(
   id: string,
   mutate: (trip: SavedTripLite) => void

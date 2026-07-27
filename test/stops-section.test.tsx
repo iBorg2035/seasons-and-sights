@@ -2,7 +2,12 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { StopsSection } from "@/components/StopsSection";
-import { createTrip, getTrip, type SavedTripLite } from "@/lib/saved-trips";
+import {
+  createTrip,
+  editedTrip,
+  getTrip,
+  type SavedTripLite,
+} from "@/lib/saved-trips";
 import { useState } from "react";
 
 const okPayload = {
@@ -26,14 +31,15 @@ function mockFetch() {
   );
 }
 
-/** Mirrors how TripView really drives StopsSection: holds the trip, re-reads
- *  it after each mutation via onChange. */
+/** Mirrors how TripView really drives StopsSection: holds a working copy and
+ *  applies edits to it in memory. Storage is only written on an explicit save,
+ *  which is why this harness never touches it. */
 function Harness({ tripId }: { tripId: string }) {
   const [trip, setTrip] = useState<SavedTripLite>(() => getTrip(tripId)!);
   return (
     <StopsSection
       trip={trip}
-      onChange={() => setTrip(getTrip(tripId)!)}
+      onEdit={(mutate) => setTrip((t) => editedTrip(t, mutate))}
     />
   );
 }

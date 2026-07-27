@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  updateTrip,
   moveStop,
   removeStopAt,
   setStopDates,
@@ -119,14 +118,12 @@ function BookedDates({
 
 export function StopsSection({
   trip,
-  onChange,
-  onSaveFailure,
+  onEdit,
   onLockInDates,
 }: {
   trip: SavedTripLite;
-  /** Re-read the trip after a mutation so the parent stays in sync. */
-  onChange: () => void;
-  onSaveFailure?: () => void;
+  /** Apply an edit to the trip page's working copy. */
+  onEdit: (mutate: (trip: SavedTripLite) => void) => void;
   /** Switch the trip onto real dates — the same action as the mode toggle,
    *  surfaced where someone asks "can I just pick the dates?". */
   onLockInDates?: () => void;
@@ -199,12 +196,10 @@ export function StopsSection({
     );
   }
 
+  // Edits go to the parent's working copy, not to storage — the trip page
+  // now saves explicitly.
   function mutate(fn: (t: SavedTripLite) => void) {
-    if (!updateTrip(trip.id, fn)) {
-      onSaveFailure?.();
-      return;
-    }
-    onChange();
+    onEdit(fn);
   }
 
   return (

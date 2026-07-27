@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import {
   getTrip,
   updateTrip,
+  editedTrip,
+  saveTrip,
+  hasUnsavedChanges,
   deleteSavedTrip,
   SAVED_TRIPS_KEY,
   SAVED_TRIPS_EVENT,
@@ -62,7 +65,12 @@ export function TripView({
 }) {
   const router = useRouter();
   const { user } = useAuth();
+  // The working copy shown and edited on this page. Nothing reaches storage
+  // until Save. `saved` is the last committed copy, kept so the page can tell
+  // whether there are real changes and can discard back to it.
   const [trip, setTrip] = useState<SavedTripLite | undefined>(undefined);
+  const [saved, setSaved] = useState<SavedTripLite | undefined>(undefined);
+  const [saving, setSaving] = useState(false);
   // `undefined` = not yet loaded (distinguish from a confirmed "missing" trip).
   const [loaded, setLoaded] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -75,17 +83,31 @@ export function TripView({
   // Snapshot of the trip as it was when the page loaded, for the "reset to
   // last saved" escape hatch. In-memory only (per page session); reloading
   // makes the last auto-saved state the new baseline, which is correct.
-  const snapshotRef = useRef<string | null>(null);
-  const dirty =
-    !!trip &&
-    !!snapshotRef.current &&
-    JSON.stringify(trip) !== snapshotRef.current;
+  const dirty = !!trip && !!saved && hasUnsavedChanges(trip, saved);
   const canManageEditors =
     !!user && !!trip && (!trip.ownerId || trip.ownerId === user.id);
 
+  /**
+   * Pull the stored trip in as the new baseline. An unsaved working copy is
+   * left alone — a cloud sync or another tab must not silently overwrite what
+   * someone is in the middle of editing.
+   */
   const refresh = useCallback(() => {
-    setTrip(getTrip(tripId));
+    const stored = getTrip(tripId);
+    setSaved(stored);
+    setTrip((current) => {
+      if (!current || !stored) return stored;
+      return hasUnsavedChanges(current, stored) ? current : stored;
+    });
   }, [tripId]);
+
+  /** Apply an edit to the working copy. Does not touch storage. */
+  const editDraft = useCallback(
+    (mutate: (t: SavedTripLite) => void) => {
+      setTrip((current) => (current ? editedTrip(current, mutate) : current));
+    },
+    []
+  );
 
   /** Mirror a local trip edit to the cloud when signed in. No-op signed-out. */
   const mirrorToCloud = useCallback(
@@ -97,6 +119,11 @@ export function TripView({
     [user]
   );
 
+  /**
+   * Edit and commit in one go. Reserved for actions that complete elsewhere —
+   * adding a stop from a region page arrives already decided, so leaving it
+   * unsaved would look like the click didn't work.
+   */
   const persistTripEdit = useCallback(
     (id: string, mutate: (trip: SavedTripLite) => void): boolean => {
       const ok = updateTrip(id, mutate);
@@ -112,13 +139,35 @@ export function TripView({
     [mirrorToCloud, refresh]
   );
 
+  /** Commit the working copy. */
+  const handleSave = useCallback(() => {
+    if (!trip) return;
+    setSaving(true);
+    const ok = saveTrip(trip);
+    setSaving(false);
+    if (!ok) {
+      setSaveError(true);
+      return;
+    }
+    setSaveError(false);
+    setSaved(getTrip(trip.id));
+    mirrorToCloud(trip.id);
+  }, [trip, mirrorToCloud]);
+
+  /** Throw the working copy away and go back to what's stored. */
+  const handleDiscard = useCallback(() => {
+    if (!saved) return;
+    if (!window.confirm("Discard your unsaved changes to this trip?")) return;
+    setTrip(structuredClone(saved));
+    setSaveError(false);
+  }, [saved]);
+
   // Load + mark this trip active + subscribe to change events.
   useEffect(() => {
     setActiveTripId(tripId);
     const initial = getTrip(tripId);
     setTrip(initial);
-    // Snapshot the loaded state once for the "reset to last saved" affordance.
-    if (initial) snapshotRef.current = JSON.stringify(initial);
+    setSaved(initial);
     setLoaded(true);
 
     const onSaved = () => refresh();
@@ -194,6 +243,34 @@ export function TripView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded, trip?.name]);
 
+  // Tab close or reload with unsaved edits. Covers the browser-level exits;
+  // the in-page "← Trips" and "Journal" links are guarded separately below.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      // Chrome requires returnValue to be set for the prompt to show.
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+
+  /** Guard an in-app navigation away from unsaved edits. */
+  const confirmLeave = useCallback(
+    (e: React.MouseEvent) => {
+      if (!dirty) return;
+      if (
+        !window.confirm(
+          "This trip has unsaved changes. Leave without saving?"
+        )
+      ) {
+        e.preventDefault();
+      }
+    },
+    [dirty]
+  );
+
   // Scroll-spy: highlight the section currently in view.
   useEffect(() => {
     const sections = SECTIONS.map((s) => document.getElementById(s.id)).filter(
@@ -246,28 +323,10 @@ export function TripView({
     const trimmed = nameDraft.trim();
     setRenaming(false);
     if (trimmed && trimmed !== trip?.name) {
-      persistTripEdit(tripId, (t) => {
+      editDraft((t) => {
         t.name = trimmed;
       });
     }
-  }
-
-  function handleReset() {
-    if (!snapshotRef.current) return;
-    const saved = JSON.parse(snapshotRef.current) as SavedTripLite;
-    const ok = persistTripEdit(tripId, (t) => {
-      t.name = saved.name;
-      t.start = saved.start;
-      t.stops = saved.stops.map((s) => [s[0], s[1]] as [string, number]);
-      // Everything the snapshot holds, not just the stop list. bookedDates is
-      // index-aligned with stops, so restoring one without the other silently
-      // re-attributes every date to the wrong destination — remove a stop,
-      // hit reset, and each stay shifts up one place.
-      t.mode = saved.mode;
-      t.bookedDates = saved.bookedDates?.map((d) => (d ? { ...d } : null));
-      t.interests = saved.interests ? [...saved.interests] : undefined;
-    });
-    if (ok) setMenuOpen(false);
   }
 
   /**
@@ -282,7 +341,7 @@ export function TripView({
       if (next === "planning") {
         // Keep bookedDates in storage so switching back restores the dates
         // rather than making the user re-enter them.
-        persistTripEdit(trip.id, (t) => {
+        editDraft((t) => {
           t.mode = "planning";
         });
         return;
@@ -302,7 +361,7 @@ export function TripView({
       ) {
         return;
       }
-      persistTripEdit(trip.id, (t) => {
+      editDraft((t) => {
         // Already has dates (switched back and forth) — keep the user's edits
         // rather than overwriting from the plan.
         if (t.bookedDates?.some((d) => d != null)) {
@@ -321,7 +380,7 @@ export function TripView({
         t.mode = "booked";
       });
     },
-    [trip, persistTripEdit]
+    [trip, editDraft]
   );
 
   function handleDelete() {
@@ -394,6 +453,7 @@ export function TripView({
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2.5">
           <Link
             href="/trips"
+            onClick={confirmLeave}
             className="flex-none text-sm font-medium text-slate-500 transition hover:text-slate-800"
           >
             ← Trips
@@ -430,6 +490,28 @@ export function TripView({
           )}
           <div className="flex flex-none items-center gap-2">
             <SyncBadge />
+            {dirty && (
+              <>
+                <span className="text-xs font-medium text-amber-700">
+                  Unsaved
+                </span>
+                <button
+                  type="button"
+                  onClick={handleDiscard}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+                >
+                  Discard
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!dirty || saving}
+              className="rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+            >
+              {saving ? "Saving…" : dirty ? "Save" : "Saved"}
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -471,10 +553,13 @@ export function TripView({
                   {dirty && (
                     <button
                       type="button"
-                      onClick={handleReset}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        handleDiscard();
+                      }}
                       className="block w-full px-4 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
                     >
-                      Reset to last saved
+                      Discard unsaved changes
                     </button>
                   )}
                   <button
@@ -497,6 +582,7 @@ export function TripView({
               because it grows without bound as a trip goes on. */}
           <Link
             href={`/trips/${tripId}/journal`}
+            onClick={confirmLeave}
             className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-slate-500 transition hover:border-slate-300 hover:text-slate-800"
           >
             Journal →
@@ -526,12 +612,12 @@ export function TripView({
           <RouteSection
             trip={trip}
             onStartChange={(month) => {
-              persistTripEdit(trip.id, (t) => {
+              editDraft((t) => {
                 t.start = month;
               });
             }}
             onInterestsChange={(interests) => {
-              persistTripEdit(trip.id, (t) => {
+              editDraft((t) => {
                 t.interests = interests;
               });
             }}
@@ -547,12 +633,12 @@ export function TripView({
           <RouteSection
             trip={trip}
             onStartChange={(month) => {
-              persistTripEdit(trip.id, (t) => {
+              editDraft((t) => {
                 t.start = month;
               });
             }}
             onInterestsChange={(interests) => {
-              persistTripEdit(trip.id, (t) => {
+              editDraft((t) => {
                 t.interests = interests;
               });
             }}
@@ -566,12 +652,12 @@ export function TripView({
               if (next === "planning") {
                 // Keep bookedDates in storage so switching back restores the
                 // dates rather than making the user re-enter them.
-                persistTripEdit(trip.id, (t) => {
+                editDraft((t) => {
                   t.mode = "planning";
                 });
                 return;
               }
-              persistTripEdit(trip.id, (t) => {
+              editDraft((t) => {
                 // Already has dates (switched back and forth) — keep the
                 // user's edits rather than overwriting from the plan.
                 if (t.bookedDates?.some((d) => d != null)) {
@@ -599,12 +685,7 @@ export function TripView({
           </h2>
           <StopsSection
             trip={trip}
-            onChange={() => {
-              setSaveError(false);
-              refresh();
-              mirrorToCloud(trip.id);
-            }}
-            onSaveFailure={() => setSaveError(true)}
+            onEdit={editDraft}
             onLockInDates={() => switchMode("booked")}
           />
         </section>
