@@ -14,14 +14,19 @@ import { eventsInMonthForRegions } from "@/data/events-slim";
 import {
   climateForMonth,
   formatStay,
-  wrapMonth,
   monthOf,
   MONTH_NAMES,
-  MONTH_NAMES_LONG,
   SEASON_META,
 } from "@/lib/season";
-import { resolveStartMonth } from "@/lib/trip-plan";
+import { resolveStartMonth, tripDateRanges } from "@/lib/trip-plan";
 import { tripSlimLegs, tripToSlimStops } from "@/lib/trip-plan-slim";
+import type { SavedTripLite } from "@/lib/saved-trips";
+import {
+  fmtRange,
+  segmentRuns,
+  splitAtYearEnd,
+  type DaySegment,
+} from "@/lib/calendar-track";
 import type { Season } from "@/types";
 
 const SEASON_BAR: Record<Season, string> = {
@@ -30,20 +35,14 @@ const SEASON_BAR: Record<Season, string> = {
   wet: "bg-sky-400",
 };
 
-interface MonthCell {
-  season: Season;
-  regionName: string;
-  festivals: string[];
-}
-
 interface Row {
   id: string;
   name: string;
   start: number;
   totalMonths: number;
   stopCount: number;
-  /** Index 0 = Jan; null where the trip isn't travelling. */
-  cells: (MonthCell | null)[];
+  /** Day-proportional bars across the twelve-column track. */
+  segments: DaySegment[];
   trip: {
     id: string;
     ownerId?: string;
@@ -54,52 +53,52 @@ interface Row {
   } | null;
 }
 
-/** Contiguous covered runs as [startIdx, endIdx] pairs (0-based, inclusive). */
-function coveredRuns(cells: (MonthCell | null)[]): [number, number][] {
-  const runs: [number, number][] = [];
-  let start = -1;
-  for (let i = 0; i < 12; i++) {
-    if (cells[i] && start === -1) start = i;
-    if ((!cells[i] || i === 11) && start !== -1) {
-      runs.push([start, cells[i] && i === 11 ? i : i - 1]);
-      start = -1;
-    }
-  }
-  return runs;
-}
-
-function buildRow(
-  id: string,
-  name: string,
-  start: number,
-  stops: [string, number][],
-  trip: Row["trip"]
-): Row | null {
-  const chosen = tripToSlimStops({ start, stops });
+function buildRow(tripData: SavedTripLite, trip: Row["trip"]): Row | null {
+  const { id, name, start } = tripData;
+  const chosen = tripToSlimStops(tripData);
   if (chosen.length === 0) return null;
 
   const effectiveStart = resolveStartMonth(start);
-  const legs = tripSlimLegs({ start, stops });
+  const legs = tripSlimLegs(tripData);
 
-  const cells: (MonthCell | null)[] = Array(12).fill(null);
-  for (const leg of legs) {
-    for (const m of leg.months) {
-      cells[m - 1] = {
-        season: climateForMonth(leg.region, m).season,
+  // Day-proportional segments from the trip's real ranges. Undated stops on a
+  // booked trip yield null and simply don't draw — there's nowhere to put them.
+  const ranges = tripDateRanges(tripData, legs);
+  const segments: DaySegment[] = [];
+  let drawnDays = 0;
+  legs.forEach((leg, i) => {
+    const range = ranges[i];
+    if (!range) return;
+    // A trip longer than a year would wrap over itself, so later stays would
+    // paint on top of earlier ones with no way to tell. Stop at a full year.
+    const legDays = Math.round(
+      (range.end.getTime() - range.start.getTime()) / 86_400_000
+    );
+    if (drawnDays >= 365) return;
+    drawnDays += legDays;
+
+    const month = leg.months[0] ?? range.start.getMonth() + 1;
+    for (const piece of splitAtYearEnd(range.start, range.end)) {
+      segments.push({
+        ...piece,
+        season: climateForMonth(leg.region, month).season,
         regionName: leg.region.name,
-        festivals: eventsInMonthForRegions([leg.region.id], m).map(
+        festivals: eventsInMonthForRegions([leg.region.id], month).map(
           (f) => f.event.name
         ),
-      };
+        label: `${fmtRange(range.start, range.end)} — ${leg.region.name}`,
+      });
     }
-  }
+  });
+  segments.sort((a, b) => a.from - b.from);
+
   return {
     id,
     name,
     start: effectiveStart,
     totalMonths: chosen.reduce((n, s) => n + s.durationMonths, 0),
     stopCount: chosen.length,
-    cells,
+    segments,
     trip,
   };
 }
@@ -110,7 +109,7 @@ function useRows(): Row[] {
     const sync = () => {
       const out: Row[] = [];
       for (const t of getSavedTrips()) {
-        const row = buildRow(t.id, t.name, t.start, t.stops, { ...t });
+        const row = buildRow(t, { ...t });
         if (row) out.push(row);
       }
       setRows(out);
@@ -245,32 +244,32 @@ export function CalendarView() {
                   aria-label={`Open ${row.name}`}
                   className="absolute inset-y-2 left-0 right-0 rounded-full bg-slate-400/10 transition hover:bg-slate-400/20"
                 />
-                {coveredRuns(row.cells).map(([a, b]) => (
+                {segmentRuns(row.segments).map((run, ri) => (
                   <div
-                    key={a}
-                    className="pointer-events-none absolute inset-y-2 flex overflow-hidden rounded-full"
+                    key={ri}
+                    className="pointer-events-none absolute inset-y-2 overflow-hidden rounded-full"
                     style={{
-                      left: `${(a / 12) * 100}%`,
-                      width: `${((b - a + 1) / 12) * 100}%`,
+                      left: `${run.from * 100}%`,
+                      width: `${(run.to - run.from) * 100}%`,
                     }}
                   >
-                    {row.cells.slice(a, b + 1).map((cell, k) => (
+                    {run.segments.map((seg, k) => (
                       <div
                         key={k}
-                        title={
-                          cell
-                            ? `${MONTH_NAMES_LONG[a + k]} — ${cell.regionName} (${SEASON_META[cell.season].short.toLowerCase()})${
-                                cell.festivals.length
-                                  ? ` · 🎉 ${cell.festivals.join(", ")}`
-                                  : ""
-                              }`
-                            : undefined
-                        }
-                        className={`pointer-events-auto relative flex-1 ${
-                          cell ? SEASON_BAR[cell.season] : ""
+                        title={`${seg.label} (${SEASON_META[seg.season].short.toLowerCase()})${
+                          seg.festivals.length
+                            ? ` · 🎉 ${seg.festivals.join(", ")}`
+                            : ""
                         }`}
+                        className={`pointer-events-auto absolute inset-y-0 ${SEASON_BAR[seg.season]}`}
+                        style={{
+                          // Positioned within the run, so the run's rounded
+                          // clip gives the group one pill outline.
+                          left: `${((seg.from - run.from) / (run.to - run.from)) * 100}%`,
+                          width: `${((seg.to - seg.from) / (run.to - run.from)) * 100}%`,
+                        }}
                       >
-                        {cell && cell.festivals.length > 0 && (
+                        {seg.festivals.length > 0 && (
                           <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90" />
                         )}
                       </div>
