@@ -40,6 +40,17 @@ export function ExpenseSection({
   const [category, setCategory] = useState<ExpenseCategory>("food");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Which logged expense the form is currently editing, if any. saveExpense
+  // has always taken an id and replaced in place; only the control to reach it
+  // was missing, so a mistyped amount could only be deleted and re-entered.
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  function resetForm() {
+    setEditingId(null);
+    setAmount("");
+    setNote("");
+    setError(null);
+  }
 
   function submit() {
     const amountCents = parseAmountToCents(amount);
@@ -47,15 +58,30 @@ export function ExpenseSection({
       setError("Enter an amount in USD, like 12.50.");
       return;
     }
-    const saved = saveExpense(tripId, { day, amountCents, category, note });
+    const saved = saveExpense(tripId, {
+      id: editingId ?? undefined,
+      day,
+      amountCents,
+      category,
+      note,
+    });
     if (!saved) {
       setError("Couldn't save that expense. Check that browser storage is enabled.");
       return;
     }
-    setError(null);
-    setAmount("");
-    setNote("");
+    resetForm();
     onChanged(saved.id);
+  }
+
+  function startEdit(expense: Expense) {
+    setEditingId(expense.id);
+    setDay(expense.day);
+    // Plain digits, not formatCents' "$12.50" — this goes back into the field
+    // the user types into.
+    setAmount((expense.amountCents / 100).toFixed(2));
+    setCategory(expense.category);
+    setNote(expense.note ?? "");
+    setError(null);
   }
 
   function handleRemove(expense: Expense) {
@@ -63,6 +89,7 @@ export function ExpenseSection({
       setError("Couldn't delete that expense.");
       return;
     }
+    if (editingId === expense.id) resetForm();
     onChanged(expense.id);
   }
 
@@ -148,8 +175,17 @@ export function ExpenseSection({
             onClick={submit}
             className="rounded-lg bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
           >
-            Add
+            {editingId ? "Save changes" : "Add"}
           </button>
+          {editingId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+          )}
         </div>
         {error && (
           <p role="alert" className="mt-2 text-sm text-rose-700">
@@ -183,7 +219,12 @@ export function ExpenseSection({
 
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             {expenses.map((e) => (
-              <li key={e.id} className="flex items-center gap-3 px-4 py-2.5">
+              <li
+                key={e.id}
+                className={`flex items-center gap-3 px-4 py-2.5 ${
+                  editingId === e.id ? "bg-amber-50" : ""
+                }`}
+              >
                 <span aria-hidden>{CATEGORY_META[e.category].icon}</span>
                 <span className="w-16 flex-none text-xs text-slate-500">
                   {fmtShortDay(e.day)}
@@ -194,6 +235,14 @@ export function ExpenseSection({
                 <span className="flex-none text-sm font-medium text-slate-900">
                   {formatCents(e.amountCents)}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => startEdit(e)}
+                  aria-label={`Edit ${formatCents(e.amountCents)} expense`}
+                  className="flex-none text-xs font-medium text-teal-700 hover:underline"
+                >
+                  Edit
+                </button>
                 <button
                   type="button"
                   onClick={() => handleRemove(e)}
