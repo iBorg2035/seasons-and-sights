@@ -14,6 +14,7 @@ import { downloadExport } from "@/lib/data-export";
 import { clearRecords } from "@/lib/trip-records";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
+import { RESERVATION_ENTITY } from "@/lib/reservations";
 
 
 /** Nav account control. Renders nothing unless Supabase is configured. */
@@ -123,6 +124,7 @@ export function AccountMenu() {
                 for (const trip of getSavedTrips()) {
                   clearRecords(JOURNAL_ENTITY, trip.id);
                   clearRecords(EXPENSE_ENTITY, trip.id);
+                  clearRecords(RESERVATION_ENTITY, trip.id);
                 }
                 localStorage.removeItem(SAVED_KEY);
                 notifySavedTripsChanged();

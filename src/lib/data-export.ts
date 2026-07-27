@@ -1,6 +1,7 @@
 import { getSavedTrips } from "@/lib/saved-trips";
 import { listEntries, type JournalEntry } from "@/lib/journal";
 import { listExpenses, type Expense } from "@/lib/expenses";
+import { listReservations, type Reservation } from "@/lib/reservations";
 
 /**
  * Everything this device holds for the user, in one file.
@@ -18,6 +19,7 @@ export interface ExportPayload {
   /** Keyed by trip id; a trip with nothing logged is simply absent. */
   journal: Record<string, JournalEntry[]>;
   expenses: Record<string, Expense[]>;
+  reservations: Record<string, Reservation[]>;
 }
 
 export const EXPORT_FILENAME = "seasons-and-sights-data.json";
@@ -55,13 +57,16 @@ export function buildExportPayload(now: Date = new Date()): ExportPayload {
   const trips = getSavedTrips();
   const journal: Record<string, JournalEntry[]> = {};
   const expenses: Record<string, Expense[]> = {};
+  const reservations: Record<string, Reservation[]> = {};
 
   for (const trip of trips) {
     const entries = listEntries(trip.id);
     if (entries.length) journal[trip.id] = entries;
     const spend = listExpenses(trip.id);
     if (spend.length) expenses[trip.id] = spend;
+    const booked = listReservations(trip.id);
+    if (booked.length) reservations[trip.id] = booked;
   }
 
-  return { exportedAt: now.toISOString(), trips, journal, expenses };
+  return { exportedAt: now.toISOString(), trips, journal, expenses, reservations };
 }

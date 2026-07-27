@@ -8,6 +8,7 @@ import {
 import { createTrip } from "@/lib/saved-trips";
 import { saveEntry, removeEntry } from "@/lib/journal";
 import { saveExpense } from "@/lib/expenses";
+import { saveReservation } from "@/lib/reservations";
 
 /**
  * The export is the user's copy of their own data. An export that silently
@@ -81,6 +82,23 @@ describe("buildExportPayload", () => {
     expect(payload.expenses).toEqual({});
   });
 
+  it("includes reservations, the third per-trip entity", () => {
+    // The export's own doc comment says a new entity belongs here; this is the
+    // check that someone actually did it.
+    const trip = createTrip("Peru", { start: 9, stops: [["peru-cusco", 1]] })!;
+    saveReservation(trip.id, {
+      kind: "stay",
+      regionId: "peru-cusco",
+      provider: "Hotel Royal",
+      reference: "BK-12345",
+      amountCents: 42000,
+    });
+
+    const payload = buildExportPayload(NOW);
+
+    expect(payload.reservations[trip.id][0].reference).toBe("BK-12345");
+  });
+
   it("hands the download the same data it built", () => {
     // The button was untested wiring until the DOM work moved into the module.
     // This asserts the file the user actually receives, not just the payload.
@@ -140,6 +158,7 @@ describe("buildExportPayload", () => {
       trips: [],
       journal: {},
       expenses: {},
+      reservations: {},
     });
     expect(() => JSON.parse(JSON.stringify(payload))).not.toThrow();
   });

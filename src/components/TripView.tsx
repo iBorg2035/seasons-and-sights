@@ -47,6 +47,7 @@ import { clearRecords } from "@/lib/trip-records";
 import { deleteRemoteRecords } from "@/lib/supabase/trip-records";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
+import { RESERVATION_ENTITY } from "@/lib/reservations";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 
 const SECTIONS = [
@@ -374,6 +375,7 @@ export function TripView({
     // would be both a leak and a surprise. (Cloud rows: Stage 4.)
     clearRecords(JOURNAL_ENTITY, trip.id);
     clearRecords(EXPENSE_ENTITY, trip.id);
+    clearRecords(RESERVATION_ENTITY, trip.id);
     if (user && (!trip.ownerId || trip.ownerId === user.id)) {
       void deleteRemoteTrip(trip.id);
       // trip_records has no FK to trips (a journal write can race ahead of the
