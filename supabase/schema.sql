@@ -270,8 +270,15 @@ grant execute on function public.invite_trip_editor_by_email(text, text) to auth
 
 -- Resolve a set of user ids to their emails, for displaying invited editors by
 -- email instead of an opaque UUID. Security definer so the caller can't read
--- auth.users directly (RLS would otherwise block it); returns only the ids
--- passed in, so it can't be used to enumerate users.
+-- auth.users directly (RLS would otherwise block it).
+--
+-- Restricted to people the caller actually collaborates with. Returning only
+-- the ids passed in stops the function being used to LIST users, but on its
+-- own it still meant that holding any uuid was enough to turn it into an email
+-- address — and uuids travel further than emails should (logs, screenshots, a
+-- future feature that exposes an id). The caller must be the user in question,
+-- own a trip they edit, or edit a trip they own; anything else comes back
+-- empty rather than erroring, so the UI simply falls back to the uuid.
 drop function if exists public.get_user_emails(uuid[]);
 create or replace function public.get_user_emails(p_ids uuid[])
 returns table (id uuid, email text)
@@ -279,7 +286,20 @@ language sql
 security definer
 set search_path = public
 as $$
-  select id, email from auth.users where id = any(p_ids);
+  select u.id, u.email
+  from auth.users u
+  where u.id = any(p_ids)
+    and (
+      u.id = auth.uid()
+      or exists (
+        select 1 from public.trip_editors te
+        where te.owner_id = auth.uid() and te.editor_id = u.id
+      )
+      or exists (
+        select 1 from public.trip_editors te
+        where te.editor_id = auth.uid() and te.owner_id = u.id
+      )
+    );
 $$;
 
 grant execute on function public.get_user_emails(uuid[]) to authenticated;
