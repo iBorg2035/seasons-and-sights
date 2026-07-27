@@ -126,7 +126,7 @@ export function createAssistantTools(tripContext?: TripContextPayload | null) {
           .array(
             z.object({
               regionId: z.string(),
-              durationMonths: z.number().min(1).max(12).default(1),
+              durationMonths: z.number().min(1 / 30).max(12).default(1),
             })
           )
           .min(1)

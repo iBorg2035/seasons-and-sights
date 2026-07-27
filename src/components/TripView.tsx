@@ -136,7 +136,7 @@ export function TripView({
     const already = trip.stops.some(([id]) => id === addRegionId);
     if (!already) {
       const saved = persistTripEdit(tripId, (t) => {
-        t.stops.push([addRegionId, 2]);
+        t.stops.push([addRegionId, 1]);
       });
       if (!saved) return;
     }

@@ -10,6 +10,7 @@ import {
   SIGHT_TYPE_META,
   estimateTripCost,
   estimateSpendSoFar,
+  formatStay,
   formatUsd,
 } from "@/lib/season";
 import {
@@ -208,7 +209,7 @@ export function RouteSection({
                 </span>
                 {leg.region.name}
                 <span className="text-xs text-slate-500/80">
-                  · {leg.months.length}m
+                  · {formatStay(leg.durationMonths ?? leg.months.length)}
                 </span>
               </span>
               {i < legs.length - 1 && (

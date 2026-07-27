@@ -13,14 +13,23 @@ import { getSlimRegion } from "@/data/regions-slim";
 import {
   fitQuality,
   climateForMonth,
+  formatStay,
   SEASON_META,
+  WEEK_MONTHS,
 } from "@/lib/season";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { bookingIssues, type BookingIssue } from "@/lib/trip-plan";
 import { AddStopsDialog } from "@/components/AddStopsDialog";
 import { StopDetail } from "@/components/StopDetail";
 
-const DURATIONS = [1, 2, 3] as const;
+/** Stay lengths offered per stop. Weeks first — a fortnight in one place is a
+ *  far more common trip than three months in one. */
+const DURATIONS = [WEEK_MONTHS, WEEK_MONTHS * 2, 1, 2, 3] as const;
+
+/** Compare stay lengths by whole days, so float noise can't unselect a chip. */
+function sameStay(a: number, b: number): boolean {
+  return Math.round(a * 30) === Math.round(b * 30);
+}
 
 const ISSUE_TEXT: Record<BookingIssue["kind"], string> = {
   gap: "Gap before this stop — nothing booked in between.",
@@ -148,7 +157,7 @@ export function StopsSection({
             onAdd={(ids) => {
               if (ids.length) {
                 mutate((t) => {
-                  for (const id of ids) t.stops.push([id, 2]);
+                  for (const id of ids) t.stops.push([id, 1]);
                 });
               }
             }}
@@ -208,7 +217,7 @@ export function StopsSection({
                   {region.name}
                 </span>
                 <span className="block truncate text-xs text-slate-500">
-                  {region.country} · {s.duration}m
+                  {region.country} · {formatStay(s.duration)}
                 </span>
               </span>
               <span
@@ -260,14 +269,14 @@ export function StopsSection({
                       if (row) row[1] = d;
                     })
                   }
-                  aria-pressed={s.duration === d}
+                  aria-pressed={sameStay(s.duration, d)}
                   className={`rounded-md border px-2 py-0.5 text-xs font-medium transition ${
-                    s.duration === d
+                    sameStay(s.duration, d)
                       ? "border-amber-300 bg-amber-100 text-amber-800"
                       : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  {d}m
+                  {formatStay(d)}
                 </button>
               ))}
                 </>
@@ -344,7 +353,7 @@ export function StopsSection({
         onAdd={(ids) => {
           if (ids.length) {
             mutate((t) => {
-              for (const id of ids) t.stops.push([id, 2]);
+              for (const id of ids) t.stops.push([id, 1]);
             });
           }
         }}

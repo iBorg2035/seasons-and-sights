@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
+  formatStay,
+  WEEK_MONTHS,
   planItinerary,
   legDateRanges,
   estimateTripCost,
@@ -118,5 +120,29 @@ describe("sub-month stays", () => {
     // Without the explicit day count this would fall back to months.length ×
     // 30 and charge a full month for a two-week stay.
     expect(estimateLegCost(leg)).toBeLessThan(leg.months.length * 30 * 50);
+  });
+});
+
+describe("formatStay", () => {
+  it("renders whole months as months", () => {
+    expect(formatStay(1)).toBe("1m");
+    expect(formatStay(3)).toBe("3m");
+  });
+
+  it("renders the week options as weeks", () => {
+    // The values the stay picker actually offers. Without this, a fortnight
+    // renders as "0.4666666666666667m".
+    expect(formatStay(WEEK_MONTHS)).toBe("1w");
+    expect(formatStay(WEEK_MONTHS * 2)).toBe("2w");
+  });
+
+  it("falls back to days for a length that is neither", () => {
+    expect(formatStay(0.5)).toBe("15d");
+  });
+
+  it("never leaks a raw fraction", () => {
+    for (const m of [WEEK_MONTHS, WEEK_MONTHS * 2, 0.5, 1, 2, 2.4, 3]) {
+      expect(formatStay(m)).not.toMatch(/\./);
+    }
   });
 });

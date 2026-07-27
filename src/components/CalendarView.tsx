@@ -13,6 +13,7 @@ import { deleteRemoteTrip } from "@/lib/supabase/trips";
 import { eventsInMonthForRegions } from "@/data/events-slim";
 import {
   climateForMonth,
+  formatStay,
   wrapMonth,
   monthOf,
   MONTH_NAMES,
@@ -194,7 +195,7 @@ export function CalendarView() {
               <div key={row.id} className="group flex h-9 items-center gap-1">
                 <button
                   onClick={() => open(row)}
-                  title={`${row.name}: ${MONTH_NAMES[row.start - 1]} start · ${row.totalMonths} months · ${row.stopCount} ${row.stopCount === 1 ? "stop" : "stops"}. Open trip.`}
+                  title={`${row.name}: ${MONTH_NAMES[row.start - 1]} start · ${formatStay(row.totalMonths)} · ${row.stopCount} ${row.stopCount === 1 ? "stop" : "stops"}. Open trip.`}
                   className="min-w-0 flex-1 truncate text-left text-sm font-medium text-slate-800 transition hover:text-teal-700"
                 >
                   {row.name}

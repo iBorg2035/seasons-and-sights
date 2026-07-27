@@ -262,6 +262,27 @@ function advanceByMonths(from: Date, months: number): Date {
   return next;
 }
 
+/** Nominal month length used for costing and sub-month stay arithmetic. */
+const DAYS_PER_MONTH = 30;
+const MS_PER_DAY = 86_400_000;
+
+/** A week, expressed in the months unit stays are stored in. */
+export const WEEK_MONTHS = 7 / DAYS_PER_MONTH;
+
+/**
+ * Render a stay length the way it was chosen: "2w", "1m", "3m".
+ *
+ * Every display site used to interpolate `{n}m` directly, which is fine while
+ * durations are whole months and nonsense the moment they aren't — a
+ * fortnight would read "0.4666666666666667m".
+ */
+export function formatStay(months: number): string {
+  if (Number.isInteger(months)) return `${months}m`;
+  const days = Math.round(months * DAYS_PER_MONTH);
+  if (days % 7 === 0) return `${days / 7}w`;
+  return `${days}d`;
+}
+
 /**
  * Average season fit over the months a stay touches.
  *
@@ -379,9 +400,6 @@ export function planItinerary<R extends ClimateRegion>(
   }
   return buildLegs(order).legs;
 }
-
-const DAYS_PER_MONTH = 30;
-const MS_PER_DAY = 86_400_000;
 
 /**
  * Parse a "YYYY-MM-DD" day as LOCAL midnight.

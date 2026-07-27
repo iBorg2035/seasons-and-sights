@@ -2,6 +2,7 @@
 
 import {
   fitQuality,
+  formatStay,
   MONTH_NAMES,
   SEASON_META,
 } from "@/lib/season";
@@ -71,7 +72,7 @@ export function MapSection({ trip }: { trip: SavedTripLite }) {
                 {leg.months
                   .map((m) => MONTH_NAMES[m - 1])
                   .join("/")}{" "}
-                ({leg.months.length}m)
+                ({formatStay(leg.durationMonths ?? leg.months.length)})
               </span>
             </li>
           ))}
