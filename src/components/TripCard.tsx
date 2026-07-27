@@ -53,13 +53,17 @@ export function TripCard({ trip, active }: { trip: SavedTripLite; active: boolea
 
   // Walk the stops month-by-month, recording each leg's season so the timeline
   // can be coloured and the header gradient can be derived from the first legs.
+  // Accumulated as a float and only rounded at lookup. Wrapping the running
+  // total directly would leave it fractional after any sub-month stay, and
+  // `region.months[9.47]` is undefined — so every stop after the first
+  // week-long one would silently render as "shoulder".
   let cursor = startMonth;
   const segments: StopSegment[] = trip.stops.map(([id, duration]) => {
     const region = getSlimRegion(id);
     const season = region
-      ? climateForMonth(region, cursor).season
+      ? climateForMonth(region, wrapMonth(Math.round(cursor))).season
       : "shoulder";
-    cursor = wrapMonth(cursor + duration);
+    cursor += duration;
     return { duration, season, region };
   });
 

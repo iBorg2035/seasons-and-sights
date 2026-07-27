@@ -146,3 +146,28 @@ describe("formatStay", () => {
     }
   });
 });
+
+describe("fractional cursors don't corrupt integer-month assumptions", () => {
+  it("clamps a whole-month advance instead of overflowing into the next month", () => {
+    // Two fortnights from Jan 1 leave the cursor on Jan 29. `setMonth(+1)`
+    // then overflows to Mar 1, because Feb 29 doesn't exist in 2027 — turning
+    // a one-month stay into 31 days and handing it an extra month of fit.
+    const legs = planItinerary(
+      [stop(cusco, WEEK_MONTHS * 2), stop(cusco, WEEK_MONTHS * 2), stop(kyoto, 1)],
+      1
+    );
+    const ranges = legDateRanges(1, legs, FROM);
+
+    expect(iso(ranges[2].start)).toBe("2027-01-29");
+    expect(iso(ranges[2].end)).toBe("2027-02-28");
+    expect(legs[2].months).toEqual([1, 2]);
+  });
+
+  it("still advances a mid-month cursor normally when no overflow occurs", () => {
+    const legs = planItinerary([stop(cusco, WEEK_MONTHS * 2), stop(kyoto, 1)], 9);
+    const ranges = legDateRanges(9, legs, FROM);
+
+    expect(iso(ranges[1].start)).toBe("2026-09-15");
+    expect(iso(ranges[1].end)).toBe("2026-10-15");
+  });
+});

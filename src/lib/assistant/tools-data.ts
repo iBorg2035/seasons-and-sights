@@ -7,12 +7,18 @@ import {
   bestMonths,
   climateForMonth,
   crowdForMonth,
+  formatStay,
   MONTH_NAMES,
   planItinerary,
   seasonFitScore,
   type ItineraryLeg,
 } from "@/lib/season";
-import { isFlexibleStart, resolveStartMonth, tripLegs } from "@/lib/trip-plan";
+import {
+  isFlexibleStart,
+  resolveStartMonth,
+  tripLegs,
+  tripToStops,
+} from "@/lib/trip-plan";
 import { packingList } from "@/lib/packing";
 import { assessTripHealth } from "@/lib/trip-health";
 import { visaCheckUrl, visaFor, type Passport } from "@/lib/visa";
@@ -295,16 +301,10 @@ export function planRouteFromStops(
   startMonth: number
 ) {
   const start = Math.min(12, Math.max(1, Math.round(startMonth) || 1));
-  const plannerStops = stops
-    .map(([id, duration]) => {
-      const region = getRegion(id);
-      if (!region) return null;
-      return {
-        region,
-        durationMonths: Math.max(1, Math.round(duration) || 1),
-      };
-    })
-    .filter((s): s is NonNullable<typeof s> => s != null);
+  // Via the shared resolver rather than a local copy of the clamp: that copy
+  // still rounded to whole months, so a fortnight the user had picked came
+  // back to them as "1 month" in the assistant's own answer.
+  const plannerStops = tripToStops({ start, stops }, getRegion);
 
   if (plannerStops.length === 0) {
     return { error: "No valid destination ids in stops." };
@@ -319,7 +319,8 @@ export function planRouteFromStops(
       id: leg.region.id,
       name: leg.region.name,
       country: leg.region.country,
-      durationMonths: leg.months.length,
+      durationMonths: leg.durationMonths ?? leg.months.length,
+      stay: formatStay(leg.durationMonths ?? leg.months.length),
       months: leg.months.map((m) => MONTH_NAMES[m - 1]),
       seasonFit: Math.round(leg.fit),
       seasons: leg.months.map((m) => climateForMonth(leg.region, m).season),

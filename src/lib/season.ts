@@ -257,7 +257,16 @@ function advanceByMonths(from: Date, months: number): Date {
   const whole = Math.floor(months);
   const days = Math.round((months - whole) * DAYS_PER_MONTH);
   const next = new Date(from);
-  if (whole) next.setMonth(next.getMonth() + whole);
+  if (whole) {
+    const targetMonth = next.getMonth() + whole;
+    const day = next.getDate();
+    next.setMonth(targetMonth);
+    // setMonth OVERFLOWS rather than clamping: Jan 31 + 1 month lands on Mar 3,
+    // which turns a one-month stay into 31 days and hands it an extra month of
+    // season fit. Only reachable since sub-month stays can leave the cursor
+    // mid-month. Clamp to the last day of the intended month instead.
+    if (next.getDate() !== day) next.setDate(0);
+  }
   if (days) next.setDate(next.getDate() + days);
   return next;
 }
