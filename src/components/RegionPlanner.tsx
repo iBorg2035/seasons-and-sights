@@ -8,6 +8,7 @@ import { CrowdStrip } from "@/components/CrowdStrip";
 import { ClimateChart } from "@/components/ClimateChart";
 import { PackingList } from "@/components/PackingList";
 import { BookingCard } from "@/components/BookingCard";
+import { GettingThere } from "@/components/GettingThere";
 import {
   CROWD_META,
   MONTH_NAMES,
@@ -157,6 +158,22 @@ export function RegionPlanner({
             checkout={checkout}
             monthLabel={monthName}
           />
+          {/* The same first-stop line the trip page uses, so the flight search
+              lives wherever a single destination is shown in depth — not just
+              on /surprise and inside a trip. */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <GettingThere
+              isFirst
+              to={{
+                lat: region.lat,
+                lng: region.lng,
+                name: region.name,
+                dest: region.bookingDest,
+              }}
+              regionName={region.name}
+              note={region.info?.gettingThere}
+            />
+          </div>
         </aside>
       </div>
     </div>
