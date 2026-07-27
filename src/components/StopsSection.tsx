@@ -204,6 +204,23 @@ export function StopsSection({
 
   return (
     <>
+    {/* Also at the top, not only after the list. Stops expand into the full
+        destination guide by default, so with even one stop the button below
+        the list is a couple of screens down — which reads as "there's no way
+        to add another". */}
+    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <p className="text-sm text-slate-500">
+        {resolved.length} {resolved.length === 1 ? "stop" : "stops"} · expand a
+        stop for its full guide
+      </p>
+      <button
+        type="button"
+        onClick={() => setAdding(true)}
+        className="rounded-lg bg-sky-800 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-sky-900"
+      >
+        + Add destination
+      </button>
+    </div>
     <ul className="space-y-2">
       {resolved.map((s, i) => {
         const { region } = s;
