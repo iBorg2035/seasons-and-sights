@@ -54,6 +54,7 @@ const detailCache = new Map<string, RegionDetail>();
  * arrives via a lazy fetch of /api/region-detail — never a client import.
  */
 export function StopDetail({
+  tripId,
   region,
   prevStop,
   stayMonth,
@@ -63,6 +64,8 @@ export function StopDetail({
   onSetExactDates,
   reservationSlot,
 }: {
+  /** Trip the packing ticks are saved against. Absent on the region page. */
+  tripId?: string;
   region: SlimRegion;
   /** The previous stop's region (for the getting-there line), or undefined. */
   prevStop?: SlimRegion;
@@ -309,6 +312,7 @@ export function StopDetail({
         (detail ? (
           <PackingList
             compact
+            tripId={tripId}
             region={{ ...region, sights: detail.sights }}
             month={stayMonth ?? now}
           />

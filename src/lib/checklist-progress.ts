@@ -16,19 +16,17 @@
  * per item, so two people packing at once don't clobber each other's ticks.
  */
 
+import { recordsKey, saveRecords } from "@/lib/trip-records";
 import {
-  deleteRecord,
-  loadRecords,
-  loadRecordsRaw,
-  recordsKey,
-  saveRecords,
-  upsertRecord,
-  type TripRecord,
-} from "@/lib/trip-records";
+  loadTickRows,
+  loadTickSet,
+  setTickIn,
+  type Tick,
+} from "@/lib/ticks";
 
 export const CHECKLIST_ENTITY = "checklist";
 
-export type ChecklistTick = TripRecord;
+export type ChecklistTick = Tick;
 
 /**
  * Convert the legacy `string[]` of ticked keys into records, in place.
@@ -67,24 +65,26 @@ export function migrateLegacyTicks(tripId: string, now = Date.now()): boolean {
   return saveRecords(CHECKLIST_ENTITY, tripId, rows, now);
 }
 
+/**
+ * The generic tick store does the work; these wrappers exist only to run the
+ * legacy migration first. Every read path goes through one of them, so no
+ * caller can reach the raw rows while they're still strings.
+ */
+
 /** The ticked item keys for a trip. */
 export function loadTicks(tripId: string): Set<string> {
   migrateLegacyTicks(tripId);
-  return new Set(
-    loadRecords<ChecklistTick>(CHECKLIST_ENTITY, tripId).map((r) => r.id)
-  );
+  return loadTickSet(CHECKLIST_ENTITY, tripId);
 }
 
 /** Tick or untick one item. */
 export function setTick(tripId: string, key: string, on: boolean): boolean {
   migrateLegacyTicks(tripId);
-  return on
-    ? upsertRecord<ChecklistTick>(CHECKLIST_ENTITY, tripId, { id: key })
-    : deleteRecord(CHECKLIST_ENTITY, tripId, key);
+  return setTickIn(CHECKLIST_ENTITY, tripId, key, on);
 }
 
 /** Every row including tombstones — for sync and data export. */
 export function loadTicksRaw(tripId: string): ChecklistTick[] {
   migrateLegacyTicks(tripId);
-  return loadRecordsRaw<ChecklistTick>(CHECKLIST_ENTITY, tripId);
+  return loadTickRows(CHECKLIST_ENTITY, tripId);
 }

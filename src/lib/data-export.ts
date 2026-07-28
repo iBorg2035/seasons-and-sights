@@ -3,6 +3,7 @@ import { listEntries, type JournalEntry } from "@/lib/journal";
 import { listExpenses, type Expense } from "@/lib/expenses";
 import { listReservations, type Reservation } from "@/lib/reservations";
 import { loadTicks } from "@/lib/checklist-progress";
+import { loadPacked } from "@/lib/packing-progress";
 
 /**
  * Everything this device holds for the user, in one file.
@@ -23,6 +24,8 @@ export interface ExportPayload {
   reservations: Record<string, Reservation[]>;
   /** Ticked pre-departure checklist item keys, by trip id. */
   checklist: Record<string, string[]>;
+  /** Ticked packing-list keys ("<regionId>::<item>"), by trip id. */
+  packing: Record<string, string[]>;
 }
 
 export const EXPORT_FILENAME = "seasons-and-sights-data.json";
@@ -62,6 +65,7 @@ export function buildExportPayload(now: Date = new Date()): ExportPayload {
   const expenses: Record<string, Expense[]> = {};
   const reservations: Record<string, Reservation[]> = {};
   const checklist: Record<string, string[]> = {};
+  const packing: Record<string, string[]> = {};
 
   for (const trip of trips) {
     const entries = listEntries(trip.id);
@@ -72,6 +76,8 @@ export function buildExportPayload(now: Date = new Date()): ExportPayload {
     if (booked.length) reservations[trip.id] = booked;
     const ticked = [...loadTicks(trip.id)];
     if (ticked.length) checklist[trip.id] = ticked;
+    const packedItems = [...loadPacked(trip.id)];
+    if (packedItems.length) packing[trip.id] = packedItems;
   }
 
   return {
@@ -81,5 +87,6 @@ export function buildExportPayload(now: Date = new Date()): ExportPayload {
     expenses,
     reservations,
     checklist,
+    packing,
   };
 }

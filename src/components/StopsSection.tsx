@@ -301,6 +301,7 @@ export function StopsSection({
                 aria-labelledby={`stop-toggle-${region.id}`}
               >
                 <StopDetail
+                  tripId={trip.id}
                   region={region}
                   prevStop={i > 0 ? resolved[i - 1]?.region : undefined}
                   stayMonth={leg?.months[0]}
