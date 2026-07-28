@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import type { Region } from "@/types";
 import { packingList } from "@/lib/packing";
 import { MONTH_NAMES_LONG } from "@/lib/season";
@@ -13,6 +14,41 @@ import {
 import { useOptionalAuth } from "@/lib/contexts/auth-context";
 import { mirrorRecord } from "@/lib/supabase/trip-records";
 import { TRIP_RECORDS_EVENT } from "@/lib/trip-records";
+import { ACTIVE_TRIP_EVENT, getActiveTripId } from "@/lib/active-trip";
+import { SAVED_TRIPS_EVENT, getTrip } from "@/lib/saved-trips";
+
+/**
+ * The trip to save ticks against when the caller doesn't name one.
+ *
+ * The region page has no trip of its own, so its packing list was read-only.
+ * Falling back to the active trip makes it work, but the ticks then land
+ * somewhere the reader isn't looking — so the name comes back too, and the UI
+ * says where they went. Resolved in an effect, not during render: it reads
+ * localStorage, which doesn't exist on the server.
+ */
+function useActiveTrip(enabled: boolean) {
+  const [trip, setTrip] = useState<{ id: string; name: string } | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const read = () => {
+      const id = getActiveTripId();
+      const t = id ? getTrip(id) : undefined;
+      setTrip(t ? { id: t.id, name: t.name } : null);
+    };
+    read();
+    window.addEventListener(ACTIVE_TRIP_EVENT, read);
+    window.addEventListener(SAVED_TRIPS_EVENT, read);
+    window.addEventListener("storage", read);
+    return () => {
+      window.removeEventListener(ACTIVE_TRIP_EVENT, read);
+      window.removeEventListener(SAVED_TRIPS_EVENT, read);
+      window.removeEventListener("storage", read);
+    };
+  }, [enabled]);
+
+  return trip;
+}
 
 /**
  * Now a client component. It was a server component rendering bare uncontrolled
@@ -119,16 +155,20 @@ export function PackingList({
   month: number;
   /** Accordion-embedded variant: h4-style heading, no card chrome. */
   compact?: boolean;
-  /** Trip to save ticks against. Without it the list is read-only. */
+  /** Trip to save ticks against. Falls back to the active trip; without
+   *  either (nothing saved yet) the list is read-only. */
   tripId?: string;
 }) {
+  const active = useActiveTrip(!tripId);
+  const saveTo = tripId ?? active?.id;
+
   if (compact) {
     return (
       <div>
         <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
           Pack for {MONTH_NAMES_LONG[month - 1]}
         </h4>
-        <Groups region={region} month={month} tripId={tripId} />
+        <Groups region={region} month={month} tripId={saveTo} />
       </div>
     );
   }
@@ -138,9 +178,24 @@ export function PackingList({
       <h2 className="font-semibold text-slate-900">Packing list</h2>
       <p className="mb-4 text-xs text-slate-400">
         Tailored to {region.name} in {MONTH_NAMES_LONG[month - 1]}
-        {tripId ? " — tick as you pack." : "."}
+        {saveTo ? " — tick as you pack." : "."}
+        {!tripId && active && (
+          // Say where the ticks land. Silently writing into a trip the reader
+          // isn't looking at is worse than not saving them at all.
+          <>
+            {" "}
+            Saving to{" "}
+            <Link
+              href={`/trips/${active.id}`}
+              className="underline underline-offset-2 hover:text-slate-600"
+            >
+              {active.name}
+            </Link>
+            .
+          </>
+        )}
       </p>
-      <Groups region={region} month={month} tripId={tripId} />
+      <Groups region={region} month={month} tripId={saveTo} />
     </section>
   );
 }
