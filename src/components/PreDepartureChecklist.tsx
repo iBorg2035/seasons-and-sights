@@ -3,8 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Region } from "@/types";
 import { buildChecklistItems } from "@/lib/checklist";
-import { loadTicks, setTick } from "@/lib/checklist-progress";
+import {
+  CHECKLIST_ENTITY,
+  loadTicks,
+  setTick,
+} from "@/lib/checklist-progress";
 import { TRIP_RECORDS_EVENT } from "@/lib/trip-records";
+import { useOptionalAuth } from "@/lib/contexts/auth-context";
+import { mirrorRecord } from "@/lib/supabase/trip-records";
 
 export function PreDepartureChecklist({
   tripId,
@@ -13,6 +19,7 @@ export function PreDepartureChecklist({
   tripId: string;
   regions: Region[];
 }) {
+  const user = useOptionalAuth()?.user;
   const items = useMemo(() => buildChecklistItems(regions), [regions]);
   const [done, setDone] = useState<Set<string>>(new Set());
   const [ready, setReady] = useState(false);
@@ -44,6 +51,9 @@ export function PreDepartureChecklist({
     // so storage is the only thing that knows the real post-write state.
     setTick(tripId, key, !done.has(key));
     reload();
+    // Push immediately, like the journal and reservations do. Syncing only at
+    // mount meant a tick made after the page loaded never left the device.
+    if (user) void mirrorRecord(user.id, tripId, CHECKLIST_ENTITY, key);
   }
 
   const completed = items.filter((i) => done.has(i.key)).length;

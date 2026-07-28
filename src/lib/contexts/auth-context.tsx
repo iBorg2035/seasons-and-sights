@@ -152,3 +152,15 @@ export function useAuth(): AuthState {
   if (!ctx) throw new Error("useAuth must be used within <AuthProvider>");
   return ctx;
 }
+
+/**
+ * The session if there is one, null if there's no provider above.
+ *
+ * For leaves that only want to know "am I signed in, so should I mirror this
+ * write to the cloud". Throwing there means a component whose job is a packing
+ * list can take down the whole panel over an optional enhancement — the strict
+ * useAuth stays the default for anything that genuinely needs a session.
+ */
+export function useOptionalAuth(): AuthState | null {
+  return useContext(AuthContext) ?? null;
+}

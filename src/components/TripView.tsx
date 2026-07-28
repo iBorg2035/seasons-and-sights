@@ -55,6 +55,7 @@ import {
   type Reservation,
 } from "@/lib/reservations";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
+import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
 
 const SECTIONS = [
   { id: "copilot", label: "Co-pilot" },
@@ -195,23 +196,25 @@ export function TripView({
   // Pull them down on sign-in, the same reconcile the journal page does for
   // its own entities — otherwise a reservation saved on your phone never
   // reaches the laptop unless you happen to open the journal.
-  useEffect(() => {
+  const syncTripRecords = useCallback(() => {
     if (!user) return;
     const userId = user.id;
-    let cancelled = false;
-    void syncRecords(userId, tripId, RESERVATION_ENTITY).then(() => {
-      if (!cancelled) reloadReservations();
-    });
+    void syncRecords(userId, tripId, RESERVATION_ENTITY).then(reloadReservations);
     // Checklist ticks ride the same reconcile. Migrate first: the legacy
     // `string[]` shares this entity's storage key, and pushing it unconverted
     // would upload rows with no id.
     migrateLegacyTicks(tripId);
     void syncRecords(userId, tripId, CHECKLIST_ENTITY);
     void syncRecords(userId, tripId, PACKING_ENTITY);
-    return () => {
-      cancelled = true;
-    };
   }, [user?.id, tripId, reloadReservations]);
+
+  useEffect(() => {
+    syncTripRecords();
+  }, [syncTripRecords]);
+
+  // Again when the tab comes back, so a browser left open on this trip picks
+  // up what was ticked on the phone instead of sitting on a stale copy.
+  useRefreshOnFocus(syncTripRecords);
 
   // Load + mark this trip active + subscribe to change events.
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import {
   fetchRemoteTrips,
@@ -12,6 +12,7 @@ import {
   SAVED_TRIPS_KEY,
   notifySavedTripsChanged,
 } from "@/lib/saved-trips";
+import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
 
 /**
  * Pull the signed-in user's cloud trips, merge them into localStorage
@@ -34,39 +35,38 @@ export function TripCloudSync() {
   const { user } = useAuth();
   const userId = user?.id;
 
+  const sync = useCallback(async () => {
+    if (!userId) return;
+    const remote = await fetchRemoteTrips();
+
+    let local: SavedTrip[] = [];
+    try {
+      local = JSON.parse(localStorage.getItem(SAVED_TRIPS_KEY) || "[]");
+    } catch {
+      // A corrupt store shouldn't block the cloud copy from arriving.
+    }
+
+    const { merged, toPush } = mergeTrips(local, remote);
+    try {
+      localStorage.setItem(SAVED_TRIPS_KEY, JSON.stringify(merged));
+      notifySavedTripsChanged();
+    } catch {
+      // Quota or private mode — the merge is lost, but nothing is corrupted.
+    }
+
+    // Outside setState so StrictMode's double-invoke can't double-upload.
+    for (const t of toPush) void upsertRemoteTrip(userId, t);
+  }, [userId]);
+
   // Keyed on the id, not the user object: a token refresh swaps the object
   // identity and would otherwise re-run the whole sync every hour.
   useEffect(() => {
-    if (!userId) return;
-    let cancelled = false;
+    void sync();
+  }, [sync]);
 
-    (async () => {
-      const remote = await fetchRemoteTrips();
-      if (cancelled) return;
-
-      let local: SavedTrip[] = [];
-      try {
-        local = JSON.parse(localStorage.getItem(SAVED_TRIPS_KEY) || "[]");
-      } catch {
-        // A corrupt store shouldn't block the cloud copy from arriving.
-      }
-
-      const { merged, toPush } = mergeTrips(local, remote);
-      try {
-        localStorage.setItem(SAVED_TRIPS_KEY, JSON.stringify(merged));
-        notifySavedTripsChanged();
-      } catch {
-        // Quota or private mode — the merge is lost, but nothing is corrupted.
-      }
-
-      // Outside setState so StrictMode's double-invoke can't double-upload.
-      for (const t of toPush) void upsertRemoteTrip(userId, t);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+  // And again whenever the tab comes back — otherwise a browser left open
+  // shows yesterday's trips while the other one has today's.
+  useRefreshOnFocus(() => void sync());
 
   return null;
 }

@@ -4,7 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import type { Region } from "@/types";
 import { packingList } from "@/lib/packing";
 import { MONTH_NAMES_LONG } from "@/lib/season";
-import { loadPacked, packingKey, setPacked } from "@/lib/packing-progress";
+import {
+  PACKING_ENTITY,
+  loadPacked,
+  packingKey,
+  setPacked,
+} from "@/lib/packing-progress";
+import { useOptionalAuth } from "@/lib/contexts/auth-context";
+import { mirrorRecord } from "@/lib/supabase/trip-records";
 import { TRIP_RECORDS_EVENT } from "@/lib/trip-records";
 
 /**
@@ -26,6 +33,7 @@ function Groups({
   month: number;
   tripId?: string;
 }) {
+  const user = useOptionalAuth()?.user;
   const groups = packingList(region, month);
   const [packed, setPackedState] = useState<Set<string>>(new Set());
 
@@ -50,6 +58,15 @@ function Groups({
     if (!tripId) return;
     setPacked(tripId, region.id, item, checked);
     reload();
+    // Push immediately rather than waiting for the next mount-time sync.
+    if (user) {
+      void mirrorRecord(
+        user.id,
+        tripId,
+        PACKING_ENTITY,
+        packingKey(region.id, item)
+      );
+    }
   }
 
   return (
