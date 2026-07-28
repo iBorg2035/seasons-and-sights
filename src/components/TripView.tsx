@@ -40,6 +40,7 @@ import {
 } from "@/lib/trip-plan";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { clearRecords, TRIP_RECORDS_EVENT } from "@/lib/trip-records";
+import { CHECKLIST_ENTITY, migrateLegacyTicks } from "@/lib/checklist-progress";
 import {
   deleteRemoteRecords,
   mirrorRecord,
@@ -200,6 +201,11 @@ export function TripView({
     void syncRecords(userId, tripId, RESERVATION_ENTITY).then(() => {
       if (!cancelled) reloadReservations();
     });
+    // Checklist ticks ride the same reconcile. Migrate first: the legacy
+    // `string[]` shares this entity's storage key, and pushing it unconverted
+    // would upload rows with no id.
+    migrateLegacyTicks(tripId);
+    void syncRecords(userId, tripId, CHECKLIST_ENTITY);
     return () => {
       cancelled = true;
     };
@@ -381,6 +387,7 @@ export function TripView({
     clearRecords(JOURNAL_ENTITY, trip.id);
     clearRecords(EXPENSE_ENTITY, trip.id);
     clearRecords(RESERVATION_ENTITY, trip.id);
+    clearRecords(CHECKLIST_ENTITY, trip.id);
     if (user && (!trip.ownerId || trip.ownerId === user.id)) {
       void deleteRemoteTrip(trip.id);
       // trip_records has no FK to trips (a journal write can race ahead of the

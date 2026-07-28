@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Region } from "@/types";
-import { buildChecklistItems, checklistStorageKey } from "@/lib/checklist";
+import { buildChecklistItems } from "@/lib/checklist";
+import { loadTicks, setTick } from "@/lib/checklist-progress";
+import { TRIP_RECORDS_EVENT } from "@/lib/trip-records";
 
 export function PreDepartureChecklist({
   tripId,
@@ -12,41 +14,36 @@ export function PreDepartureChecklist({
   regions: Region[];
 }) {
   const items = useMemo(() => buildChecklistItems(regions), [regions]);
-  // Progress is scoped to this trip (by id), so ticking an item on one trip
-  // doesn't show up checked on another — even two trips with identical stops.
-  const storageKey = useMemo(() => checklistStorageKey(tripId), [tripId]);
   const [done, setDone] = useState<Set<string>>(new Set());
   const [ready, setReady] = useState(false);
 
-  // (Re)load this trip's checked state whenever the trip changes.
+  // Progress is scoped to this trip (by id), so ticking an item on one trip
+  // doesn't show up checked on another — even two trips with identical stops.
+  const reload = useCallback(() => {
+    setDone(loadTicks(tripId));
+    setReady(true);
+  }, [tripId]);
+
+  // Reload on trip change AND whenever records change, so a tick pulled down
+  // from another device appears without a refresh — same subscription the
+  // journal and reservations use.
   useEffect(() => {
     setReady(false);
-    let loaded = new Set<string>();
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) loaded = new Set(JSON.parse(raw) as string[]);
-    } catch {
-      /* ignore */
-    }
-    setDone(loaded);
-    setReady(true);
-  }, [storageKey]);
+    reload();
+    window.addEventListener(TRIP_RECORDS_EVENT, reload);
+    window.addEventListener("storage", reload);
+    return () => {
+      window.removeEventListener(TRIP_RECORDS_EVENT, reload);
+      window.removeEventListener("storage", reload);
+    };
+  }, [reload]);
 
   function toggle(key: string) {
-    setDone((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      // Persist on toggle (keyed to the current trip) rather than in an effect,
-      // so switching trips reloads state without ever writing one trip's ticks
-      // under another's key. localStorage writes are idempotent → StrictMode-safe.
-      try {
-        localStorage.setItem(storageKey, JSON.stringify([...next]));
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
+    // Write first, then read back, rather than toggling local state and
+    // persisting inside the updater: unticking is a tombstone, not a removal,
+    // so storage is the only thing that knows the real post-write state.
+    setTick(tripId, key, !done.has(key));
+    reload();
   }
 
   const completed = items.filter((i) => done.has(i.key)).length;

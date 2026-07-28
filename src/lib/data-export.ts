@@ -2,6 +2,7 @@ import { getSavedTrips } from "@/lib/saved-trips";
 import { listEntries, type JournalEntry } from "@/lib/journal";
 import { listExpenses, type Expense } from "@/lib/expenses";
 import { listReservations, type Reservation } from "@/lib/reservations";
+import { loadTicks } from "@/lib/checklist-progress";
 
 /**
  * Everything this device holds for the user, in one file.
@@ -20,6 +21,8 @@ export interface ExportPayload {
   journal: Record<string, JournalEntry[]>;
   expenses: Record<string, Expense[]>;
   reservations: Record<string, Reservation[]>;
+  /** Ticked pre-departure checklist item keys, by trip id. */
+  checklist: Record<string, string[]>;
 }
 
 export const EXPORT_FILENAME = "seasons-and-sights-data.json";
@@ -58,6 +61,7 @@ export function buildExportPayload(now: Date = new Date()): ExportPayload {
   const journal: Record<string, JournalEntry[]> = {};
   const expenses: Record<string, Expense[]> = {};
   const reservations: Record<string, Reservation[]> = {};
+  const checklist: Record<string, string[]> = {};
 
   for (const trip of trips) {
     const entries = listEntries(trip.id);
@@ -66,7 +70,16 @@ export function buildExportPayload(now: Date = new Date()): ExportPayload {
     if (spend.length) expenses[trip.id] = spend;
     const booked = listReservations(trip.id);
     if (booked.length) reservations[trip.id] = booked;
+    const ticked = [...loadTicks(trip.id)];
+    if (ticked.length) checklist[trip.id] = ticked;
   }
 
-  return { exportedAt: now.toISOString(), trips, journal, expenses, reservations };
+  return {
+    exportedAt: now.toISOString(),
+    trips,
+    journal,
+    expenses,
+    reservations,
+    checklist,
+  };
 }

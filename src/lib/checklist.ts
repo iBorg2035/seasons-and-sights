@@ -10,15 +10,6 @@ function uniq<T>(arr: T[]): T[] {
   return Array.from(new Set(arr));
 }
 
-/**
- * localStorage key for a trip's checklist progress, scoped to the trip id so
- * ticking an item on one trip never carries over to another (even two trips
- * with identical destinations).
- */
-export function checklistStorageKey(tripId: string): string {
-  return `seasons-checklist:${tripId}`;
-}
-
 /** Build a trip-specific pre-departure prep list from the destinations' data. */
 export function buildChecklistItems(regions: Region[]): ChecklistItem[] {
   const items: ChecklistItem[] = [

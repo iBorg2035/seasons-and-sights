@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { buildChecklistItems, checklistStorageKey } from "@/lib/checklist";
+import { buildChecklistItems } from "@/lib/checklist";
+import { recordsKey } from "@/lib/trip-records";
+import { CHECKLIST_ENTITY } from "@/lib/checklist-progress";
 import type { Region } from "@/types";
 
 // Minimal stubs — buildChecklistItems only reads country + info fields.
@@ -73,15 +75,20 @@ describe("buildChecklistItems", () => {
   });
 });
 
-describe("checklistStorageKey (per-trip)", () => {
+describe("checklist storage key (per-trip)", () => {
+  // checklistStorageKey is gone; the checklist is a trip-record entity now and
+  // derives its key the same way journal and expenses do. These still pin the
+  // property that matters, which the app got wrong once already.
+  const key = (tripId: string) => recordsKey(CHECKLIST_ENTITY, tripId);
+
   it("keys by trip id, not destination set", () => {
     // Two trips with identical stops must NOT share checklist progress.
-    expect(checklistStorageKey("trip-a")).not.toBe(
-      checklistStorageKey("trip-b")
-    );
+    expect(key("trip-a")).not.toBe(key("trip-b"));
   });
 
   it("namespaces under the checklist prefix", () => {
-    expect(checklistStorageKey("trip-a")).toBe("seasons-checklist:trip-a");
+    // Unchanged from the pre-records format on purpose: same key means the
+    // legacy ticks are migrated in place rather than orphaned.
+    expect(key("trip-a")).toBe("seasons-checklist:trip-a");
   });
 });
