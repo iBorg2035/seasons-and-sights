@@ -3,12 +3,18 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   recordSyncResult,
+  resetSyncStatus,
   getSyncStatus,
   SYNC_STATUS_EVENT,
 } from "@/lib/sync-status";
 
 describe("sync-status", () => {
-  beforeEach(() => localStorage.clear());
+  // The status is module-level and outlives a test, so it has to be reset —
+  // otherwise "starts as unknown" only holds if this test happens to run first.
+  beforeEach(() => {
+    localStorage.clear();
+    resetSyncStatus();
+  });
 
   it("starts as 'unknown'", () => {
     expect(getSyncStatus()).toBe("unknown");

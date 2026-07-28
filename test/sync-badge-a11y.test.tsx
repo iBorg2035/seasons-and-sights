@@ -2,7 +2,7 @@
 import { describe, it, expect, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { SyncBadge } from "@/components/SyncBadge";
-import { recordSyncResult } from "@/lib/sync-status";
+import { recordSyncResult, resetSyncStatus } from "@/lib/sync-status";
 
 /**
  * The sync badge is the only place a cloud read/write failure surfaces, and it
@@ -10,7 +10,13 @@ import { recordSyncResult } from "@/lib/sync-status";
  * user is never told their trip failed to reach the cloud.
  */
 
-beforeEach(() => cleanup());
+// This module's state is process-wide, so a test that records a result would
+// otherwise leave every later "nothing recorded yet" assertion at the mercy of
+// run order.
+beforeEach(() => {
+  cleanup();
+  resetSyncStatus();
+});
 afterEach(() => cleanup());
 
 describe("SyncBadge", () => {

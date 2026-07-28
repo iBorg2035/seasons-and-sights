@@ -70,14 +70,25 @@ describe("<StopDetail>", () => {
   });
 
   it("serves a re-expand from the session cache without refetching", async () => {
-    // kyoto's detail was cached by the previous test's fetch.
-    const spy = mockFetch(async () => new Response(JSON.stringify(okPayload), { status: 200 }));
-    render(<StopDetail region={kyoto} />);
+    // Warms the cache itself, on a region no other test touches. It used to
+    // rely on the previous test having fetched kyoto, which meant it passed
+    // only in file order and failed when run alone — the kind of coupling that
+    // makes a suite look flaky when it's really just order-dependent.
+    const hoian = getSlimRegion("vietnam-hoian")!;
+    const detailCalls = (spy: ReturnType<typeof mockFetch>) =>
+      spy.mock.calls.filter(([u]) => String(u).includes("/api/region-detail"));
+
+    const first = mockFetch(async () => new Response(JSON.stringify(okPayload), { status: 200 }));
+    const view = render(<StopDetail region={hoian} />);
     await waitFor(() => expect(screen.getByText("Fushimi Inari")).toBeTruthy());
-    const detailCalls = spy.mock.calls.filter(([u]) =>
-      String(u).includes("/api/region-detail")
-    );
-    expect(detailCalls).toHaveLength(0);
+    expect(detailCalls(first)).toHaveLength(1);
+    view.unmount();
+
+    // Re-expand against a fresh spy, so any refetch is unmistakable.
+    const second = mockFetch(async () => new Response(JSON.stringify(okPayload), { status: 200 }));
+    render(<StopDetail region={hoian} />);
+    await waitFor(() => expect(screen.getByText("Fushimi Inari")).toBeTruthy());
+    expect(detailCalls(second)).toHaveLength(0);
   });
 
   it("highlights a festival that falls during the passed stayMonths", async () => {
