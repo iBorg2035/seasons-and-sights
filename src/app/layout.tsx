@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Fraunces, Inter } from "next/font/google";
 import { SiteNav } from "@/components/SiteNav";
 import { MigrationRunner } from "@/components/MigrationRunner";
+import { TripCloudSync } from "@/components/TripCloudSync";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { ErrorReporter } from "@/components/ErrorReporter";
 import { AuthProvider } from "@/lib/contexts/auth-context";
@@ -82,6 +83,7 @@ export default function RootLayout({
         </a>
         <AuthProvider>
         <MigrationRunner />
+        <TripCloudSync />
         <header className="sticky top-0 z-[1000] border-b border-[var(--hairline)] bg-[var(--chrome)] backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
             <Link

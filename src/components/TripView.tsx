@@ -10,9 +10,7 @@ import {
   saveTrip,
   hasUnsavedChanges,
   deleteSavedTrip,
-  SAVED_TRIPS_KEY,
   SAVED_TRIPS_EVENT,
-  notifySavedTripsChanged,
   type SavedTripLite,
 } from "@/lib/saved-trips";
 import {
@@ -21,10 +19,8 @@ import {
 } from "@/lib/active-trip";
 import { useAuth } from "@/lib/contexts/auth-context";
 import {
-  fetchRemoteTrips,
   upsertRemoteTrip,
   deleteRemoteTrip,
-  mergeTrips,
   type SavedTrip,
 } from "@/lib/supabase/trips";
 import { SyncBadge } from "@/components/SyncBadge";
@@ -243,42 +239,10 @@ export function TripView({
     router.replace(`/trips/${tripId}`);
   }, [addRegionId, trip, tripId, router, persistTripEdit]);
 
-  // On sign-in, pull the user's cloud trips, merge with what's local
-  // (last-write-wins), and push any local-only trips up. Keyed on user.id so
-  // it doesn't re-run on every token refresh (which swaps the user object).
-  // This is the sync that makes sign-in actually do something — it was lost
-  // when TripPlanner was retired and is re-homed here.
-  useEffect(() => {
-    if (!user) return;
-    const userId = user.id;
-    let cancelled = false;
-    (async () => {
-      const remote = await fetchRemoteTrips();
-      if (cancelled) return;
-      let local: SavedTrip[] = [];
-      try {
-        local = JSON.parse(
-          localStorage.getItem(SAVED_TRIPS_KEY) || "[]"
-        );
-      } catch {
-        // ignore
-      }
-      const { merged, toPush } = mergeTrips(local, remote);
-      try {
-        localStorage.setItem(SAVED_TRIPS_KEY, JSON.stringify(merged));
-        notifySavedTripsChanged();
-      } catch {
-        // ignore
-      }
-      refresh();
-      // Side-effects outside setState so React's StrictMode double-invoke can't
-      // double-upload.
-      for (const t of toPush) void upsertRemoteTrip(userId, t);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id, refresh]);
+  // The sign-in sync used to live here. It now runs from the root layout
+  // (TripCloudSync) so it also reaches someone who lands on /trips with an
+  // empty local store. Its merge fires SAVED_TRIPS_EVENT, which the listener
+  // above already turns into a refresh, so nothing is needed here.
 
   // If the trip still has the default name, invite a rename on first load —
   // the user almost certainly wants to name a fresh trip.
