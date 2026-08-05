@@ -42,6 +42,7 @@ import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { clearRecords, TRIP_RECORDS_EVENT } from "@/lib/trip-records";
 import { CHECKLIST_ENTITY, migrateLegacyTicks } from "@/lib/checklist-progress";
 import { PACKING_ENTITY } from "@/lib/packing-progress";
+import { FX_ENTITY } from "@/lib/fx";
 import {
   deleteRemoteRecords,
   mirrorRecord,
@@ -394,6 +395,7 @@ export function TripView({
     clearRecords(RESERVATION_ENTITY, trip.id);
     clearRecords(CHECKLIST_ENTITY, trip.id);
     clearRecords(PACKING_ENTITY, trip.id);
+    clearRecords(FX_ENTITY, trip.id);
     if (user && (!trip.ownerId || trip.ownerId === user.id)) {
       void deleteRemoteTrip(trip.id);
       // trip_records has no FK to trips (a journal write can race ahead of the

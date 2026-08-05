@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DayStamp } from "@/lib/saved-trips";
 import {
   CATEGORY_META,
   EXPENSE_CATEGORIES,
+  describeAmount,
   formatCents,
   parseAmountToCents,
   removeExpense,
@@ -14,6 +15,23 @@ import {
   type Expense,
   type ExpenseCategory,
 } from "@/lib/expenses";
+import {
+  CURRENCIES,
+  CURRENCY_CODES,
+  parseAmountToMinor,
+  toUsdCents,
+  type CurrencyCode,
+} from "@/lib/money";
+import {
+  FX_ENTITY,
+  SNAPSHOT_CAPTURED_AT,
+  isSnapshotStale,
+  isUsableRate,
+  rateFor,
+  setRate,
+} from "@/lib/fx";
+import { useOptionalAuth } from "@/lib/contexts/auth-context";
+import { mirrorRecord } from "@/lib/supabase/trip-records";
 
 function fmtShortDay(day: DayStamp): string {
   const [y, m, d] = day.split("-").map(Number);
@@ -28,43 +46,79 @@ export function ExpenseSection({
   expenses,
   defaultDay,
   onChanged,
+  currencyForDay,
 }: {
   tripId: string;
   expenses: Expense[];
   defaultDay: DayStamp;
   /** Called with the changed row's id so the caller can mirror just that row. */
   onChanged: (id: string) => void;
+  /**
+   * Which currency you were most likely handing over on a given day. The
+   * caller resolves it from the itinerary; this component deliberately knows
+   * nothing about regions, which keeps the destination dataset out of its
+   * bundle.
+   */
+  currencyForDay?: (day: DayStamp) => CurrencyCode | undefined;
 }) {
+  const user = useOptionalAuth()?.user;
   const [day, setDay] = useState<DayStamp>(defaultDay);
   const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState<CurrencyCode>("USD");
+  const [rateInput, setRateInput] = useState("");
   const [category, setCategory] = useState<ExpenseCategory>("food");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
-  // Which logged expense the form is currently editing, if any. saveExpense
-  // has always taken an id and replaced in place; only the control to reach it
-  // was missing, so a mistyped amount could only be deleted and re-entered.
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // The row being edited, if any — the whole row rather than just its id,
+  // because deciding whether an edit changed the money means comparing against
+  // what was stored.
+  const [editing, setEditing] = useState<Expense | null>(null);
+  const editingId = editing?.id ?? null;
+
+  // Follow the itinerary while the form is idle: pick a day, and the currency
+  // is the one you were spending that day. Left alone once you're editing a
+  // row or have started typing, so it never changes under you mid-entry.
+  useEffect(() => {
+    if (editing || amount !== "") return;
+    setCurrency(currencyForDay?.(day) ?? "USD");
+    // amount is deliberately not a dependency: this reacts to the day, and
+    // re-running it on every keystroke is exactly what "left alone" excludes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [day, currencyForDay, editing]);
+
+  // Show the rate this trip would use, so it can be corrected before it's used.
+  useEffect(() => {
+    if (currency === "USD") return;
+    setRateInput(String(rateFor(tripId, currency)?.unitsPerUsd ?? ""));
+  }, [tripId, currency]);
+
+  const rateSource = currency === "USD" ? undefined : rateFor(tripId, currency)?.source;
+  const parsedRate = Number(rateInput);
+  const showStaleWarning =
+    rateSource === "suggested" && isSnapshotStale() && isUsableRate(parsedRate);
+
+  /** Live "≈ $9.84" under the field, or null when there's nothing to show. */
+  const preview = (() => {
+    if (currency === "USD" || !amount.trim()) return null;
+    const minor = parseAmountToMinor(amount, currency);
+    if (minor == null || !isUsableRate(parsedRate)) return null;
+    const cents = toUsdCents(minor, currency, parsedRate);
+    return cents == null ? null : formatCents(cents);
+  })();
 
   function resetForm() {
-    setEditingId(null);
+    setEditing(null);
     setAmount("");
     setNote("");
     setError(null);
   }
 
   function submit() {
-    const amountCents = parseAmountToCents(amount);
-    if (amountCents == null) {
-      setError("Enter an amount in USD, like 12.50.");
-      return;
-    }
-    const saved = saveExpense(tripId, {
-      id: editingId ?? undefined,
-      day,
-      amountCents,
-      category,
-      note,
-    });
+    const draft =
+      currency === "USD" ? buildUsdDraft() : buildForeignDraft();
+    if (draft === null) return;
+
+    const saved = saveExpense(tripId, { ...draft, id: editingId ?? undefined });
     if (!saved) {
       setError("Couldn't save that expense. Check that browser storage is enabled.");
       return;
@@ -73,15 +127,85 @@ export function ExpenseSection({
     onChanged(saved.id);
   }
 
+  function buildUsdDraft() {
+    const amountCents = parseAmountToCents(amount);
+    if (amountCents == null) {
+      setError("Enter an amount in USD, like 12.50.");
+      return null;
+    }
+    return { day, amountCents, category, note };
+  }
+
+  function buildForeignDraft() {
+    const amountMinor = parseAmountToMinor(amount, currency);
+    if (amountMinor == null) {
+      setError(`Enter an amount in ${currency}, like ${CURRENCIES[currency].digits === 0 ? "250000" : "12.50"}.`);
+      return null;
+    }
+    if (!isUsableRate(parsedRate)) {
+      setError(`Enter how many ${currency} buy one US dollar.`);
+      return null;
+    }
+
+    /**
+     * An edit that leaves the money alone must leave the stored figures
+     * alone. Re-converting a row because its note was fixed would let
+     * rounding drift each time, and would silently restate what a past day
+     * cost. Anything that does change the money — amount, currency, or a
+     * corrected rate — is a correction, so it reconverts.
+     */
+    const untouched =
+      editing?.foreign != null &&
+      editing.foreign.currency === currency &&
+      editing.foreign.amountMinor === amountMinor &&
+      editing.foreign.unitsPerUsd === parsedRate;
+
+    const amountCents = untouched
+      ? editing!.amountCents
+      : toUsdCents(amountMinor, currency, parsedRate);
+    if (amountCents == null) {
+      setError("That amount doesn't convert to a usable figure.");
+      return null;
+    }
+
+    // Remember the rate for the rest of the trip, and push it like any other
+    // record so the other device doesn't ask again.
+    if (rateFor(tripId, currency)?.unitsPerUsd !== parsedRate) {
+      if (setRate(tripId, currency, parsedRate) && user) {
+        void mirrorRecord(user.id, tripId, FX_ENTITY, currency);
+      }
+    }
+
+    return {
+      day,
+      amountCents,
+      category,
+      note,
+      foreign: { amountMinor, currency, unitsPerUsd: parsedRate },
+    };
+  }
+
   function startEdit(expense: Expense) {
-    setEditingId(expense.id);
+    setEditing(expense);
     setDay(expense.day);
-    // Plain digits, not formatCents' "$12.50" — this goes back into the field
-    // the user types into.
-    setAmount((expense.amountCents / 100).toFixed(2));
     setCategory(expense.category);
     setNote(expense.note ?? "");
     setError(null);
+    if (expense.foreign) {
+      const { amountMinor, currency: code, unitsPerUsd } = expense.foreign;
+      setCurrency(code);
+      setAmount(
+        (amountMinor / 10 ** CURRENCIES[code].digits).toFixed(
+          CURRENCIES[code].digits
+        )
+      );
+      setRateInput(String(unitsPerUsd));
+      return;
+    }
+    setCurrency("USD");
+    // Plain digits, not formatCents' "$12.50" — this goes back into the field
+    // the user types into.
+    setAmount((expense.amountCents / 100).toFixed(2));
   }
 
   function handleRemove(expense: Expense) {
@@ -122,20 +246,39 @@ export function ExpenseSection({
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500" htmlFor="expense-amount">
-              Amount (USD)
+              Amount
             </label>
-            <input
-              id="expense-amount"
-              type="text"
-              inputMode="decimal"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") submit();
-              }}
-              placeholder="12.50"
-              className="mt-1 w-28 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-teal-500"
-            />
+            <div className="mt-1 flex items-center gap-1.5">
+              <input
+                id="expense-amount"
+                type="text"
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submit();
+                }}
+                placeholder={CURRENCIES[currency].digits === 0 ? "250000" : "12.50"}
+                className="w-28 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-teal-500"
+              />
+              <select
+                aria-label="Currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
+                className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-800"
+              >
+                {CURRENCY_CODES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {preview && (
+              <p className="mt-1 text-xs text-slate-500" role="status" aria-live="polite">
+                ≈ {preview}
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-500" htmlFor="expense-category">
@@ -187,6 +330,36 @@ export function ExpenseSection({
             </button>
           )}
         </div>
+
+        {currency !== "USD" && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+            <label
+              className="text-xs font-medium text-slate-500"
+              htmlFor="expense-rate"
+            >
+              1 USD =
+            </label>
+            <input
+              id="expense-rate"
+              type="text"
+              inputMode="decimal"
+              value={rateInput}
+              onChange={(e) => setRateInput(e.target.value)}
+              className="w-28 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-teal-500"
+            />
+            <span className="text-xs text-slate-500">
+              {CURRENCIES[currency].name} ({currency})
+            </span>
+            {showStaleWarning && (
+              // Never blocks. A stale rate you can see beats an accurate one
+              // you can't, and the traveller is the one holding the receipt.
+              <span className="text-xs text-amber-700">
+                suggested, from {SNAPSHOT_CAPTURED_AT} — worth checking
+              </span>
+            )}
+          </div>
+        )}
+
         {error && (
           <p role="alert" className="mt-2 text-sm text-rose-700">
             {error}
@@ -196,7 +369,7 @@ export function ExpenseSection({
 
       {expenses.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
-          No expenses logged yet. Amounts are in USD.
+          No expenses logged yet. Totals are in USD.
         </p>
       ) : (
         <>
@@ -233,12 +406,12 @@ export function ExpenseSection({
                   {e.note || CATEGORY_META[e.category].label}
                 </span>
                 <span className="flex-none text-sm font-medium text-slate-900">
-                  {formatCents(e.amountCents)}
+                  {describeAmount(e)}
                 </span>
                 <button
                   type="button"
                   onClick={() => startEdit(e)}
-                  aria-label={`Edit ${formatCents(e.amountCents)} expense`}
+                  aria-label={`Edit ${describeAmount(e)} expense`}
                   className="flex-none text-xs font-medium text-teal-700 hover:underline"
                 >
                   Edit
@@ -246,7 +419,7 @@ export function ExpenseSection({
                 <button
                   type="button"
                   onClick={() => handleRemove(e)}
-                  aria-label={`Delete ${formatCents(e.amountCents)} expense`}
+                  aria-label={`Delete ${describeAmount(e)} expense`}
                   className="flex-none text-xs font-medium text-rose-600 hover:underline"
                 >
                   Delete

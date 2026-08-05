@@ -8,6 +8,7 @@ import { TRIP_RECORDS_EVENT } from "@/lib/trip-records";
 import { listEntries, type JournalEntry } from "@/lib/journal";
 import { listExpenses, type Expense } from "@/lib/expenses";
 import { stopOnDay, tripDateRanges } from "@/lib/trip-plan";
+import { currencyFromInfo } from "@/lib/money";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
 import { findActiveLeg, formatDay } from "@/lib/season";
 import { JournalSection } from "@/components/JournalSection";
@@ -15,6 +16,7 @@ import { ExpenseSection } from "@/components/ExpenseSection";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
+import { FX_ENTITY } from "@/lib/fx";
 import { mirrorRecord, syncRecords } from "@/lib/supabase/trip-records";
 
 /**
@@ -83,7 +85,9 @@ export function TripJournalView({ tripId }: { tripId: string }) {
     const userId = user.id;
     let cancelled = false;
     (async () => {
-      for (const entity of [JOURNAL_ENTITY, EXPENSE_ENTITY]) {
+      // FX rates ride along: a rate confirmed on the phone should not have
+      // to be re-entered on the laptop.
+      for (const entity of [JOURNAL_ENTITY, EXPENSE_ENTITY, FX_ENTITY]) {
         await syncRecords(userId, tripId, entity);
         if (cancelled) return;
       }
@@ -108,6 +112,14 @@ export function TripJournalView({ tripId }: { tripId: string }) {
   }, [trip]);
 
   const defaultDay = useMemo(() => defaultDayFor(ranges, new Date()), [ranges]);
+
+  // What you were most likely paying in on a given day. Reuses placeFor rather
+  // than re-deriving the itinerary, and reads the currency off the slim
+  // region's practical info — no heavy dataset reaches this route.
+  const currencyForDay = useCallback(
+    (day: DayStamp) => currencyFromInfo(placeFor(day)?.info?.currency),
+    [placeFor]
+  );
 
   if (!loaded) {
     return <div className="h-40 animate-pulse rounded-2xl bg-slate-100" />;
@@ -159,6 +171,7 @@ export function TripJournalView({ tripId }: { tripId: string }) {
         expenses={expenses}
         defaultDay={defaultDay}
         onChanged={onRecordChanged(EXPENSE_ENTITY)}
+        currencyForDay={currencyForDay}
       />
     </div>
   );

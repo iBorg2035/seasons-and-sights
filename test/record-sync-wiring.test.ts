@@ -22,6 +22,7 @@ const WRITERS = [
   { file: "src/components/PreDepartureChecklist.tsx", what: "checklist ticks" },
   { file: "src/components/PackingList.tsx", what: "packing ticks" },
   { file: "src/components/TripJournalView.tsx", what: "journal and expenses" },
+  { file: "src/components/ExpenseSection.tsx", what: "confirmed FX rates" },
   { file: "src/components/TripView.tsx", what: "reservations" },
 ];
 
@@ -65,6 +66,11 @@ describe("every record entity is reconciled on the trip page", () => {
     });
   }
 
+  it("reconciles FX rates on the journal page, where they're entered", () => {
+    // Not on the trip page: the rate form lives with the expenses.
+    expect(read("src/components/TripJournalView.tsx")).toContain("FX_ENTITY");
+  });
+
   it("clears every entity when the trip is deleted", () => {
     for (const entity of [
       "JOURNAL_ENTITY",
@@ -72,6 +78,7 @@ describe("every record entity is reconciled on the trip page", () => {
       "RESERVATION_ENTITY",
       "CHECKLIST_ENTITY",
       "PACKING_ENTITY",
+      "FX_ENTITY",
     ]) {
       expect(tripView).toContain(`clearRecords(${entity}`);
     }

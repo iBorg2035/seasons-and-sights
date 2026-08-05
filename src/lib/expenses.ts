@@ -5,6 +5,12 @@ import {
   upsertRecord,
   type TripRecord,
 } from "@/lib/trip-records";
+import {
+  formatMoney,
+  isCurrencyCode,
+  parseAmountToMinor,
+  type CurrencyCode,
+} from "@/lib/money";
 
 export const EXPENSE_ENTITY = "expense";
 
@@ -29,16 +35,40 @@ export const CATEGORY_META: Record<ExpenseCategory, { icon: string; label: strin
 /** ~$100k in one line item — a typo guard, not a real spending limit. */
 export const MAX_AMOUNT_CENTS = 10_000_000;
 
+/**
+ * What was actually handed over, when it wasn't dollars.
+ *
+ * One object rather than three optional fields: an amount with no currency, or
+ * a currency with no rate, are not states worth being able to represent.
+ */
+export interface ForeignAmount {
+  /** Minor units of `currency` — 250000 for ₫250,000. */
+  amountMinor: number;
+  currency: CurrencyCode;
+  /**
+   * Units of `currency` per US dollar, as used at entry. Stored on the row,
+   * not looked up when displaying: correcting a trip's rate in October must
+   * not silently rewrite what August cost.
+   */
+  unitsPerUsd: number;
+}
+
 export interface Expense extends TripRecord {
   day: DayStamp;
   /**
    * USD, in integer cents. Not a float: these get summed across a whole trip
    * and then compared against the estimator, so a total that drifts by a cent
    * for arithmetic reasons would read as a bug in the reconciliation.
+   *
+   * Always present, including on foreign-currency expenses, where it is the
+   * converted figure. Every total, category breakdown and budget comparison
+   * reads this and only this.
    */
   amountCents: number;
   category: ExpenseCategory;
   note?: string;
+  /** Absent when the expense was in USD, which is every pre-existing row. */
+  foreign?: ForeignAmount;
 }
 
 export interface ExpenseDraft {
@@ -47,6 +77,7 @@ export interface ExpenseDraft {
   amountCents: number;
   category: ExpenseCategory;
   note?: string;
+  foreign?: ForeignAmount;
 }
 
 /**
@@ -61,37 +92,66 @@ export interface ExpenseDraft {
  * a category total.
  */
 export function parseAmountToCents(input: string): number | null {
-  const cleaned = input.trim().replace(/[$,\s]/g, "");
-  if (!/^\d*\.?\d*$/.test(cleaned) || cleaned === "" || cleaned === ".") {
-    return null;
-  }
-
-  const [whole, frac = ""] = cleaned.split(".");
-  // Third decimal onward is rounded, not truncated, so "0.005" is a cent.
-  const centsFrac = frac.slice(0, 2).padEnd(2, "0");
-  const roundUp = frac.length > 2 && Number(frac[2]) >= 5 ? 1 : 0;
-
-  const cents = Number(whole || "0") * 100 + Number(centsFrac) + roundUp;
-  if (!Number.isFinite(cents) || cents <= 0 || cents > MAX_AMOUNT_CENTS) {
-    return null;
-  }
+  const cents = parseAmountToMinor(input, "USD");
+  // The domain bound lives here, not in money.ts: MAX_AMOUNT_CENTS is a guard
+  // against a typo'd expense, not a fact about dollars.
+  if (cents === null || cents > MAX_AMOUNT_CENTS) return null;
   return cents;
 }
 
 /** `$1,234.56` — unlike formatUsd in season.ts, cents are shown, because a
  *  logged expense is an exact figure rather than an estimate. */
 export function formatCents(cents: number): string {
-  return `$${(cents / 100).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  return formatMoney(cents, "USD");
+}
+
+/**
+ * Reject a `foreign` that doesn't hold together.
+ *
+ * Records are untrusted input — they come back from localStorage and from
+ * Supabase jsonb, written by whatever client version. A row from a newer build
+ * using a currency this one doesn't know must not throw inside a list render.
+ */
+function validForeign(v: unknown): v is ForeignAmount {
+  if (typeof v !== "object" || v === null) return false;
+  const f = v as Partial<ForeignAmount>;
+  return (
+    Number.isSafeInteger(f.amountMinor) &&
+    (f.amountMinor as number) > 0 &&
+    isCurrencyCode(f.currency) &&
+    typeof f.unitsPerUsd === "number" &&
+    Number.isFinite(f.unitsPerUsd) &&
+    f.unitsPerUsd > 0
+  );
+}
+
+/**
+ * Degrade a bad `foreign` to nothing rather than dropping the expense.
+ *
+ * `amountCents` is always present, so an expense whose original-currency
+ * detail is unreadable still counts toward every total — it just displays in
+ * dollars. Losing the receipt's currency is a cosmetic loss; losing the
+ * expense is a real one.
+ */
+function normalize(e: Expense): Expense {
+  if (e.foreign === undefined || validForeign(e.foreign)) return e;
+  const { foreign: _dropped, ...rest } = e;
+  return rest;
 }
 
 /** A trip's expenses, newest day first (ties broken by most recently edited). */
 export function listExpenses(tripId: string): Expense[] {
-  return loadRecords<Expense>(EXPENSE_ENTITY, tripId).sort(
-    (a, b) => b.day.localeCompare(a.day) || b.updatedAt - a.updatedAt
-  );
+  return loadRecords<Expense>(EXPENSE_ENTITY, tripId)
+    .map(normalize)
+    .sort((a, b) => b.day.localeCompare(a.day) || b.updatedAt - a.updatedAt);
+}
+
+/** `₫250,000 ($9.84)`, or just `$9.84` when it was paid in dollars. */
+export function describeAmount(e: Expense): string {
+  const usd = formatCents(e.amountCents);
+  return e.foreign
+    ? `${formatMoney(e.foreign.amountMinor, e.foreign.currency)} (${usd})`
+    : usd;
 }
 
 /** Create or update an expense. Null means it was rejected and not saved. */
@@ -109,6 +169,9 @@ export function saveExpense(
     return null;
   }
   if (!EXPENSE_CATEGORIES.includes(draft.category)) return null;
+  // All three fields or none — a half-populated foreign amount is refused
+  // rather than quietly stored and dropped again on the next read.
+  if (draft.foreign !== undefined && !validForeign(draft.foreign)) return null;
 
   const expense: Expense = {
     id: draft.id || crypto.randomUUID(),
@@ -116,6 +179,7 @@ export function saveExpense(
     amountCents: draft.amountCents,
     category: draft.category,
     note: draft.note?.trim() || undefined,
+    foreign: draft.foreign,
     updatedAt: now,
   };
   return upsertRecord<Expense>(EXPENSE_ENTITY, tripId, expense, now)
