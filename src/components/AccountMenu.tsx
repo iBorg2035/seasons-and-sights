@@ -12,6 +12,8 @@ import {
 } from "@/lib/saved-trips";
 import { downloadExport } from "@/lib/data-export";
 import { clearRecords } from "@/lib/trip-records";
+import { ALL_TRIP_ENTITIES } from "@/lib/trip-entities";
+import { clearQueue } from "@/lib/receipt-queue";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
 import { RESERVATION_ENTITY } from "@/lib/reservations";
@@ -122,9 +124,13 @@ export function AccountMenu() {
                 // off anything. Clear every per-trip entity too, or deleting
                 // the account would leave the diary sitting in localStorage.
                 for (const trip of getSavedTrips()) {
-                  clearRecords(JOURNAL_ENTITY, trip.id);
-                  clearRecords(EXPENSE_ENTITY, trip.id);
-                  clearRecords(RESERVATION_ENTITY, trip.id);
+                  for (const entity of ALL_TRIP_ENTITIES) {
+                    clearRecords(entity, trip.id);
+                  }
+                  // Not a trip-record and not in that list: held receipt
+                  // photos live in IndexedDB, and an account deletion that
+                  // left them on the device would be the worst of the lot.
+                  void clearQueue(trip.id);
                 }
                 localStorage.removeItem(SAVED_KEY);
                 notifySavedTripsChanged();

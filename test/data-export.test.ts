@@ -161,6 +161,7 @@ describe("buildExportPayload", () => {
       reservations: {},
       checklist: {},
       packing: {},
+      rates: {},
     });
     expect(() => JSON.parse(JSON.stringify(payload))).not.toThrow();
   });

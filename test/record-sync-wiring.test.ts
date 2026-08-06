@@ -78,15 +78,11 @@ describe("every record entity is reconciled on the trip page", () => {
   });
 
   it("clears every entity when the trip is deleted", () => {
-    for (const entity of [
-      "JOURNAL_ENTITY",
-      "EXPENSE_ENTITY",
-      "RESERVATION_ENTITY",
-      "CHECKLIST_ENTITY",
-      "PACKING_ENTITY",
-      "FX_ENTITY",
-    ]) {
-      expect(tripView).toContain(`clearRecords(${entity}`);
-    }
+    // Asserted as a loop over the shared list, not a hand-written roll call.
+    // The roll call was the bug: it drifted out of step with AccountMenu's
+    // copy, so an account deletion cleared three entities while a trip
+    // deletion cleared six. Completeness of that list is owned by
+    // test/trip-entities.test.ts.
+    expect(tripView).toMatch(/for \(const entity of ALL_TRIP_ENTITIES\)/);
   });
 });

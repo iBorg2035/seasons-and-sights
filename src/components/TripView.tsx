@@ -44,6 +44,7 @@ import { CHECKLIST_ENTITY, migrateLegacyTicks } from "@/lib/checklist-progress";
 import { PACKING_ENTITY } from "@/lib/packing-progress";
 import { FX_ENTITY } from "@/lib/fx";
 import { clearQueue } from "@/lib/receipt-queue";
+import { ALL_TRIP_ENTITIES } from "@/lib/trip-entities";
 import {
   deleteRemoteRecords,
   mirrorRecord,
@@ -391,12 +392,7 @@ export function TripView({
     // Deleting the trip must take its journal and expenses with it — leaving
     // personal entries in localStorage under a trip the user just deleted
     // would be both a leak and a surprise. (Cloud rows: Stage 4.)
-    clearRecords(JOURNAL_ENTITY, trip.id);
-    clearRecords(EXPENSE_ENTITY, trip.id);
-    clearRecords(RESERVATION_ENTITY, trip.id);
-    clearRecords(CHECKLIST_ENTITY, trip.id);
-    clearRecords(PACKING_ENTITY, trip.id);
-    clearRecords(FX_ENTITY, trip.id);
+    for (const entity of ALL_TRIP_ENTITIES) clearRecords(entity, trip.id);
     // Held receipt photos are not trip-records, but they are just as much
     // this trip's data — a deleted trip must not leave its photos behind.
     void clearQueue(trip.id);
