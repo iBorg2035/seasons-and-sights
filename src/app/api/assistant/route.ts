@@ -10,8 +10,8 @@ import { xai } from "@ai-sdk/xai";
 import { buildSystemPrompt } from "@/lib/assistant/system";
 import { createAssistantTools } from "@/lib/assistant/tools";
 import type { TripContextPayload } from "@/lib/assistant/types";
-import { getServerUser } from "@/lib/supabase/server";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { requireAssistantAccess } from "@/lib/assistant/access";
 
 export const maxDuration = 60;
 
@@ -26,20 +26,20 @@ const rateLimit = createRateLimiter({ limit: 30, windowMs: 10 * 60 * 1000 });
 const MODEL = process.env.XAI_MODEL?.trim() || "grok-4.5";
 
 /**
- * Allowlist of emails permitted to use the assistant, comma-separated.
- *
- * This endpoint spends money per call, so it is NOT public. It fails closed:
- * an empty/unset allowlist disables the assistant entirely rather than
- * opening it up, so forgetting to configure it can never expose the endpoint.
- *
  * To open the assistant to every signed-in user later, replace the allowlist
- * check with a plain `user` check — but add rate limiting first, since the
- * allowlist is currently the only thing bounding spend.
+ * check in requireAssistantAccess with a plain `user` check — but add rate
+ * limiting first, since the allowlist is currently the only thing bounding
+ * spend.
  */
-const ALLOWED_EMAILS = (process.env.ASSISTANT_ALLOWED_EMAILS ?? "")
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
+const ACCESS_MESSAGES = {
+  unconfigured:
+    "Assistant is not configured. Set XAI_API_KEY in the server environment (see .env.example).",
+  notOpen:
+    "The assistant is in limited testing and isn't open yet. Set ASSISTANT_ALLOWED_EMAILS to enable it.",
+  signIn: "Sign in to use the assistant.",
+  forbidden: "The assistant is in limited testing.",
+  throttled: "Too many assistant requests — give it a minute.",
+};
 
 function parseTripContext(raw: unknown): TripContextPayload | null {
   if (!raw || typeof raw !== "object") return null;
@@ -66,51 +66,8 @@ function parseTripContext(raw: unknown): TripContextPayload | null {
 }
 
 export async function POST(req: Request) {
-  if (!process.env.XAI_API_KEY?.trim()) {
-    return Response.json(
-      {
-        error:
-          "Assistant is not configured. Set XAI_API_KEY in the server environment (see .env.example).",
-      },
-      { status: 503 }
-    );
-  }
-
-  // Access check runs before any model call, so an unauthorized request can
-  // never cost anything.
-  if (ALLOWED_EMAILS.length === 0) {
-    return Response.json(
-      {
-        error:
-          "The assistant is in limited testing and isn't open yet. Set ASSISTANT_ALLOWED_EMAILS to enable it.",
-      },
-      { status: 503 }
-    );
-  }
-
-  const user = await getServerUser();
-  if (!user) {
-    return Response.json(
-      { error: "Sign in to use the assistant." },
-      { status: 401 }
-    );
-  }
-  if (!ALLOWED_EMAILS.includes((user.email ?? "").toLowerCase())) {
-    return Response.json(
-      { error: "The assistant is in limited testing." },
-      { status: 403 }
-    );
-  }
-
-  // Keyed on the verified user id, not anything client-supplied, and still
-  // ahead of the model call so a throttled request costs nothing.
-  const limited = rateLimit(user.id);
-  if (!limited.ok) {
-    return Response.json(
-      { error: "Too many assistant requests — give it a minute." },
-      { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
-    );
-  }
+  const access = await requireAssistantAccess(rateLimit, ACCESS_MESSAGES);
+  if (!access.ok) return access.response;
 
   let body: { messages?: UIMessage[]; tripContext?: unknown };
   try {

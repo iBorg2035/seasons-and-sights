@@ -76,6 +76,13 @@ export default function PrivacyPage() {
           rest of the site never touches it. The co-pilot is currently limited
           to test accounts and is off for everyone else.
         </p>
+        <p>
+          Scanning a receipt sends that photo to xAI once, to read the amount
+          — the same limited-access rule as the co-pilot applies. The image is
+          never stored: not on our servers, not in the database, not
+          alongside the expense it creates. Only the numbers you review and
+          save are kept.
+        </p>
       </Section>
 
       <Section title="Your choices & rights">

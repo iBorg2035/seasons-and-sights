@@ -32,6 +32,8 @@ import {
 } from "@/lib/fx";
 import { useOptionalAuth } from "@/lib/contexts/auth-context";
 import { mirrorRecord } from "@/lib/supabase/trip-records";
+import { ReceiptScanButton } from "@/components/ReceiptScanButton";
+import type { ReceiptExtraction } from "@/lib/receipt";
 
 function fmtShortDay(day: DayStamp): string {
   const [y, m, d] = day.split("-").map(Number);
@@ -69,6 +71,9 @@ export function ExpenseSection({
   const [category, setCategory] = useState<ExpenseCategory>("food");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // A scan result waiting on confirmation, because it arrived while the
+  // amount field already had something in it that it must not overwrite.
+  const [pendingExtraction, setPendingExtraction] = useState<ReceiptExtraction | null>(null);
   // The row being edited, if any — the whole row rather than just its id,
   // because deciding whether an edit changed the money means comparing against
   // what was stored.
@@ -111,6 +116,40 @@ export function ExpenseSection({
     setAmount("");
     setNote("");
     setError(null);
+  }
+
+  /**
+   * Fill the form from a scan. Currency resolves the same way it does for a
+   * fresh entry — the extracted currency wins, the itinerary is the
+   * fallback — and the rate-prefill effect above (keyed on currency) picks up
+   * the corresponding rate on its own; nothing extra needed here for that.
+   *
+   * Never calls submit(). The scan fills the same fields a human would type
+   * into; nothing is saved until Add is pressed, so a misread is caught by
+   * looking at it, not by a computer's confidence score.
+   */
+  function applyExtraction(result: ReceiptExtraction) {
+    const resolved = result.currency ?? currencyForDay?.(result.day ?? day) ?? "USD";
+    setCurrency(resolved);
+    if (result.amount) setAmount(result.amount);
+    if (result.day) setDay(result.day);
+    if (result.category) setCategory(result.category);
+    // Only into a blank note — a merchant name must not overwrite something
+    // already typed, same rule as the amount field below.
+    if (result.merchant && note.trim() === "") setNote(result.merchant);
+    setPendingExtraction(null);
+    setError(null);
+  }
+
+  function handleExtracted(result: ReceiptExtraction) {
+    // A non-empty amount means someone was already mid-entry when this
+    // arrived. Silently replacing what they typed would be worse than the
+    // scan never having run, so it waits on an explicit "use this?" instead.
+    if (amount.trim() !== "") {
+      setPendingExtraction(result);
+      return;
+    }
+    applyExtraction(result);
   }
 
   function submit() {
@@ -329,7 +368,39 @@ export function ExpenseSection({
               Cancel
             </button>
           )}
+          <ReceiptScanButton
+            currencyHint={currencyForDay?.(day)}
+            onExtracted={handleExtracted}
+            onError={setError}
+          />
         </div>
+
+        {pendingExtraction && (
+          <div
+            role="status"
+            className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-700"
+          >
+            <span>
+              Read {pendingExtraction.amount} {pendingExtraction.currency ?? ""}
+              {pendingExtraction.merchant ? ` at ${pendingExtraction.merchant}` : ""}
+              {" "}— use this?
+            </span>
+            <button
+              type="button"
+              onClick={() => applyExtraction(pendingExtraction)}
+              className="rounded-lg bg-sky-800 px-2.5 py-1 text-xs font-semibold text-white hover:bg-sky-900"
+            >
+              Use it
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingExtraction(null)}
+              className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {currency !== "USD" && (
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
