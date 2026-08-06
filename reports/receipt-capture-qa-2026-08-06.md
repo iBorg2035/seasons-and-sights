@@ -31,10 +31,36 @@ The two-tab check used a `localStorage` counter incremented inside each tab's
 fetch stub — shared across tabs of one origin, so it counts real attempts on
 both sides rather than inferring from one.
 
+## Live model read — now verified, and it found a bug
+
+Run against the real xAI API with a temporary probe (deleted afterwards; it
+spends money per run). Receipt rendered locally via `qlmanage` — a Vietnamese
+restaurant bill with a 570,000 subtotal and a 644,100 total, so taking the
+wrong number was possible.
+
+| Check | Result |
+|---|---|
+| API key, model, and vision path | ✅ |
+| `{ type: "file", mediaType }` content-part shape | ✅ accepted — the shape the plan flagged as worth verifying rather than guessing |
+| Structured output against our zod schema | ✅ |
+| Landscape photo → refuses to invent a receipt | ✅ `found: false`, all fields null |
+| Reads the TOTAL, not the subtotal or priciest line | ✅ `644100`, not 570000 or 180000 |
+| Currency / category / merchant | ✅ `VND` / `food` / `NHA HANG CUA DAI` |
+
+**The bug:** `day` came back as `12/08/2026`, not ISO. The client's `validDay`
+rejects that and drops it, so the expense would silently land on *today*
+instead of the day it happened — a quiet wrong answer, not a visible failure.
+The prompt asked for "the date" without ever specifying a format.
+
+Fixed by asking for `YYYY-MM-DD` explicitly and telling the model that
+non-US receipts print DD/MM/YYYY, so `12/08/2026` is 12 August rather than
+8 December. Re-ran: `2026-08-12`. Only a live call could have caught this —
+every mocked test supplied an already-ISO date.
+
 ## Still unverified
 
-**The actual model read.** `XAI_API_KEY` is not set in this environment, so
-every path above exercised the route's error handling or a stubbed success.
-Whether grok-4.5 reads a real receipt correctly — the right total rather than a
-subtotal, the right currency, a sensible category — has never been tested and
-remains the one genuinely open question across all three stages.
+**End-to-end through the route.** `/api/receipt/extract` requires a signed-in,
+allowlisted user, and there is no Supabase session in local QA — so the model
+was exercised directly rather than through the gate. The gate itself is covered
+by `test/assistant-access.test.ts`; what remains untested is the two joined
+together on a real deployment.

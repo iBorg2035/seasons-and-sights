@@ -60,6 +60,16 @@ function buildPrompt(hintCurrency: string | null): string {
     "",
     "Return the amount as plain digits with at most one decimal point — no",
     "currency symbol, no thousands separators (e.g. \"250000\" or \"12.50\").",
+    "",
+    // Live testing returned "12/08/2026" for a Vietnamese receipt, which the
+    // client rejects as not-a-date and drops — the expense then silently lands
+    // on today instead of the day it happened. Ask for ISO explicitly, and say
+    // which way to read an ambiguous slash date rather than leaving the model
+    // to guess between 12 August and 8 December.
+    "Return the date strictly as YYYY-MM-DD. Receipts outside the US usually",
+    "print DD/MM/YYYY, so read 12/08/2026 as 2026-08-12 unless the receipt",
+    "clearly indicates otherwise. If the date is absent or unreadable, use null",
+    "rather than guessing a date.",
     hintCurrency
       ? `The traveler is currently somewhere using ${hintCurrency}; prefer that reading if the currency symbol is ambiguous (e.g. a bare "$").`
       : "",
