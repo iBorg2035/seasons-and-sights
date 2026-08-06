@@ -57,10 +57,26 @@ non-US receipts print DD/MM/YYYY, so `12/08/2026` is 12 August rather than
 8 December. Re-ran: `2026-08-12`. Only a live call could have caught this —
 every mocked test supplied an already-ISO date.
 
+## End-to-end on production — confirmed
+
+`XAI_API_KEY` and `ASSISTANT_ALLOWED_EMAILS` were never set in Vercel, which
+is why both this route and the trip co-pilot had returned 503 in production
+since they shipped. Once set and redeployed, an unauthenticated probe moved
+from 503 ("not configured") to 401 ("sign in"), which proves both variables
+landed: the key check and the non-empty-allowlist check both pass, and the
+gate now stops at authentication as designed.
+
+**Reported by the user after testing on a real device:** scanning works, the
+phone scan is fast, and the result lands in the review step so it can be
+edited before committing — the never-auto-save rule behaving as intended with
+a real receipt rather than a rendered one.
+
 ## Still unverified
 
-**End-to-end through the route.** `/api/receipt/extract` requires a signed-in,
-allowlisted user, and there is no Supabase session in local QA — so the model
-was exercised directly rather than through the gate. The gate itself is covered
-by `test/assistant-access.test.ts`; what remains untested is the two joined
-together on a real deployment.
+- **Awkward receipts.** Everything tested here — mine rendered, theirs
+  photographed — worked. A creased thermal receipt with faded ink, a fold
+  through the total, tips, discounts or a split bill has not been tried, and
+  that is where a wrong-number read would come from.
+- **The date fix under real conditions.** `2026-08-12` came back correctly on
+  a rendered receipt after the prompt fix, but the fix is an instruction to a
+  model, not a guarantee. A real DD/MM receipt is still the honest test.
