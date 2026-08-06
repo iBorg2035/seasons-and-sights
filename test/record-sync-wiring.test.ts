@@ -71,6 +71,12 @@ describe("every record entity is reconciled on the trip page", () => {
     expect(read("src/components/TripJournalView.tsx")).toContain("FX_ENTITY");
   });
 
+  it("takes held receipt photos with the trip when it's deleted", () => {
+    // Not a trip-record, but just as much this trip's data — and a photo of a
+    // deleted trip lingering in IndexedDB is a privacy problem, not just a leak.
+    expect(tripView).toContain("clearQueue(trip.id)");
+  });
+
   it("clears every entity when the trip is deleted", () => {
     for (const entity of [
       "JOURNAL_ENTITY",

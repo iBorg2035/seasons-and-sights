@@ -78,10 +78,11 @@ export default function PrivacyPage() {
         </p>
         <p>
           Scanning a receipt sends that photo to xAI once, to read the amount
-          — the same limited-access rule as the co-pilot applies. The image is
-          never stored: not on our servers, not in the database, not
-          alongside the expense it creates. Only the numbers you review and
-          save are kept.
+          — the same limited-access rule as the co-pilot applies. If you have
+          no signal, the photo is held <strong>on your device</strong> until
+          you do, then read and deleted. It is never stored on our servers or
+          in the database, and never kept alongside the expense it creates.
+          Only the numbers you review and save are kept.
         </p>
       </Section>
 

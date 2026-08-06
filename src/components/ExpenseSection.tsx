@@ -34,6 +34,7 @@ import { useOptionalAuth } from "@/lib/contexts/auth-context";
 import { mirrorRecord } from "@/lib/supabase/trip-records";
 import { ReceiptScanButton } from "@/components/ReceiptScanButton";
 import type { ReceiptExtraction } from "@/lib/receipt";
+import { useReceiptQueue } from "@/lib/use-receipt-queue";
 
 function fmtShortDay(day: DayStamp): string {
   const [y, m, d] = day.split("-").map(Number);
@@ -79,6 +80,10 @@ export function ExpenseSection({
   // what was stored.
   const [editing, setEditing] = useState<Expense | null>(null);
   const editingId = editing?.id ?? null;
+
+  // Receipts held on this device because there was no signal when they were
+  // taken. Drains itself; this only reads the result.
+  const queue = useReceiptQueue(tripId, { hintCurrency: currencyForDay?.(day) });
 
   // Follow the itinerary while the form is idle: pick a day, and the currency
   // is the one you were spending that day. Left alone once you're editing a
@@ -269,6 +274,71 @@ export function ExpenseSection({
         </p>
       </div>
 
+      {(queue.waiting.length > 0 ||
+        queue.ready.length > 0 ||
+        queue.failed.length > 0) && (
+        <div className="space-y-2 rounded-2xl border border-sky-200 bg-sky-50/60 p-4">
+          {queue.waiting.length > 0 && (
+            <p className="text-sm text-slate-700" role="status">
+              📷 {queue.waiting.length} receipt
+              {queue.waiting.length === 1 ? "" : "s"} waiting for signal —
+              held on this device only.
+            </p>
+          )}
+
+          {queue.ready.map((row) => (
+            <div key={row.id} className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-slate-800">
+                Read {row.result?.amount} {row.result?.currency ?? ""}
+                {row.result?.merchant ? ` at ${row.result.merchant}` : ""}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (row.result) handleExtracted(row.result);
+                  void queue.discard(row.id);
+                }}
+                className="rounded-lg bg-sky-800 px-2.5 py-1 text-xs font-semibold text-white hover:bg-sky-900"
+              >
+                Review
+              </button>
+              <button
+                type="button"
+                onClick={() => void queue.discard(row.id)}
+                className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+              >
+                Discard
+              </button>
+            </div>
+          ))}
+
+          {queue.failed.map((row) => (
+            <div key={row.id} className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-rose-700">
+                Couldn&apos;t read a receipt: {row.error}
+              </span>
+              {/* Retry only when the photo is still here to send. */}
+              {row.blob && (
+                <button
+                  type="button"
+                  onClick={() => void queue.retry(row.id)}
+                  className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                >
+                  Retry
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => void queue.discard(row.id)}
+                className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+              >
+                Discard
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-end gap-3">
           <div>
@@ -370,8 +440,10 @@ export function ExpenseSection({
           )}
           <ReceiptScanButton
             currencyHint={currencyForDay?.(day)}
+            tripId={tripId}
             onExtracted={handleExtracted}
             onError={setError}
+            onQueued={queue.refresh}
           />
         </div>
 

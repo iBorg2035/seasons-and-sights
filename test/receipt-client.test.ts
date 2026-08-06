@@ -143,8 +143,39 @@ describe("extractReceipt", () => {
 
     const result = await extractReceipt(new Blob());
 
+    // Shape gained `retryable`/`backOff` when the offline queue landed: the
+    // caller has to know whether a failure is worth holding onto, and 429
+    // specifically means stop the whole drain rather than try the next one.
     expect(result).toEqual({
       error: "Too many receipt scans — give it a minute.",
+      retryable: true,
+      backOff: true,
+    });
+  });
+
+  it("classifies a bad request as not worth holding onto", async () => {
+    // A malformed image fails identically in an hour. Queuing it would make a
+    // row that retries three times and dies.
+    mockResponse(400, { error: "Only JPEG or PNG images are supported" });
+
+    const result = await extractReceipt(new Blob());
+
+    expect(result).toEqual({
+      error: "Only JPEG or PNG images are supported",
+      retryable: false,
+      backOff: false,
+    });
+  });
+
+  it("classifies a server error as worth retrying, without stopping the queue", async () => {
+    mockResponse(502, { error: "model timed out" });
+
+    const result = await extractReceipt(new Blob());
+
+    expect(result).toEqual({
+      error: "model timed out",
+      retryable: true,
+      backOff: false,
     });
   });
 

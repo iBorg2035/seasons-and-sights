@@ -79,6 +79,33 @@ export async function compressForUpload(
   }
 }
 
+/**
+ * Why a scan failed, and what the caller should do about it.
+ *
+ * The distinction is what keeps the queue honest. A photo that isn't a valid
+ * image, or a caller who isn't allowed, will fail identically in an hour —
+ * holding onto it produces a row that retries three times and dies, which is
+ * worse than saying so immediately. A network blip is the opposite.
+ */
+export interface ReceiptFailure {
+  error: string;
+  /** Worth holding for later. */
+  retryable: boolean;
+  /** Rate-limited or unavailable: stop the whole drain pass, not just this row. */
+  backOff: boolean;
+}
+
+function classifyStatus(status: number): { retryable: boolean; backOff: boolean } {
+  // Throttled or temporarily unavailable — the next nine will fail too, so
+  // the caller should stop rather than work through the rest of the queue.
+  if (status === 429 || status === 503) return { retryable: true, backOff: true };
+  // The request itself is wrong: bad image, not signed in, not allowed, too
+  // large. Time doesn't fix any of these.
+  if (status >= 400 && status < 500) return { retryable: false, backOff: false };
+  // 5xx — the server or the model had a moment.
+  return { retryable: true, backOff: false };
+}
+
 /** ISO date, but only when it's a real calendar date — not just digit-shaped. */
 function validDay(v: string | null): string | null {
   if (v == null || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return null;
@@ -98,7 +125,7 @@ function validDay(v: string | null): string | null {
 export async function extractReceipt(
   blob: Blob,
   opts: { hintCurrency?: CurrencyCode } = {}
-): Promise<ReceiptExtraction | { error: string }> {
+): Promise<ReceiptExtraction | ReceiptFailure> {
   const form = new FormData();
   form.set("image", blob, "receipt.jpg");
   if (opts.hintCurrency) form.set("hintCurrency", opts.hintCurrency);
@@ -107,14 +134,23 @@ export async function extractReceipt(
   try {
     res = await fetch("/api/receipt/extract", { method: "POST", body: form });
   } catch {
-    return { error: "Couldn't reach the server — check your connection." };
+    // The network, not the request — worth holding onto and trying later.
+    return {
+      error: "Couldn't reach the server — check your connection.",
+      retryable: true,
+      backOff: false,
+    };
   }
 
   let raw: unknown;
   try {
     raw = await res.json();
   } catch {
-    return { error: "Couldn't read that receipt — enter it manually." };
+    return {
+      error: "Couldn't read that receipt — enter it manually.",
+      retryable: false,
+      backOff: false,
+    };
   }
 
   if (!res.ok) {
@@ -122,7 +158,7 @@ export async function extractReceipt(
       typeof raw === "object" && raw && "error" in raw && typeof raw.error === "string"
         ? raw.error
         : "Couldn't read that receipt — enter it manually.";
-    return { error: message };
+    return { error: message, ...classifyStatus(res.status) };
   }
 
   if (typeof raw !== "object" || raw === null) return { ...EMPTY };

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { compressForUpload, extractReceipt, type ReceiptExtraction } from "@/lib/receipt";
+import { enqueue, isQueueAvailable } from "@/lib/receipt-queue";
 import type { CurrencyCode } from "@/lib/money";
 
 /**
@@ -14,25 +15,55 @@ import type { CurrencyCode } from "@/lib/money";
  */
 export function ReceiptScanButton({
   currencyHint,
+  tripId,
   onExtracted,
   onError,
+  onQueued,
 }: {
   currencyHint?: CurrencyCode;
+  /** Which trip a held photo belongs to, when there's no signal to read it. */
+  tripId: string;
   onExtracted: (result: ReceiptExtraction) => void;
   onError: (message: string) => void;
+  /** A photo was held for later rather than read now. */
+  onQueued?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  /** Hold the photo, and say whether that worked. */
+  async function hold(blob: Blob): Promise<boolean> {
+    if (!isQueueAvailable()) return false;
+    const queued = await enqueue(tripId, blob);
+    if (!queued.ok) {
+      onError(queued.error ?? "Couldn't hold that photo.");
+      return true; // Handled — the user has been told why.
+    }
+    onError("");
+    onQueued?.();
+    return true;
+  }
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
     setBusy(true);
     try {
       const compressed = await compressForUpload(file);
+
+      // Known offline: don't burn a request that cannot succeed, just hold it.
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        if (await hold(compressed)) return;
+      }
+
       const result = await extractReceipt(compressed, {
         hintCurrency: currencyHint,
       });
+
       if ("error" in result) {
+        // Retryable means the network or the model had a moment — worth
+        // keeping. A 400 or 403 fails the same way in an hour, so holding it
+        // would only produce a row that dies three attempts later.
+        if (result.retryable && (await hold(compressed))) return;
         onError(result.error);
         return;
       }
