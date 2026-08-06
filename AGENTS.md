@@ -29,6 +29,23 @@ the lines a diff changed. So:
 - **Verify against a production build and hard-refresh** — `next dev` Fast
   Refresh and CDN/browser caches hide real bugs.
 
+## Checkpointing (a session can end without warning)
+
+An assistant **cannot see its own usage** and gets no warning before a limit
+cuts a session off. Do not claim to be watching a threshold, and do not save
+work "when usage gets high" — there is no signal to act on. Make the cutoff
+cheap instead:
+
+- **Commit at every green point, not every stage boundary.** tsc + `npx vitest
+  run` + `npm run build` passing, and the work coherent? Commit it — mid-stage
+  is fine, live QA still outstanding is fine. Record what's unverified in the
+  commit message rather than holding the commit until it is.
+- **Push immediately.** A local commit still dies with the machine.
+- **Write "where we are" only where it survives**: the commit message, the plan
+  file, `reports/`. Conversation context does not survive; those do.
+- **A cold resume should need only `git log` plus the plan file** — no
+  re-deriving decisions that were already made.
+
 ## Architecture notes
 - Client views import the slim data modules (`@/data/regions-slim`,
   `@/data/events-slim`), never the heavy `@/data/regions` (server-only). Adding
