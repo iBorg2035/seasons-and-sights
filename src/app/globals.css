@@ -165,13 +165,14 @@ h3 {
   background-color: rgba(45, 212, 191, 0.14);
 }
 
-/* Dim and tint the map tiles so the basemap reads dark; markers are overlays
-   and keep their colors. */
+/* The basemap is genuinely dark in dark mode (Carto Dark Matter — see
+   lib/map.ts), so no filter is needed. There used to be an
+   invert(1) hue-rotate(180deg) here faking it from a light basemap; that
+   mangled hues, muddied label text, and would now invert the real dark tiles
+   straight back to white. Only the container background remains, to cover the
+   gap before tiles load. */
 .dark .leaflet-container {
   background: #0a1014;
-}
-.dark .leaflet-tile {
-  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
 }
 
 /* Colored pills (season/crowd/festival chips, banners) read as bright pastels

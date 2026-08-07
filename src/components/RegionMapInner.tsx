@@ -11,7 +11,8 @@ import {
   useMap,
 } from "react-leaflet";
 import type { Region, SightType } from "@/types";
-import { TILE_ATTRIBUTION, TILE_URL } from "@/lib/map";
+import { TILE_ATTRIBUTION, tileUrlFor } from "@/lib/map";
+import { useDarkTheme } from "@/lib/use-dark-theme";
 
 const TYPE_COLORS: Record<SightType, string> = {
   nature: "#10b981",
@@ -32,6 +33,7 @@ function FitBounds({ points }: { points: [number, number][] }) {
 }
 
 export default function RegionMapInner({ region }: { region: Region }) {
+  const tileUrl = tileUrlFor(useDarkTheme());
   const points: [number, number][] = [
     [region.lat, region.lng],
     ...region.sights.map((s) => [s.lat, s.lng] as [number, number]),
@@ -44,7 +46,7 @@ export default function RegionMapInner({ region }: { region: Region }) {
       scrollWheelZoom={false}
       style={{ height: "100%", width: "100%" }}
     >
-      <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
+      <TileLayer key={tileUrl} attribution={TILE_ATTRIBUTION} url={tileUrl} />
       {region.sights.map((sight) => (
         <CircleMarker
           key={sight.name}

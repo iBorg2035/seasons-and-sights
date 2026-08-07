@@ -11,7 +11,8 @@ import {
   Popup,
   useMap,
 } from "react-leaflet";
-import { SEASON_HEX, TILE_ATTRIBUTION, TILE_URL } from "@/lib/map";
+import { SEASON_HEX, TILE_ATTRIBUTION, tileUrlFor } from "@/lib/map";
+import { useDarkTheme } from "@/lib/use-dark-theme";
 import {
   SEASON_META,
   climateForMonth,
@@ -40,6 +41,7 @@ function numberedIcon(n: number, color: string) {
 }
 
 export default function RouteMapInner({ legs }: { legs: ItineraryLeg[] }) {
+  const tileUrl = tileUrlFor(useDarkTheme());
   const points = legs.map(
     (l) => [l.region.lat, l.region.lng] as [number, number]
   );
@@ -53,7 +55,7 @@ export default function RouteMapInner({ legs }: { legs: ItineraryLeg[] }) {
       worldCopyJump
       style={{ height: "100%", width: "100%" }}
     >
-      <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
+      <TileLayer key={tileUrl} attribution={TILE_ATTRIBUTION} url={tileUrl} />
       <Polyline
         positions={points}
         pathOptions={{ color: "#334155", weight: 2, dashArray: "4 6", opacity: 0.7 }}

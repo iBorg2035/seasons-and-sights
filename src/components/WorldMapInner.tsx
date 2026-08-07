@@ -11,7 +11,8 @@ import {
   useMap,
 } from "react-leaflet";
 import type { Region } from "@/types";
-import { SEASON_HEX, TILE_ATTRIBUTION, TILE_URL } from "@/lib/map";
+import { SEASON_HEX, TILE_ATTRIBUTION, tileUrlFor } from "@/lib/map";
+import { useDarkTheme } from "@/lib/use-dark-theme";
 import { SEASON_META, climateForMonth } from "@/lib/season";
 
 function FitBounds({ regions }: { regions: Region[] }) {
@@ -34,6 +35,7 @@ export default function WorldMapInner({
   regions: Region[];
   month: number;
 }) {
+  const tileUrl = tileUrlFor(useDarkTheme());
   return (
     <MapContainer
       center={[20, 10]}
@@ -43,7 +45,7 @@ export default function WorldMapInner({
       worldCopyJump
       style={{ height: "100%", width: "100%" }}
     >
-      <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
+      <TileLayer key={tileUrl} attribution={TILE_ATTRIBUTION} url={tileUrl} />
       {regions.map((r) => {
         const season = climateForMonth(r, month).season;
         return (
