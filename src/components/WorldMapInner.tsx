@@ -13,6 +13,7 @@ import {
 import type { Region } from "@/types";
 import { SEASON_HEX, TILE_ATTRIBUTION, tileUrlFor } from "@/lib/map";
 import { useDarkTheme } from "@/lib/use-dark-theme";
+import { MapInteraction } from "@/components/MapInteraction";
 import { SEASON_META, climateForMonth } from "@/lib/season";
 
 function FitBounds({ regions }: { regions: Region[] }) {
@@ -36,6 +37,8 @@ export default function WorldMapInner({
   month: number;
 }) {
   const tileUrl = tileUrlFor(useDarkTheme());
+  // scrollWheelZoom starts off so the wheel doesn't swallow page scroll;
+  // MapInteraction turns it on once the map is clicked or focused.
   return (
     <MapContainer
       center={[20, 10]}
@@ -46,6 +49,7 @@ export default function WorldMapInner({
       style={{ height: "100%", width: "100%" }}
     >
       <TileLayer key={tileUrl} attribution={TILE_ATTRIBUTION} url={tileUrl} />
+      <MapInteraction />
       {regions.map((r) => {
         const season = climateForMonth(r, month).season;
         return (

@@ -13,6 +13,7 @@ import {
 } from "react-leaflet";
 import { SEASON_HEX, TILE_ATTRIBUTION, tileUrlFor } from "@/lib/map";
 import { useDarkTheme } from "@/lib/use-dark-theme";
+import { MapInteraction } from "@/components/MapInteraction";
 import {
   SEASON_META,
   climateForMonth,
@@ -46,6 +47,8 @@ export default function RouteMapInner({ legs }: { legs: ItineraryLeg[] }) {
     (l) => [l.region.lat, l.region.lng] as [number, number]
   );
 
+  // scrollWheelZoom starts off so the wheel doesn't swallow page scroll;
+  // MapInteraction turns it on once the map is clicked or focused.
   return (
     <MapContainer
       center={[20, 10]}
@@ -56,6 +59,7 @@ export default function RouteMapInner({ legs }: { legs: ItineraryLeg[] }) {
       style={{ height: "100%", width: "100%" }}
     >
       <TileLayer key={tileUrl} attribution={TILE_ATTRIBUTION} url={tileUrl} />
+      <MapInteraction />
       <Polyline
         positions={points}
         pathOptions={{ color: "#334155", weight: 2, dashArray: "4 6", opacity: 0.7 }}

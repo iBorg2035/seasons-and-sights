@@ -13,6 +13,7 @@ import {
 import type { Region, SightType } from "@/types";
 import { TILE_ATTRIBUTION, tileUrlFor } from "@/lib/map";
 import { useDarkTheme } from "@/lib/use-dark-theme";
+import { MapInteraction } from "@/components/MapInteraction";
 
 const TYPE_COLORS: Record<SightType, string> = {
   nature: "#10b981",
@@ -24,11 +25,17 @@ const TYPE_COLORS: Record<SightType, string> = {
 
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();
+  // Keyed on the coordinates, not the array. `points` is rebuilt on every
+  // render — and StopDetail passes a fresh `{...region, sights}` object, so
+  // renders are frequent — which made this refit constantly: pan the map and
+  // it snapped straight back, which reads as "the map is static". The other
+  // two maps already keyed on a string for exactly this reason.
+  const key = points.map((p) => p.join(",")).join("|");
   useEffect(() => {
     if (points.length < 1) return;
-    const bounds = L.latLngBounds(points);
-    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 11 });
-  }, [map, points]);
+    map.fitBounds(L.latLngBounds(points), { padding: [30, 30], maxZoom: 11 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, key]);
   return null;
 }
 
@@ -39,6 +46,8 @@ export default function RegionMapInner({ region }: { region: Region }) {
     ...region.sights.map((s) => [s.lat, s.lng] as [number, number]),
   ];
 
+  // scrollWheelZoom starts off so the wheel doesn't swallow page scroll;
+  // MapInteraction turns it on once the map is clicked or focused.
   return (
     <MapContainer
       center={[region.lat, region.lng]}
@@ -47,6 +56,7 @@ export default function RegionMapInner({ region }: { region: Region }) {
       style={{ height: "100%", width: "100%" }}
     >
       <TileLayer key={tileUrl} attribution={TILE_ATTRIBUTION} url={tileUrl} />
+      <MapInteraction />
       {region.sights.map((sight) => (
         <CircleMarker
           key={sight.name}
