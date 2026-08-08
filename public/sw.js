@@ -7,7 +7,7 @@
 // visitor would keep rendering the previously-cached HTML/JS bundle (with its
 // old behaviour) until they hard-refresh — the SW would otherwise amplify the
 // stale-cache risk the QA doc warns about.
-const CACHE = "ss-v2";
+const CACHE = "ss-v3";
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) =>
