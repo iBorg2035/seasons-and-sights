@@ -206,6 +206,39 @@ export function totalsByCategory(
   return totals;
 }
 
+/**
+ * An already-logged expense that this draft looks like a repeat of.
+ *
+ * Same day, same amount, same category is a deliberately loose test: two
+ * genuinely separate ₫250,000 lunches on one day are possible, so this warns
+ * rather than blocks. It exists because scanning the same receipt twice is
+ * easy — you photograph it, get distracted, photograph it again — and two
+ * identical rows are indistinguishable afterwards, which makes the mistake
+ * both easy to commit and hard to undo.
+ *
+ * Editing an existing row is excluded by id: a row is never its own duplicate.
+ */
+export function findDuplicate(
+  expenses: Expense[],
+  draft: Pick<ExpenseDraft, "day" | "amountCents" | "category"> & { id?: string }
+): Expense | undefined {
+  return expenses.find(
+    (e) =>
+      e.id !== draft.id &&
+      e.day === draft.day &&
+      e.amountCents === draft.amountCents &&
+      e.category === draft.category
+  );
+}
+
+/** `14:32` — distinguishes rows that are otherwise identical. */
+export function loggedAt(e: Expense): string {
+  return new Date(e.updatedAt).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 /** Total spend on a single day — used to show a day's cost in the journal. */
 export function totalForDay(expenses: Expense[], day: DayStamp): number {
   return totalCents(expenses.filter((e) => e.day === day));

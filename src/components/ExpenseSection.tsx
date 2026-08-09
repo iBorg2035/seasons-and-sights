@@ -6,7 +6,9 @@ import {
   CATEGORY_META,
   EXPENSE_CATEGORIES,
   describeAmount,
+  findDuplicate,
   formatCents,
+  loggedAt,
   parseAmountToCents,
   removeExpense,
   saveExpense,
@@ -75,6 +77,9 @@ export function ExpenseSection({
   // A scan result waiting on confirmation, because it arrived while the
   // amount field already had something in it that it must not overwrite.
   const [pendingExtraction, setPendingExtraction] = useState<ReceiptExtraction | null>(null);
+  // A draft held back because it looks like something already logged. Scanning
+  // the same receipt twice is easy; two identical rows are hard to untangle.
+  const [duplicateOf, setDuplicateOf] = useState<Expense | null>(null);
   // The row being edited, if any — the whole row rather than just its id,
   // because deciding whether an edit changed the money means comparing against
   // what was stored.
@@ -118,6 +123,7 @@ export function ExpenseSection({
 
   function resetForm() {
     setEditing(null);
+    setDuplicateOf(null);
     setAmount("");
     setNote("");
     setError(null);
@@ -157,10 +163,19 @@ export function ExpenseSection({
     applyExtraction(result);
   }
 
-  function submit() {
+  function submit(force = false) {
     const draft =
       currency === "USD" ? buildUsdDraft() : buildForeignDraft();
     if (draft === null) return;
+
+    if (!force) {
+      const dup = findDuplicate(expenses, { ...draft, id: editingId ?? undefined });
+      if (dup) {
+        setDuplicateOf(dup);
+        return;
+      }
+    }
+    setDuplicateOf(null);
 
     const saved = saveExpense(tripId, { ...draft, id: editingId ?? undefined });
     if (!saved) {
@@ -260,6 +275,14 @@ export function ExpenseSection({
     if (editingId === expense.id) resetForm();
     onChanged(expense.id);
   }
+
+  /**
+   * Whether another row would look exactly like this one in the list. Only
+   * then is the logged time worth showing — on a unique row it's noise, and
+   * on a duplicate it's the only thing telling them apart.
+   */
+  const hasTwin = (e: Expense) =>
+    expenses.some((o) => o.id !== e.id && findDuplicate([o], e) !== undefined);
 
   const total = totalCents(expenses);
   const byCategory = totalsByCategory(expenses);
@@ -424,7 +447,7 @@ export function ExpenseSection({
           </div>
           <button
             type="button"
-            onClick={submit}
+            onClick={() => submit()}
             className="rounded-lg bg-sky-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-900"
           >
             {editingId ? "Save changes" : "Add"}
@@ -503,6 +526,34 @@ export function ExpenseSection({
           </div>
         )}
 
+        {duplicateOf && (
+          <div
+            role="alert"
+            className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+          >
+            <span>
+              You already logged {describeAmount(duplicateOf)} for{" "}
+              {CATEGORY_META[duplicateOf.category].label.toLowerCase()} on{" "}
+              {fmtShortDay(duplicateOf.day)} at {loggedAt(duplicateOf)}
+              {duplicateOf.note ? ` (${duplicateOf.note})` : ""}. Scanned it twice?
+            </span>
+            <button
+              type="button"
+              onClick={() => submit(true)}
+              className="rounded-lg bg-sky-800 px-2.5 py-1 text-xs font-semibold text-white hover:bg-sky-900"
+            >
+              Add anyway
+            </button>
+            <button
+              type="button"
+              onClick={() => setDuplicateOf(null)}
+              className="rounded-lg border border-amber-400 px-2.5 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
         {error && (
           <p role="alert" className="mt-2 text-sm text-rose-700">
             {error}
@@ -547,6 +598,11 @@ export function ExpenseSection({
                 </span>
                 <span className="min-w-0 flex-1 truncate text-sm text-slate-700">
                   {e.note || CATEGORY_META[e.category].label}
+                  {hasTwin(e) && (
+                    <span className="ml-1.5 text-xs text-slate-400">
+                      logged {loggedAt(e)}
+                    </span>
+                  )}
                 </span>
                 <span className="flex-none text-sm font-medium text-slate-900">
                   {describeAmount(e)}
@@ -554,7 +610,7 @@ export function ExpenseSection({
                 <button
                   type="button"
                   onClick={() => startEdit(e)}
-                  aria-label={`Edit ${describeAmount(e)} expense`}
+                  aria-label={`Edit ${describeAmount(e)} expense${hasTwin(e) ? `, logged ${loggedAt(e)}` : ""}`}
                   className="flex-none text-xs font-medium text-teal-700 hover:underline"
                 >
                   Edit
@@ -562,7 +618,7 @@ export function ExpenseSection({
                 <button
                   type="button"
                   onClick={() => handleRemove(e)}
-                  aria-label={`Delete ${describeAmount(e)} expense`}
+                  aria-label={`Delete ${describeAmount(e)} expense${hasTwin(e) ? `, logged ${loggedAt(e)}` : ""}`}
                   className="flex-none text-xs font-medium text-rose-600 hover:underline"
                 >
                   Delete
