@@ -120,6 +120,13 @@ export default function RootLayout({
               Terms
             </Link>
           </nav>
+          {/* Which build this device is actually running. A stale service
+              worker used to be invisible — the app looked deployed and behaved
+              like the previous release, with nothing to compare. This makes
+              "did the fix reach my phone?" answerable by looking. */}
+          <p className="mt-3 font-mono text-[10px] text-stone-300">
+            build {(process.env.NEXT_PUBLIC_BUILD_ID || "dev").slice(0, 7)}
+          </p>
         </footer>
         </AuthProvider>
         <Analytics />
