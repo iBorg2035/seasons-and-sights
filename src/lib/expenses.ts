@@ -14,6 +14,15 @@ import {
 
 export const EXPENSE_ENTITY = "expense";
 
+/**
+ * Look-alike groups confirmed to be genuinely separate spends.
+ *
+ * A tick store keyed by `duplicateKey`, so the answer travels between devices
+ * with everything else — being told about the same non-duplicate again on the
+ * laptop would be its own small annoyance.
+ */
+export const DUP_OK_ENTITY = "dupok";
+
 export const EXPENSE_CATEGORIES = [
   "food",
   "lodging",
@@ -229,6 +238,41 @@ export function findDuplicate(
       e.amountCents === draft.amountCents &&
       e.category === draft.category
   );
+}
+
+/**
+ * Expenses already logged that look like repeats of each other.
+ *
+ * `findDuplicate` only guards the moment of entry, which does nothing for the
+ * repeats already sitting in the list — and finding them by eye means reading
+ * every row across every day and holding three fields in your head. The app
+ * has the answer and was not saying it.
+ *
+ * Grouped by the same day/amount/category test, so the two functions can never
+ * disagree about what a duplicate is. Groups of one aren't groups.
+ */
+export function findDuplicateGroups(expenses: Expense[]): Expense[][] {
+  const groups = new Map<string, Expense[]>();
+  for (const e of expenses) {
+    const key = duplicateKey(e);
+    const group = groups.get(key);
+    if (group) group.push(e);
+    else groups.set(key, [e]);
+  }
+  return [...groups.values()]
+    .filter((g) => g.length > 1)
+    // Oldest first within a group: the first one logged is usually the keeper,
+    // and the later one the accidental re-scan.
+    .map((g) => [...g].sort((a, b) => a.updatedAt - b.updatedAt));
+}
+
+/**
+ * Identifies a group of look-alikes, and doubles as the key under which
+ * "these are actually different" is remembered. Contains no free text, so
+ * dismissing a group can't be undone by editing a note.
+ */
+export function duplicateKey(e: Pick<Expense, "day" | "amountCents" | "category">): string {
+  return `${e.day}|${e.amountCents}|${e.category}`;
 }
 
 /** `14:32` — distinguishes rows that are otherwise identical. */

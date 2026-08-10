@@ -5,8 +5,11 @@ import type { DayStamp } from "@/lib/saved-trips";
 import {
   CATEGORY_META,
   EXPENSE_CATEGORIES,
+  DUP_OK_ENTITY,
   describeAmount,
+  duplicateKey,
   findDuplicate,
+  findDuplicateGroups,
   formatCents,
   loggedAt,
   parseAmountToCents,
@@ -32,6 +35,7 @@ import {
   rateFor,
   setRate,
 } from "@/lib/fx";
+import { loadTickSet, setTickIn } from "@/lib/ticks";
 import { useOptionalAuth } from "@/lib/contexts/auth-context";
 import { mirrorRecord } from "@/lib/supabase/trip-records";
 import { ReceiptScanButton } from "@/components/ReceiptScanButton";
@@ -85,6 +89,18 @@ export function ExpenseSection({
   // what was stored.
   const [editing, setEditing] = useState<Expense | null>(null);
   const editingId = editing?.id ?? null;
+
+  // Look-alike groups this trip has already been told are genuinely separate.
+  // Two coffees at the same price on one day is an ordinary Tuesday, and a
+  // warning that cannot be answered is just a permanent smudge on the screen.
+  const [keptApart, setKeptApart] = useState<Set<string>>(new Set());
+  useEffect(() => setKeptApart(loadTickSet(DUP_OK_ENTITY, tripId)), [tripId]);
+
+  function keepApart(key: string) {
+    setTickIn(DUP_OK_ENTITY, tripId, key, true);
+    setKeptApart((prev) => new Set(prev).add(key));
+    if (user) void mirrorRecord(user.id, tripId, DUP_OK_ENTITY, key);
+  }
 
   // Receipts held on this device because there was no signal when they were
   // taken. Drains itself; this only reads the result.
@@ -283,6 +299,13 @@ export function ExpenseSection({
    */
   const hasTwin = (e: Expense) =>
     expenses.some((o) => o.id !== e.id && findDuplicate([o], e) !== undefined);
+
+  // Groups still awaiting a verdict. Dismissed ones drop out here rather than
+  // being filtered inside findDuplicateGroups, which keeps that function a
+  // statement about the data and not about what's been read.
+  const duplicateGroups = findDuplicateGroups(expenses).filter(
+    (g) => !keptApart.has(duplicateKey(g[0]))
+  );
 
   const total = totalCents(expenses);
   const byCategory = totalsByCategory(expenses);
@@ -583,6 +606,49 @@ export function ExpenseSection({
               </li>
             ))}
           </ul>
+
+          {duplicateGroups.map((group) => {
+            const key = duplicateKey(group[0]);
+            const [first] = group;
+            return (
+              <div
+                key={key}
+                role="status"
+                className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"
+              >
+                <p className="font-medium">
+                  {group.length} entries on {fmtShortDay(first.day)} look like the
+                  same {CATEGORY_META[first.category].label.toLowerCase()} —{" "}
+                  {describeAmount(first)} each.
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {group.map((e) => (
+                    <li key={e.id} className="flex items-center gap-2">
+                      <span className="min-w-0 flex-1 truncate text-xs">
+                        {e.note || "no note"}{" "}
+                        <span className="text-amber-700">· logged {loggedAt(e)}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(e)}
+                        aria-label={`Remove the ${describeAmount(e)} expense logged at ${loggedAt(e)}`}
+                        className="flex-none rounded-lg border border-amber-400 px-2 py-0.5 text-xs font-medium hover:bg-amber-100"
+                      >
+                        Remove this one
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => keepApart(key)}
+                  className="mt-2 text-xs font-medium underline hover:no-underline"
+                >
+                  They&apos;re different — keep both
+                </button>
+              </div>
+            );
+          })}
 
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             {expenses.map((e) => (

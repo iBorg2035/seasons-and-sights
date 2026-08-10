@@ -1,5 +1,5 @@
 import { JOURNAL_ENTITY } from "@/lib/journal";
-import { EXPENSE_ENTITY } from "@/lib/expenses";
+import { DUP_OK_ENTITY, EXPENSE_ENTITY } from "@/lib/expenses";
 import { RESERVATION_ENTITY } from "@/lib/reservations";
 import { CHECKLIST_ENTITY } from "@/lib/checklist-progress";
 import { PACKING_ENTITY } from "@/lib/packing-progress";
@@ -9,7 +9,7 @@ import { FX_ENTITY } from "@/lib/fx";
  * Every per-trip record entity, in one place.
  *
  * This exists because the list had already drifted. Deleting a single trip
- * cleared all six; deleting your entire account cleared three — so the more
+ * cleared all of them; deleting your entire account cleared half — so the more
  * destructive action cleaned up less, and a diary, packing list and confirmed
  * exchange rates survived an account deletion that promised to remove
  * everything.
@@ -23,6 +23,7 @@ import { FX_ENTITY } from "@/lib/fx";
 export const ALL_TRIP_ENTITIES = [
   JOURNAL_ENTITY,
   EXPENSE_ENTITY,
+  DUP_OK_ENTITY,
   RESERVATION_ENTITY,
   CHECKLIST_ENTITY,
   PACKING_ENTITY,
