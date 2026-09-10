@@ -57,6 +57,23 @@ No trips → `/trips` and `/calendar` show a friendly "plan a trip" state; the
 🧳 badge doesn't render; `/trips/<unknown-id>` shows "trip couldn't be found"
 with a way back.
 
+### 8. Nearby (on-the-ground places)
+The trip page's **Nearby right now** section. Three things to check, because
+each fails in a different place:
+- **Fallback location.** With location permission *denied*, the section must
+  still work, centred on the stop you're on ("Near <stop> · your trip stop").
+  Granting location switches it to "Near your location" and re-searches.
+- **Isolation.** Load Nearby on trip A, switch to trip B in a *different*
+  country. B must show B's city, never A's places — the section is keyed on
+  the trip so a client-side switch remounts it.
+- **Offline.** Load results, then go offline (DevTools → Network → Offline) and
+  reload. The last results for that spot must come back **labelled stale**
+  ("Offline — showing the last results saved for this spot"). Showing them
+  unlabelled, or showing nothing, are both bugs.
+
+With no `GOOGLE_PLACES_API_KEY` set, the section must say it isn't configured
+and must not issue any upstream call.
+
 ## Pre-ship static audit
 
 - **Storage scoping:** grep every `localStorage` key. Any key holding
@@ -66,7 +83,10 @@ with a way back.
   Correctly-global keys: `theme`, `seasons-onboarded`, `seasons-passport`
   (per-device/user), `seasons-saved-trips`, `seasons-active-trip-id`,
   `seasons-migrated-v2` (single instances); `seasons-draft` is legacy, read
-  only by the one-time migration.
+  only by the one-time migration. `seasons-nearby:<lat>,<lng>,<category>,
+  <radius>` is deliberately keyed by *location* rather than trip id — it caches
+  what is near a point, which is not per-trip state, and two trips standing on
+  the same corner should share the answer rather than pay for it twice.
 - **Regression tests:** every fixed bug leaves a test behind (see
   `checklistStorageKey` tests for the isolation bug).
 - `npx tsc --noEmit`, `npx vitest run`, `npm run build` all green.

@@ -30,6 +30,7 @@ import { RouteSection } from "@/components/RouteSection";
 import { StopsSection } from "@/components/StopsSection";
 import { PrepSection } from "@/components/PrepSection";
 import { MapSection } from "@/components/MapSection";
+import { NearbySection } from "@/components/NearbySection";
 import { TripCopilot } from "@/components/TripCopilot";
 import { TripModeToggle } from "@/components/TripModeToggle";
 import { legDateRanges } from "@/lib/season";
@@ -65,6 +66,7 @@ const SECTIONS = [
   { id: "route", label: "Route" },
   { id: "stops", label: "Stops" },
   { id: "prep", label: "Prep" },
+  { id: "nearby", label: "Nearby" },
   { id: "map", label: "Map" },
 ] as const;
 
@@ -662,6 +664,16 @@ export function TripView({
             Pre-departure prep
           </h2>
           <PrepSection trip={trip} />
+        </section>
+
+        <section id="nearby" className="scroll-mt-32">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">
+            Nearby right now
+          </h2>
+          {/* Keyed on the trip so a client-side move between two /trips/[id]
+              pages remounts it, rather than leaving the previous trip's
+              places on screen while the new origin resolves. */}
+          <NearbySection key={trip.id} trip={trip} />
         </section>
 
         <section id="map" className="scroll-mt-32">
