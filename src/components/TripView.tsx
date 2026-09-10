@@ -633,57 +633,11 @@ export function TripView({
         </section>
 
         <section id="stops" className="scroll-mt-32">
+          {/* TripModeToggle does its own confirming, so this passes
+              alreadyConfirmed; switchMode holds the rest of the logic. */}
           <TripModeToggle
             trip={trip}
             onSwitch={(next) => switchMode(next, true)}
-          />
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Route</h2>
-          <RouteSection
-            trip={trip}
-            onStartChange={(month) => {
-              editDraft((t) => {
-                t.start = month;
-              });
-            }}
-            onInterestsChange={(interests) => {
-              editDraft((t) => {
-                t.interests = interests;
-              });
-            }}
-          />
-        </section>
-
-        <section id="stops" className="scroll-mt-32">
-          <TripModeToggle
-            trip={trip}
-            onSwitch={(next) => {
-              if (next === "planning") {
-                // Keep bookedDates in storage so switching back restores the
-                // dates rather than making the user re-enter them.
-                editDraft((t) => {
-                  t.mode = "planning";
-                });
-                return;
-              }
-              editDraft((t) => {
-                // Already has dates (switched back and forth) — keep the
-                // user's edits rather than overwriting from the plan.
-                if (t.bookedDates?.some((d) => d != null)) {
-                  t.mode = "booked";
-                  return;
-                }
-                // Plan BEFORE flipping the mode: tripSlimLegs dispatches on
-                // mode, so a trip already marked booked would be planned from
-                // its (still empty) dates — yielding zero-length stays and no
-                // reorder, instead of the derived plan we mean to commit.
-                const legs = tripSlimLegs(t);
-                const ranges = legDateRanges(resolveStartMonth(t.start), legs);
-                const seeded = seedBookedDates(t.stops, legs, ranges);
-                t.stops = seeded.stops;
-                t.bookedDates = seeded.bookedDates;
-                t.mode = "booked";
-              });
-            }}
           />
           <h2 className="mb-4 text-lg font-semibold text-slate-900">
             Stops{" "}
