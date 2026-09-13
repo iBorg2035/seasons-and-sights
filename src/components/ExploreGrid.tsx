@@ -39,7 +39,15 @@ export function ExploreGrid() {
   const [query, setQuery] = useState("");
   const [goodNow, setGoodNow] = useState(false);
   const [view, setView] = useState<View>("grid");
+  /**
+   * The month every season judgement on this page is made against — the filter,
+   * the map pin colours, and each card's badge and strip. Defaults to now,
+   * which is the common case, but "when should I go to X" is the question this
+   * whole app exists to answer, so it can't only ever answer it for today.
+   */
   const currentMonth = monthOf();
+  const [month, setMonth] = useState(currentMonth);
+  const isNow = month === currentMonth;
 
   const regions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -55,14 +63,11 @@ export function ExploreGrid() {
       );
     if (goodNow) {
       list = list
-        .filter((r) => seasonFitScore(r, currentMonth) >= 60)
-        .sort(
-          (a, b) =>
-            seasonFitScore(b, currentMonth) - seasonFitScore(a, currentMonth)
-        );
+        .filter((r) => seasonFitScore(r, month) >= 60)
+        .sort((a, b) => seasonFitScore(b, month) - seasonFitScore(a, month));
     }
     return list;
-  }, [filter, style, query, goodNow, currentMonth]);
+  }, [filter, style, query, goodNow, month]);
 
   return (
     <div>
@@ -112,18 +117,35 @@ export function ExploreGrid() {
           ))}
         </div>
 
-        <button
-          onClick={() => setGoodNow((v) => !v)}
-          aria-pressed={goodNow}
-          className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition ${
-            goodNow
-              ? "border-amber-300 bg-amber-100 text-amber-800"
-              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
-          }`}
-        >
-          <span className={`h-2 w-2 rounded-full ${goodNow ? "bg-amber-500" : "bg-slate-300"}`} />
-          Good to visit now ({MONTH_NAMES_LONG[currentMonth - 1]})
-        </button>
+        <div className="inline-flex items-center gap-2">
+          <button
+            onClick={() => setGoodNow((v) => !v)}
+            aria-pressed={goodNow}
+            title={`Show only destinations in season in ${MONTH_NAMES_LONG[month - 1]}`}
+            className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition ${
+              goodNow
+                ? "border-amber-300 bg-amber-100 text-amber-800"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            <span className={`h-2 w-2 rounded-full ${goodNow ? "bg-amber-500" : "bg-slate-300"}`} />
+            Good to visit {isNow ? "now" : "in"}
+          </button>
+
+          <select
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+            aria-label="Month to judge destinations by"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          >
+            {MONTH_NAMES_LONG.map((name, i) => (
+              <option key={name} value={i + 1}>
+                {name}
+                {i + 1 === currentMonth ? " (now)" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="ml-auto flex items-center gap-3">
           <span className="text-sm text-slate-400">
@@ -155,7 +177,7 @@ export function ExploreGrid() {
       ) : view === "map" ? (
         <div>
           <div className="h-[520px] w-full overflow-hidden rounded-2xl border border-slate-200">
-            <WorldMap regions={regions} month={currentMonth} />
+            <WorldMap regions={regions} month={month} />
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
             {LEGEND.map((s) => (
@@ -165,7 +187,7 @@ export function ExploreGrid() {
               </span>
             ))}
             <span className="text-slate-400">
-              pins colored by {MONTH_NAMES_LONG[currentMonth - 1]}&apos;s season ·
+              pins colored by {MONTH_NAMES_LONG[month - 1]}&apos;s season ·
               click a pin to open it
             </span>
           </div>
@@ -173,7 +195,7 @@ export function ExploreGrid() {
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {regions.map((region) => (
-            <RegionCard key={region.id} region={region} />
+            <RegionCard key={region.id} region={region} month={month} />
           ))}
         </div>
       )}
