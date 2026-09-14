@@ -10,6 +10,7 @@ const REGIONS = [
   ["vietnam-hoian", 15.8801, 108.338, "WDDDDDDDWWWW"],
   ["vietnam-quynhon", 13.7829, 109.2196, "SDDDDDDDWWWS"],
   ["vietnam-nhatrang", 12.2388, 109.1967, "SDDDDDDDSWWS"],
+  ["vietnam-dalat", 11.9404, 108.4583, "DDDSWWWWWWSD"],
   ["vietnam-hanoi", 21.0278, 105.8342, "DSSDWWWWWSDD"],
   ["vietnam-hcmc", 10.8231, 106.6297, "DDDSWWWWWWSD"],
   ["cambodia-siemreap", 13.3671, 103.8448, "DDDDWWWWWWDD"],

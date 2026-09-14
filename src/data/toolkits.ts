@@ -65,6 +65,7 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "vietnam-hoian": { phrases: vn, ...VIET },
   "vietnam-quynhon": { phrases: vn, ...VIET },
   "vietnam-nhatrang": { phrases: vn, ...VIET },
+  "vietnam-dalat": { phrases: vn, ...VIET },
   "vietnam-hanoi": { phrases: vn, ...VIET },
   "vietnam-hcmc": { phrases: vn, ...VIET },
   "indonesia-bali": { phrases: [{ en: "Hello", local: "Halo / Selamat" }, { en: "Thank you", local: "Terima kasih" }, { en: "How much?", local: "Berapa harganya?" }, { en: "Help!", local: "Tolong!" }], emergency: "112 · 110 police · 118 ambulance", tipping: "Not expected; round up", water: "Not potable — drink bottled" },

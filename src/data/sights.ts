@@ -55,6 +55,12 @@ export const SIGHTS: Record<string, Sight[]> = {
       { name: "Hon Mun reefs", type: "wildlife", lat: 12.1667, lng: 109.3, blurb: "Marine reserve and the country's best-known dive site." },
       { name: "Ba Ho Waterfalls", type: "nature", lat: 12.45, lng: 109.1833, blurb: "Three-tier falls and pools in the hills inland." },
     ],
+  "vietnam-dalat": [
+      { name: "Xuan Huong Lake", type: "city", lat: 11.9416, lng: 108.4383, blurb: "Crescent lake at the centre of town, ringed by a walking path." },
+      { name: "Langbiang Mountain", type: "nature", lat: 12.0464, lng: 108.4372, blurb: "Twin peaks over the plateau, with highland villages below." },
+      { name: "Datanla Falls", type: "nature", lat: 11.9139, lng: 108.4394, blurb: "Pine-forest waterfall reached by an alpine toboggan run." },
+      { name: "Da Lat Railway Station", type: "culture", lat: 11.9436, lng: 108.4544, blurb: "Art-deco terminus and a heritage line out to Trai Mat." },
+    ],
   "vietnam-hanoi": [
       { name: "Hoan Kiem Lake & Old Quarter", type: "city", lat: 21.0287, lng: 105.8525, blurb: "Lake-side heart of Hanoi's tangled old town." },
       { name: "Ha Long Bay", type: "nature", lat: 20.9101, lng: 107.1839, blurb: "Thousands of limestone karsts in an emerald sea." },

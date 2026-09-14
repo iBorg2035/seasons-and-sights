@@ -154,6 +154,10 @@ export const EVENTS: Record<string, { name: string; month: number; blurb: string
       { name: "Tết (Lunar New Year)", month: 2, blurb: "Vietnam's biggest holiday; beaches fill with domestic visitors." },
       { name: "Po Nagar Festival", month: 4, blurb: "Cham temple pilgrimage with music, offerings and dance." },
     ],
+    "vietnam-dalat": [
+      { name: "Da Lat Flower Festival", month: 12, blurb: "Biennial festival filling the gardens and streets with blooms." },
+      { name: "Tết (Lunar New Year)", month: 2, blurb: "Vietnam's biggest holiday, in the middle of the dry season here." },
+    ],
     "vietnam-hcmc": [
       { name: "Tết (Lunar New Year)", month: 2, blurb: "Nguyễn Huệ flower street and citywide festivities." },
       { name: "Reunification Day", month: 4, blurb: "April 30 parades and fireworks." },
