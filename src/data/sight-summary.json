@@ -355,6 +355,15 @@
       "culture"
     ]
   },
+  "philippines-mactan": {
+    "count": 4,
+    "types": [
+      "culture",
+      "beach",
+      "wildlife",
+      "nature"
+    ]
+  },
   "philippines-boracay": {
     "count": 4,
     "types": [

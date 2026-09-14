@@ -116,6 +116,7 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "philippines-makati": { phrases: ph, ...PHIL },
   "philippines-bgc": { phrases: ph, ...PHIL },
   "philippines-cebu": { phrases: ph, ...PHIL },
+  "philippines-mactan": { phrases: ph, ...PHIL },
   "philippines-boracay": { phrases: ph, ...PHIL },
   "philippines-bohol": { phrases: ph, ...PHIL },
   "philippines-siargao": { phrases: ph, ...PHIL },

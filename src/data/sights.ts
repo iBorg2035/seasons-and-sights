@@ -289,6 +289,12 @@ export const SIGHTS: Record<string, Sight[]> = {
       { name: "Moalboal sardine run", type: "wildlife", lat: 9.949, lng: 123.396, blurb: "Vast sardine shoals just off the shore." },
       { name: "Magellan's Cross & Basilica", type: "culture", lat: 10.2937, lng: 123.9018, blurb: "Where Christianity reached the islands in 1521." },
     ],
+  "philippines-mactan": [
+      { name: "Mactan Shrine", type: "culture", lat: 10.3092, lng: 124.0175, blurb: "Where Lapu-Lapu turned back Magellan in 1521." },
+      { name: "Punta Engaño beaches", type: "beach", lat: 10.3128, lng: 124.0206, blurb: "The resort strip on the island's northeast point." },
+      { name: "Hilutungan & Nalusuan", type: "wildlife", lat: 10.2333, lng: 123.9333, blurb: "Marine sanctuaries with walls of reef fish just offshore." },
+      { name: "Olango Island", type: "nature", lat: 10.2667, lng: 124.0333, blurb: "Tidal flats on the migratory flyway — birds by the thousand." },
+    ],
   "philippines-boracay": [
       { name: "White Beach", type: "beach", lat: 11.9646, lng: 121.9269, blurb: "Four kilometres of powder-white sand." },
       { name: "Puka Shell Beach", type: "beach", lat: 11.993, lng: 121.921, blurb: "Quieter, shell-strewn northern beach." },

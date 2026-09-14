@@ -110,6 +110,10 @@ export const EVENTS: Record<string, { name: string; month: number; blurb: string
     "philippines-cebu": [
       { name: "Sinulog Festival", month: 1, blurb: "The country's grandest fiesta — drums, dance and colour." },
     ],
+    "philippines-mactan": [
+      { name: "Kadaugan sa Mactan", month: 4, blurb: "Re-enactment of the 1521 battle on the shore where it happened." },
+      { name: "Sinulog", month: 1, blurb: "Cebu's grandest fiesta, felt across the whole island group." },
+    ],
     "philippines-siargao": [
       { name: "Siargao Surfing Cup", month: 9, blurb: "International surf competition at Cloud 9." },
     ],
