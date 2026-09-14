@@ -253,6 +253,18 @@ export const SIGHTS: Record<string, Sight[]> = {
       { name: "Rizal Park", type: "city", lat: 14.5826, lng: 120.9787, blurb: "Historic central park and national monument." },
       { name: "Binondo (Chinatown)", type: "city", lat: 14.6, lng: 120.975, blurb: "The world's oldest Chinatown — a street-food haven." },
     ],
+  "philippines-makati": [
+      { name: "Ayala Museum", type: "culture", lat: 14.5533, lng: 121.0224, blurb: "Philippine history and art, including the gold collection." },
+      { name: "Greenbelt & Ayala Center", type: "city", lat: 14.5525, lng: 121.0215, blurb: "Garden-wrapped malls with a chapel in the middle." },
+      { name: "Poblacion", type: "city", lat: 14.5657, lng: 121.0295, blurb: "Old quarter turned dense strip of bars and small kitchens." },
+      { name: "Salcedo Saturday Market", type: "city", lat: 14.5597, lng: 121.0227, blurb: "Weekly food market in the park, best before noon." },
+    ],
+  "philippines-bgc": [
+      { name: "Bonifacio High Street", type: "city", lat: 14.5506, lng: 121.0489, blurb: "Open-air spine of shops and lawns through the district." },
+      { name: "Manila American Cemetery", type: "culture", lat: 14.5378, lng: 121.0447, blurb: "17,000 graves and the largest WWII memorial abroad." },
+      { name: "The Mind Museum", type: "culture", lat: 14.5487, lng: 121.0503, blurb: "Hands-on science museum, good on a wet afternoon." },
+      { name: "Burgos Circle", type: "city", lat: 14.5546, lng: 121.0463, blurb: "Compact dining circle that fills up after dark." },
+    ],
   "philippines-cebu": [
       { name: "Kawasan Falls", type: "nature", lat: 9.7986, lng: 123.376, blurb: "Turquoise tiered falls and canyoneering." },
       { name: "Oslob whale sharks", type: "wildlife", lat: 9.4622, lng: 123.38, blurb: "Snorkel beside gentle whale sharks." },

@@ -31,7 +31,15 @@ for (const [id, title] of Object.entries(TITLES)) {
       if (!res.ok) { console.warn(`✗ ${id}: HTTP ${res.status}`); break; }
       const thumb = (await res.json()).thumbnail?.source;
       if (!thumb) { console.warn(`✗ ${id}: no thumbnail`); break; }
-      out[id] = thumb.replace(/\/(\d+)px-/, "/1280px-");
+      // Wikipedia serves these from thumb.wikimedia.org now; upload.wikimedia.org
+      // returns the identical file and is the host next.config allows, so pin it
+      // here rather than widening remotePatterns to a second CDN name. The utm
+      // query is tracking noise and breaks the extension sniff in
+      // download-photos.mjs.
+      out[id] = thumb
+        .replace(/\/(\d+)px-/, "/1280px-")
+        .replace("://thumb.wikimedia.org/", "://upload.wikimedia.org/")
+        .replace(/\?.*$/, "");
       console.log(`✓ ${id}`);
       fetched++;
       ok = true;

@@ -101,6 +101,12 @@ export const EVENTS: Record<string, { name: string; month: number; blurb: string
     "philippines-manila": [
       { name: "Feast of the Black Nazarene", month: 1, blurb: "Vast barefoot devotional procession through the old city." },
     ],
+    "philippines-makati": [
+      { name: "Christmas season", month: 12, blurb: "The world's longest — lights and carols from September on." },
+    ],
+    "philippines-bgc": [
+      { name: "BGC Arts Center season", month: 2, blurb: "Theatre, dance and gallery programming across the district." },
+    ],
     "philippines-cebu": [
       { name: "Sinulog Festival", month: 1, blurb: "The country's grandest fiesta — drums, dance and colour." },
     ],

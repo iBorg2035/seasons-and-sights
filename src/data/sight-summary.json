@@ -308,6 +308,20 @@
       "city"
     ]
   },
+  "philippines-makati": {
+    "count": 4,
+    "types": [
+      "culture",
+      "city"
+    ]
+  },
+  "philippines-bgc": {
+    "count": 4,
+    "types": [
+      "city",
+      "culture"
+    ]
+  },
   "philippines-cebu": {
     "count": 4,
     "types": [

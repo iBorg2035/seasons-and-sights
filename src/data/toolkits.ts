@@ -110,6 +110,8 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "newzealand-queenstown": { phrases: [{ en: "Hello", local: "Kia ora" }, { en: "Thank you", local: "Thanks / Ngā mihi" }, { en: "How much?", local: "How much?" }, { en: "Help!", local: "Help!" }], emergency: "111", tipping: "Not expected", water: "Tap water safe" },
   // ── Philippines ──
   "philippines-manila": { phrases: ph, ...PHIL },
+  "philippines-makati": { phrases: ph, ...PHIL },
+  "philippines-bgc": { phrases: ph, ...PHIL },
   "philippines-cebu": { phrases: ph, ...PHIL },
   "philippines-boracay": { phrases: ph, ...PHIL },
   "philippines-bohol": { phrases: ph, ...PHIL },

@@ -32,6 +32,8 @@ const REGIONS = [
   ["costa-rica-arenal", 10.4633, -84.6531, "DDDDWWSWWWWW"],
   ["india-agra", 27.1767, 78.0081, "DDSSSWWWWSDD"],
   ["philippines-manila", 14.5995, 120.9842, "DDDSSWWWWWSD"],
+  ["philippines-makati", 14.5547, 121.0244, "DDDSSWWWWWSD"],
+  ["philippines-bgc", 14.5508, 121.0495, "DDDSSWWWWWSD"],
   ["philippines-cebu", 10.3157, 123.8854, "DDDDDWWWWWWD"],
   ["philippines-boracay", 11.9674, 121.9248, "DDDDSWWWWWSS"],
   ["philippines-bohol", 9.85, 124.1435, "DDDDDWWWWWWS"],
