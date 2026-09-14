@@ -146,6 +146,14 @@ export const EVENTS: Record<string, { name: string; month: number; blurb: string
       { name: "Tết (Lunar New Year)", month: 2, blurb: "Vietnam's biggest holiday; the old town glows with lanterns." },
       { name: "Mid-Autumn Lantern Festival", month: 9, blurb: "Hội An's signature lantern-lit full-moon celebration." },
     ],
+    "vietnam-quynhon": [
+      { name: "Tết (Lunar New Year)", month: 2, blurb: "Vietnam's biggest holiday; much of the city closes for it." },
+      { name: "Cham Tower festivals", month: 3, blurb: "Binh Dinh's Champa heritage marked at the old towers." },
+    ],
+    "vietnam-nhatrang": [
+      { name: "Tết (Lunar New Year)", month: 2, blurb: "Vietnam's biggest holiday; beaches fill with domestic visitors." },
+      { name: "Po Nagar Festival", month: 4, blurb: "Cham temple pilgrimage with music, offerings and dance." },
+    ],
     "vietnam-hcmc": [
       { name: "Tết (Lunar New Year)", month: 2, blurb: "Nguyễn Huệ flower street and citywide festivities." },
       { name: "Reunification Day", month: 4, blurb: "April 30 parades and fireworks." },

@@ -45,6 +45,23 @@
       "nature"
     ]
   },
+  "vietnam-quynhon": {
+    "count": 4,
+    "types": [
+      "beach",
+      "nature",
+      "culture"
+    ]
+  },
+  "vietnam-nhatrang": {
+    "count": 4,
+    "types": [
+      "beach",
+      "culture",
+      "wildlife",
+      "nature"
+    ]
+  },
   "vietnam-hanoi": {
     "count": 4,
     "types": [

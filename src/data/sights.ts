@@ -43,6 +43,18 @@ export const SIGHTS: Record<string, Sight[]> = {
       { name: "An Bang Beach", type: "beach", lat: 15.91, lng: 108.338, blurb: "Relaxed sandy stretch minutes from the old town." },
       { name: "Marble Mountains", type: "nature", lat: 16.0036, lng: 108.2655, blurb: "Cave temples inside marble outcrops near Da Nang." },
     ],
+  "vietnam-quynhon": [
+      { name: "Ky Co Beach", type: "beach", lat: 13.7167, lng: 109.2833, blurb: "Cove of clear water between granite headlands." },
+      { name: "Eo Gio", type: "nature", lat: 13.7503, lng: 109.2897, blurb: "Windy cliff walk above the South China Sea." },
+      { name: "Banh It Cham Towers", type: "culture", lat: 13.8667, lng: 109.1167, blurb: "Hilltop brick towers from the Champa kingdom." },
+      { name: "Ghenh Rang & Quy Hoa", type: "nature", lat: 13.75, lng: 109.2167, blurb: "Coastal park, poet's tomb and a quiet crescent beach." },
+    ],
+  "vietnam-nhatrang": [
+      { name: "Nha Trang Beach", type: "beach", lat: 12.24, lng: 109.199, blurb: "Six kilometres of city sand facing the bay islands." },
+      { name: "Po Nagar Cham Towers", type: "culture", lat: 12.2653, lng: 109.1953, blurb: "Cham temple complex still in active worship." },
+      { name: "Hon Mun reefs", type: "wildlife", lat: 12.1667, lng: 109.3, blurb: "Marine reserve and the country's best-known dive site." },
+      { name: "Ba Ho Waterfalls", type: "nature", lat: 12.45, lng: 109.1833, blurb: "Three-tier falls and pools in the hills inland." },
+    ],
   "vietnam-hanoi": [
       { name: "Hoan Kiem Lake & Old Quarter", type: "city", lat: 21.0287, lng: 105.8525, blurb: "Lake-side heart of Hanoi's tangled old town." },
       { name: "Ha Long Bay", type: "nature", lat: 20.9101, lng: 107.1839, blurb: "Thousands of limestone karsts in an emerald sea." },
