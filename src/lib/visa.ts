@@ -15,7 +15,9 @@ export const PASSPORTS: { code: Passport; label: string }[] = [
 type Rule = { default: string } & Partial<Record<Passport, string>>;
 
 const VISA_RULES: Record<string, Rule> = {
-  Thailand: { default: "Visa-free 30–60 days" },
+  // Cut from 60 to 30 days on 15 Sep 2026 for most passports, including all five
+  // above; one 30-day extension (~฿1,900) is available at immigration.
+  Thailand: { default: "Visa-free 30 days (+30-day extension)" },
   Indonesia: { default: "Visa on arrival (30 days)" },
   Vietnam: { default: "eVisa (up to 90 days)" },
   Cambodia: { default: "eVisa / visa on arrival" },
