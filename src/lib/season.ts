@@ -292,6 +292,42 @@ export function formatStay(months: number): string {
   return `${days}d`;
 }
 
+type LegLength = Pick<ItineraryLeg, "days" | "durationMonths" | "months">;
+
+/**
+ * How many days a leg lasts.
+ *
+ * Planning legs are sized in months (`durationMonths`); booked legs carry the
+ * real night count from their dates in `days` and have no `durationMonths`.
+ * `months.length` is only the number of calendar months a stay *touches*, so
+ * using it as a length made every booked stop inside a single month read as a
+ * whole month — an 11-night stay shown as "1m".
+ */
+export function legDays(leg: LegLength): number {
+  if (leg.durationMonths != null) {
+    return Math.round(leg.durationMonths * DAYS_PER_MONTH);
+  }
+  if (leg.days != null) return leg.days;
+  return leg.months.length * DAYS_PER_MONTH;
+}
+
+/**
+ * A leg's length, labelled the way it was decided.
+ *
+ * Planning stays were chosen in months, so they keep formatStay's "2m" / "2w".
+ * Booked stays come from real dates, so they read as the actual nights — "11d",
+ * or whole weeks like "1w" — never rounded up to the month they fall in. A
+ * booked stop with no dates yet has no length to show.
+ */
+export function formatLegStay(leg: LegLength): string {
+  if (leg.durationMonths != null) return formatStay(leg.durationMonths);
+  if (leg.days != null) {
+    if (leg.days <= 0) return "dates TBD";
+    return leg.days % 7 === 0 ? `${leg.days / 7}w` : `${leg.days}d`;
+  }
+  return formatStay(leg.months.length);
+}
+
 /**
  * Average season fit over the months a stay touches.
  *

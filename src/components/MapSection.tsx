@@ -2,13 +2,14 @@
 
 import {
   fitQuality,
-  formatStay,
+  formatLegStay,
+  legDays,
   MONTH_NAMES,
   SEASON_META,
 } from "@/lib/season";
 import { resolveStartMonth, tripDateRanges } from "@/lib/trip-plan";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
-import type { SavedTripLite } from "@/lib/saved-trips";
+import { isBooked, type SavedTripLite } from "@/lib/saved-trips";
 import { RouteMap } from "@/components/RouteMap";
 
 function fmtDate(d: Date): string {
@@ -20,6 +21,8 @@ export function MapSection({ trip }: { trip: SavedTripLite }) {
   const legs = tripSlimLegs(trip);
   const ranges = tripDateRanges(trip, legs);
   const totalMonths = legs.reduce((sum, l) => sum + l.months.length, 0);
+  const totalDays = legs.reduce((sum, l) => sum + legDays(l), 0);
+  const firstRange = ranges.find((r) => r != null);
 
   if (legs.length === 0) {
     return (
@@ -47,7 +50,7 @@ export function MapSection({ trip }: { trip: SavedTripLite }) {
               <div
                 key={leg.region.id}
                 className={`${meta.dot}`}
-                style={{ flexGrow: leg.months.length }}
+                style={{ flexGrow: legDays(leg) }}
                 title={`${leg.region.name} · ${q.label}`}
               />
             );
@@ -72,14 +75,23 @@ export function MapSection({ trip }: { trip: SavedTripLite }) {
                 {leg.months
                   .map((m) => MONTH_NAMES[m - 1])
                   .join("/")}{" "}
-                ({formatStay(leg.durationMonths ?? leg.months.length)})
+                ({formatLegStay(leg)})
               </span>
             </li>
           ))}
         </ul>
         <p className="mt-3 text-xs text-slate-400">
-          {totalMonths} month{totalMonths === 1 ? "" : "s"} · starting{" "}
-          {MONTH_NAMES[start - 1]}
+          {isBooked(trip) ? (
+            <>
+              {totalDays} day{totalDays === 1 ? "" : "s"}
+              {firstRange && <> · from {fmtDate(firstRange.start)}</>}
+            </>
+          ) : (
+            <>
+              {totalMonths} month{totalMonths === 1 ? "" : "s"} · starting{" "}
+              {MONTH_NAMES[start - 1]}
+            </>
+          )}
         </p>
       </div>
     </div>

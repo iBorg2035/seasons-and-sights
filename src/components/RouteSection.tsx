@@ -10,8 +10,9 @@ import {
   SIGHT_TYPE_META,
   estimateTripCost,
   estimateSpendSoFar,
-  formatStay,
+  formatLegStay,
   formatUsd,
+  legDays,
 } from "@/lib/season";
 import {
   isFlexibleStart,
@@ -26,7 +27,7 @@ import { formatCents, listExpenses, totalCents } from "@/lib/expenses";
 import { listReservations, reservationTotalCents } from "@/lib/reservations";
 import { TRIP_RECORDS_EVENT } from "@/lib/trip-records";
 import { tripSlimLegs, tripToSlimStops } from "@/lib/trip-plan-slim";
-import type { SavedTripLite } from "@/lib/saved-trips";
+import { isBooked, type SavedTripLite } from "@/lib/saved-trips";
 import { assessTripHealth } from "@/lib/trip-health";
 import type { SightType } from "@/types";
 
@@ -147,6 +148,12 @@ export function RouteSection({
     onInterestsChange(next);
   }
   const totalMonths = legs.reduce((sum, l) => sum + l.months.length, 0);
+  const totalDays = legs.reduce((sum, l) => sum + legDays(l), 0);
+  // Booked trips are measured in real nights; a month count would round a
+  // 29-night trip across three stops up to "3 months".
+  const tripLength = isBooked(trip)
+    ? `${totalDays} day${totalDays === 1 ? "" : "s"}`
+    : `${totalMonths} month${totalMonths === 1 ? "" : "s"}`;
   const fitSummary = legs.every((l) => l.fit >= 80)
     ? "Every stop lands in dry season"
     : legs.some((l) => l.fit < 50)
@@ -225,7 +232,7 @@ export function RouteSection({
                 </span>
                 {leg.region.name}
                 <span className="text-xs text-slate-500/80">
-                  · {formatStay(leg.durationMonths ?? leg.months.length)}
+                  · {formatLegStay(leg)}
                 </span>
               </span>
               {i < legs.length - 1 && (
@@ -248,7 +255,7 @@ export function RouteSection({
               <div
                 key={leg.region.id}
                 className={`${meta.dot}`}
-                style={{ flexGrow: leg.months.length }}
+                style={{ flexGrow: legDays(leg) }}
                 title={`${leg.region.name} · ${q.label}`}
               />
             );
@@ -444,7 +451,7 @@ export function RouteSection({
           <span className="font-medium text-slate-800">
             {isFlexible ? "Flexible start" : `Starting ${MONTH_NAMES_LONG[start - 1]}`}
           </span>{" "}
-          · {totalMonths} month{totalMonths === 1 ? "" : "s"} total ·{" "}
+          · {tripLength} total ·{" "}
           {fitSummary}
           {totalCost > 0 && <> · ~{formatUsd(totalCost)} estimated</>}
         </p>
