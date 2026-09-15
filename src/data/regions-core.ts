@@ -56,11 +56,12 @@ export const REGIONS_CORE: Region[] = [
     lng: 98.9853,
     bookingDest: "Chiang Mai, Thailand",
     climateBlurb:
-      "Cool, dry air from November to February; a hot, hazy March–April; then the southwest monsoon brings afternoon rains May–October.",
-    months: climate("DDDDWWWWWWDD", {
+      "Cool, dry air from November to February; a hot, hazy March–April; then the southwest monsoon brings afternoon rains May–September, easing through October.",
+    months: climate("DDDDWWWWWSDD", {
       3: "crop-burning season — hazy skies",
       4: "hottest month, burning-season haze",
       9: "wettest month",
+      10: "wet first week, then the rains ease",
     }),
     sights: [],
   },

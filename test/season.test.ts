@@ -55,6 +55,18 @@ describe("bestMonths", () => {
     expect(bestMonths(chiangmai)).toBe("Nov–Apr");
   });
 
+  it("rates Chiang Mai's October as shoulder, not wet", () => {
+    // Open-Meteo 2020–2024: ~117mm over Oct 1–10, then ~46mm per ten days
+    // with around a dozen fully dry days in the month. Labelling it wet hid
+    // the city from October searches, and — since crowd is derived from the
+    // season when there's no override — also claimed October crowds were low.
+    expect(climateForMonth(chiangmai, 10).season).toBe("shoulder");
+    expect(crowdForMonth(chiangmai, 10)).toBe("mid");
+    // Shoulder months only count toward the best window when a region has no
+    // dry months, so the headline advice is unchanged.
+    expect(bestMonths(chiangmai)).toBe("Nov–Apr");
+  });
+
   it("treats a Mediterranean dry summer as the best window", () => {
     const albania = getRegion("albania-riviera") as Region;
     const kotor = getRegion("montenegro-kotor") as Region;

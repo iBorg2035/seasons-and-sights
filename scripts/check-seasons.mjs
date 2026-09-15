@@ -2,7 +2,7 @@
 // Flags any month curated "dry" that is actually among the wettest (or "wet"
 // that is among the driest). Run:  node scripts/check-seasons.mjs
 const REGIONS = [
-  ["thailand-chiangmai", 18.7883, 98.9853, "DDDDWWWWWWDD"],
+  ["thailand-chiangmai", 18.7883, 98.9853, "DDDDWWWWWSDD"],
   ["thailand-bangkok", 13.7563, 100.5018, "DDSSWWWWWWDD"],
   ["thailand-krabi", 8.0863, 98.9063, "DDDDWWWWWWSD"],
   ["thailand-kohsamui", 9.512, 100.0136, "SDDDDDDDWWWW"],
