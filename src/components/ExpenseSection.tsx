@@ -1,24 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DayStamp } from "@/lib/saved-trips";
 import {
   CATEGORY_META,
   EXPENSE_CATEGORIES,
   DUP_OK_ENTITY,
+  NO_EXPENSE_FILTER,
   describeAmount,
   duplicateKey,
+  filterExpenses,
   findDuplicate,
   findDuplicateGroups,
   formatCents,
+  isFilterActive,
   loggedAt,
   parseAmountToCents,
+  placesForExpenses,
   removeExpense,
   saveExpense,
+  sortExpenses,
   totalCents,
   totalsByCategory,
   type Expense,
   type ExpenseCategory,
+  type ExpenseFilter,
+  type ExpenseSort,
 } from "@/lib/expenses";
 import {
   CURRENCIES,
@@ -56,6 +63,7 @@ export function ExpenseSection({
   defaultDay,
   onChanged,
   currencyForDay,
+  placeFor,
 }: {
   tripId: string;
   expenses: Expense[];
@@ -69,6 +77,12 @@ export function ExpenseSection({
    * bundle.
    */
   currencyForDay?: (day: DayStamp) => CurrencyCode | undefined;
+  /**
+   * Which destination the trip was in on a day, or null if none/undated —
+   * same resolver the journal uses. Optional: without it the list simply
+   * offers no place filter, which is the right behaviour for an undated trip.
+   */
+  placeFor?: (day: DayStamp) => { name: string } | null;
 }) {
   const user = useOptionalAuth()?.user;
   const [day, setDay] = useState<DayStamp>(defaultDay);
@@ -100,6 +114,30 @@ export function ExpenseSection({
     setTickIn(DUP_OK_ENTITY, tripId, key, true);
     setKeptApart((prev) => new Set(prev).add(key));
     if (user) void mirrorRecord(user.id, tripId, DUP_OK_ENTITY, key);
+  }
+
+  // How the list is being read. Deliberately not persisted: a filter is a
+  // question you're asking right now, and coming back next week to a list that
+  // silently hides most of your spending would read as lost data. Being
+  // component state also keeps it out of localStorage, where a per-trip key is
+  // one forgotten trip id away from leaking between trips.
+  const [filter, setFilter] = useState<ExpenseFilter>(NO_EXPENSE_FILTER);
+  const [sort, setSort] = useState<ExpenseSort>("day");
+  // The page remounts per trip today, so this is belt-and-braces — but a
+  // filter surviving a trip switch would hide the new trip's rows for reasons
+  // invisible on screen.
+  useEffect(() => {
+    setFilter(NO_EXPENSE_FILTER);
+    setSort("day");
+  }, [tripId]);
+
+  function toggleCategory(c: ExpenseCategory) {
+    setFilter((f) => ({
+      ...f,
+      categories: f.categories.includes(c)
+        ? f.categories.filter((x) => x !== c)
+        : [...f.categories, c],
+    }));
   }
 
   // Receipts held on this device because there was no signal when they were
@@ -197,6 +235,13 @@ export function ExpenseSection({
     if (!saved) {
       setError("Couldn't save that expense. Check that browser storage is enabled.");
       return;
+    }
+    // A row you just typed must not vanish into a filter you set two minutes
+    // ago — with the form blanking itself at the same moment, that reads as
+    // the entry having been lost. Showing more than was asked for is the
+    // recoverable mistake here, and the cleared controls say what happened.
+    if (filterExpenses([saved], filter, placeOf).length === 0) {
+      setFilter(NO_EXPENSE_FILTER);
     }
     resetForm();
     onChanged(saved.id);
@@ -300,15 +345,66 @@ export function ExpenseSection({
   const hasTwin = (e: Expense) =>
     expenses.some((o) => o.id !== e.id && findDuplicate([o], e) !== undefined);
 
-  // Groups still awaiting a verdict. Dismissed ones drop out here rather than
-  // being filtered inside findDuplicateGroups, which keeps that function a
-  // statement about the data and not about what's been read.
-  const duplicateGroups = findDuplicateGroups(expenses).filter(
-    (g) => !keptApart.has(duplicateKey(g[0]))
+  const placeOf = useCallback(
+    (day: DayStamp) => placeFor?.(day)?.name ?? null,
+    [placeFor]
   );
 
+  /**
+   * Everything the filter says except the category chips. The tiles are both
+   * the category control and a readout, so they show totals for the slice
+   * you've narrowed to — "food in Hanoi" — while clicking one can't change
+   * its own number, which would make the tiles jump as you click them.
+   */
+  const scoped = useMemo(
+    () => filterExpenses(expenses, { ...filter, categories: [] }, placeOf),
+    [expenses, filter, placeOf]
+  );
+
+  /** The rows actually rendered: scoped, then by category, then ordered. */
+  const visible = useMemo(
+    () =>
+      sortExpenses(
+        filterExpenses(scoped, {
+          ...NO_EXPENSE_FILTER,
+          categories: filter.categories,
+        }),
+        sort
+      ),
+    [scoped, filter.categories, sort]
+  );
+
+  // Offered from the whole trip, not from `scoped` — a place dropdown that
+  // drops its own options once you pick one can't be changed back.
+  const places = useMemo(
+    () => (placeFor ? placesForExpenses(expenses, placeOf) : []),
+    [placeFor, expenses, placeOf]
+  );
+
+  const filtering = isFilterActive(filter);
+  // Below a handful of rows there is nothing to find, so the controls would be
+  // pure chrome — but they must not vanish while still hiding rows, or while
+  // still reordering them: deleting down to four rows with "largest first" set
+  // would otherwise leave no way back to day order.
+  const showFilters = expenses.length >= 5 || filtering || sort !== "day";
+
+  // Trip totals, not filtered ones: the heading answers "what has this trip
+  // cost", which a filter doesn't change. The filtered subtotal is shown with
+  // the filter controls instead.
   const total = totalCents(expenses);
-  const byCategory = totalsByCategory(expenses);
+  const byCategory = totalsByCategory(scoped);
+
+  // Read off the visible rows, not the whole trip: "Remove this one" deletes
+  // a specific row, and offering that for rows the filter is hiding — under a
+  // banner sitting above an empty list — is a delete aimed at something the
+  // user can't see. Unfiltered, `visible` is every row, so the warning behaves
+  // exactly as it did before.
+  // Dismissed groups drop out here rather than inside findDuplicateGroups,
+  // which keeps that function a statement about the data and not about what's
+  // been read.
+  const duplicateGroups = findDuplicateGroups(visible).filter(
+    (g) => !keptApart.has(duplicateKey(g[0]))
+  );
 
   return (
     <section className="space-y-4">
@@ -590,22 +686,187 @@ export function ExpenseSection({
         </p>
       ) : (
         <>
+          {/* The breakdown doubles as the category filter — the numbers were
+              already here, and the thing you want after reading "Lodging
+              $840" is the rows behind it. */}
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-            {EXPENSE_CATEGORIES.map((c) => (
-              <li
-                key={c}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center"
-              >
-                <div className="text-lg" aria-hidden>
-                  {CATEGORY_META[c].icon}
-                </div>
-                <div className="text-xs text-slate-500">{CATEGORY_META[c].label}</div>
-                <div className="text-sm font-semibold text-slate-900">
-                  {formatCents(byCategory[c])}
-                </div>
-              </li>
-            ))}
+            {EXPENSE_CATEGORIES.map((c) => {
+              const on = filter.categories.includes(c);
+              return (
+                <li key={c}>
+                  <button
+                    type="button"
+                    onClick={() => toggleCategory(c)}
+                    aria-pressed={on}
+                    aria-label={`${CATEGORY_META[c].label}, ${formatCents(
+                      byCategory[c]
+                    )} — ${on ? "stop filtering by this" : "show only these"}`}
+                    className={`w-full rounded-xl border px-3 py-2 text-center transition ${
+                      on
+                        ? "border-teal-600 bg-teal-50 ring-1 ring-teal-600"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="text-lg" aria-hidden>
+                      {CATEGORY_META[c].icon}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {CATEGORY_META[c].label}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-900">
+                      {formatCents(byCategory[c])}
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
+
+          {showFilters && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="min-w-[9rem] flex-1">
+                  <label
+                    className="block text-xs font-medium text-slate-500"
+                    htmlFor="expense-search"
+                  >
+                    Search notes
+                  </label>
+                  <input
+                    id="expense-search"
+                    type="search"
+                    value={filter.query}
+                    onChange={(e) =>
+                      setFilter((f) => ({ ...f, query: e.target.value }))
+                    }
+                    placeholder="market, hotel, taxi…"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-teal-500"
+                  />
+                </div>
+
+                {/* One-stop trips get no dropdown: the only option would be
+                    the whole list. Once a place is chosen the control stays
+                    even if the trip collapses to one place under it —
+                    otherwise the filter is still on with nothing to turn it
+                    off but a blanket clear. */}
+                {(places.length > 1 || filter.place !== null) && (
+                  <div>
+                    <label
+                      className="block text-xs font-medium text-slate-500"
+                      htmlFor="expense-place"
+                    >
+                      Destination
+                    </label>
+                    <select
+                      id="expense-place"
+                      value={filter.place ?? ""}
+                      onChange={(e) =>
+                        setFilter((f) => ({
+                          ...f,
+                          place: e.target.value || null,
+                        }))
+                      }
+                      className="mt-1 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-800"
+                    >
+                      <option value="">Anywhere</option>
+                      {places.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div>
+                  <label
+                    className="block text-xs font-medium text-slate-500"
+                    htmlFor="expense-from"
+                  >
+                    From
+                  </label>
+                  <input
+                    id="expense-from"
+                    type="date"
+                    value={filter.from}
+                    onChange={(e) =>
+                      setFilter((f) => ({ ...f, from: e.target.value }))
+                    }
+                    className="mt-1 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label
+                    className="block text-xs font-medium text-slate-500"
+                    htmlFor="expense-to"
+                  >
+                    To
+                  </label>
+                  <input
+                    id="expense-to"
+                    type="date"
+                    value={filter.to}
+                    onChange={(e) =>
+                      setFilter((f) => ({ ...f, to: e.target.value }))
+                    }
+                    className="mt-1 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-800"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    className="block text-xs font-medium text-slate-500"
+                    htmlFor="expense-sort"
+                  >
+                    Sort
+                  </label>
+                  <select
+                    id="expense-sort"
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value as ExpenseSort)}
+                    className="mt-1 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-800"
+                  >
+                    <option value="day">Newest first</option>
+                    <option value="amount">Largest first</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Always mounted, empty until it has something to say: a live
+                  region inserted at the same moment as its text is not
+                  announced, which would silence exactly the announcement that
+                  matters — that rows are now hidden. */}
+              <div
+                className={`flex flex-wrap items-center gap-3 text-sm ${
+                  filtering ? "mt-3 border-t border-slate-100 pt-3" : ""
+                }`}
+              >
+                <p className="text-slate-600" role="status" aria-live="polite">
+                  {filtering && (
+                    <>
+                      Showing{" "}
+                      <span className="font-semibold text-slate-900">
+                        {visible.length}
+                      </span>{" "}
+                      of {expenses.length} ·{" "}
+                      <span className="font-semibold text-slate-900">
+                        {formatCents(totalCents(visible))}
+                      </span>
+                    </>
+                  )}
+                </p>
+                {filtering && (
+                  <button
+                    type="button"
+                    onClick={() => setFilter(NO_EXPENSE_FILTER)}
+                    className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {duplicateGroups.map((group) => {
             const key = duplicateKey(group[0]);
@@ -650,8 +911,21 @@ export function ExpenseSection({
             );
           })}
 
+          {visible.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+              No expenses match these filters.{" "}
+              <button
+                type="button"
+                onClick={() => setFilter(NO_EXPENSE_FILTER)}
+                className="font-medium text-teal-700 underline hover:no-underline"
+              >
+                Clear them
+              </button>{" "}
+              to see all {expenses.length}.
+            </p>
+          ) : (
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            {expenses.map((e) => (
+            {visible.map((e) => (
               <li
                 key={e.id}
                 className={`flex items-center gap-3 px-4 py-2.5 ${
@@ -692,6 +966,7 @@ export function ExpenseSection({
               </li>
             ))}
           </ul>
+          )}
         </>
       )}
     </section>

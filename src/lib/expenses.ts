@@ -287,3 +287,123 @@ export function loggedAt(e: Expense): string {
 export function totalForDay(expenses: Expense[], day: DayStamp): number {
   return totalCents(expenses.filter((e) => e.day === day));
 }
+
+/** How the list is ordered. Not a filter, but always wanted next to one. */
+export type ExpenseSort = "day" | "amount";
+
+/**
+ * How the expense list is narrowed. One object rather than five loose pieces
+ * of state, so "is anything filtered?" and "clear it" are single expressions
+ * and can't go half-applied.
+ *
+ * Every axis has a value meaning "don't narrow on this", so the inactive
+ * filter is a real value (`NO_EXPENSE_FILTER`) rather than null or undefined.
+ */
+export interface ExpenseFilter {
+  /** Empty means every category — not "no categories", which shows nothing. */
+  categories: ExpenseCategory[];
+  /**
+   * Matched against the note only. Not the category (which has its own
+   * control) and not the amount: a search box that quietly also matches
+   * numbers makes "12" a confusing query.
+   */
+  query: string;
+  /** A destination name as the itinerary resolves it, or null for anywhere. */
+  place: string | null;
+  /** Inclusive day bounds; "" is unbounded on that side. */
+  from: DayStamp | "";
+  to: DayStamp | "";
+}
+
+export const NO_EXPENSE_FILTER: ExpenseFilter = {
+  categories: [],
+  query: "",
+  place: null,
+  from: "",
+  to: "",
+};
+
+/** Whether anything is being hidden — what "Clear filters" keys off. */
+export function isFilterActive(f: ExpenseFilter): boolean {
+  return (
+    f.categories.length > 0 ||
+    f.query.trim() !== "" ||
+    f.place !== null ||
+    f.from !== "" ||
+    f.to !== ""
+  );
+}
+
+/**
+ * Apply a filter. Purely a view operation — nothing here writes, so a filtered
+ * list can never be mistaken for the trip's real contents by a caller that
+ * totals it.
+ *
+ * `placeOf` resolves a day to a destination name and is supplied by the caller
+ * (from the itinerary), because expenses store a day and not a place: the
+ * place a spend happened is derived, and re-deriving it here would drag the
+ * destination dataset into this module.
+ *
+ * Day comparisons are plain string compares, which is exact for `DayStamp`'s
+ * `YYYY-MM-DD` and avoids parsing dates into a timezone.
+ */
+export function filterExpenses(
+  expenses: Expense[],
+  filter: ExpenseFilter,
+  placeOf?: (day: DayStamp) => string | null
+): Expense[] {
+  const query = filter.query.trim().toLowerCase();
+  return expenses.filter((e) => {
+    if (filter.categories.length > 0 && !filter.categories.includes(e.category))
+      return false;
+    if (filter.from && e.day < filter.from) return false;
+    if (filter.to && e.day > filter.to) return false;
+    if (query && !(e.note ?? "").toLowerCase().includes(query)) return false;
+    // An expense on a day the itinerary doesn't cover has no place, so it is
+    // not in the one being asked about.
+    if (filter.place !== null && placeOf?.(e.day) !== filter.place) return false;
+    return true;
+  });
+}
+
+/**
+ * Reorder a copy — callers hold the unsorted list for totals and duplicate
+ * detection, which must not change because the list is being read differently.
+ *
+ * Both orders end in the same day/updatedAt tie-break as `listExpenses`, so
+ * two rows that look identical keep a stable relative order however they're
+ * sorted.
+ */
+export function sortExpenses(expenses: Expense[], sort: ExpenseSort): Expense[] {
+  const rows = [...expenses];
+  if (sort === "amount") {
+    return rows.sort(
+      (a, b) =>
+        b.amountCents - a.amountCents ||
+        b.day.localeCompare(a.day) ||
+        b.updatedAt - a.updatedAt
+    );
+  }
+  return rows.sort(
+    (a, b) => b.day.localeCompare(a.day) || b.updatedAt - a.updatedAt
+  );
+}
+
+/**
+ * The destinations these expenses fall in, in itinerary order.
+ *
+ * Built from the expenses rather than from the trip's stops so the dropdown
+ * only ever offers places that would actually return something — a filter
+ * option that yields an empty list is a small lie.
+ */
+export function placesForExpenses(
+  expenses: Expense[],
+  placeOf: (day: DayStamp) => string | null
+): string[] {
+  const names = new Set<string>();
+  for (const e of [...expenses].sort((a, b) => a.day.localeCompare(b.day))) {
+    const name = placeOf(e.day);
+    if (name) names.add(name);
+  }
+  return [...names];
+}

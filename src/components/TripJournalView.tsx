@@ -172,6 +172,7 @@ export function TripJournalView({ tripId }: { tripId: string }) {
         defaultDay={defaultDay}
         onChanged={onRecordChanged(EXPENSE_ENTITY)}
         currencyForDay={currencyForDay}
+        placeFor={placeFor}
       />
     </div>
   );
