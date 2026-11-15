@@ -102,7 +102,11 @@ export async function POST(req: Request) {
       stream: toUIMessageStream({ stream: result.stream }),
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Assistant failed";
-    return Response.json({ error: message }, { status: 502 });
+    // Logged, not forwarded: upstream error text can carry provider internals.
+    console.error("[assistant] request failed", err);
+    return Response.json(
+      { error: "The assistant is unavailable right now — try again shortly." },
+      { status: 502 }
+    );
   }
 }
