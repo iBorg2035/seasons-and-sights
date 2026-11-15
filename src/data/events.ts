@@ -252,6 +252,18 @@ export const EVENTS: Record<string, { name: string; month: number; blurb: string
       { name: "Phuket Vegetarian Festival", month: 10, blurb: "Striking Taoist rites of fasting and body-piercing processions." },
       { name: "Songkran", month: 4, blurb: "Thai New Year water festival." },
     ],
+    "thailand-chiangrai": [
+      { name: "Chiang Rai Flower Festival", month: 12, blurb: "Cool-season gardens of tulips and lilies fill the city's parks." },
+      { name: "Lychee Fair", month: 5, blurb: "Harvest parade and markets for the province's prized fruit." },
+    ],
+    "thailand-udonthani": [
+      { name: "Thung Si Mueang Fair", month: 12, blurb: "The city's big annual fair — food, concerts and Isan crafts." },
+      { name: "Red Lotus Sea in bloom", month: 1, blurb: "Dawn boat rides across a lake carpeted in pink water lilies." },
+    ],
+    "thailand-khonkaen": [
+      { name: "Silk Festival & Phuk Siao", month: 12, blurb: "Mudmee silk fair with the Isan friendship-binding ceremony." },
+      { name: "Songkran on Khao Niao Road", month: 4, blurb: "Isan's biggest Thai New Year water fight and human wave." },
+    ],
     "indonesia-gili": [
       { name: "Bau Nyale", month: 2, blurb: "Lombok's sea-worm-catching festival, rooted in legend." },
       { name: "Independence Day", month: 8, blurb: "August 17 boat races and games." },

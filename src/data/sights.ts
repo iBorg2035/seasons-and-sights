@@ -403,6 +403,25 @@ export const SIGHTS: Record<string, Sight[]> = {
       { name: "Big Buddha", type: "culture", lat: 7.828, lng: 98.312, blurb: "A 45m marble Buddha over the island." },
       { name: "Phi Phi Islands & Maya Bay", type: "nature", lat: 7.679, lng: 98.766, blurb: "Iconic limestone bays, a day-trip away." },
     ],
+  "thailand-chiangrai": [
+      { name: "Wat Rong Khun (White Temple)", type: "culture", lat: 19.8242, lng: 99.7631, blurb: "A dazzling all-white contemporary temple." },
+      { name: "Wat Rong Suea Ten (Blue Temple)", type: "culture", lat: 19.9233, lng: 99.8419, blurb: "Sapphire-blue halls around a white seated Buddha." },
+      { name: "Baan Dam Museum", type: "culture", lat: 19.9919, lng: 99.8606, blurb: "Thawan Duchanee's dark-timbered 'Black House' compound." },
+      { name: "Doi Mae Salong", type: "nature", lat: 20.1667, lng: 99.6228, blurb: "Ridge-top tea terraces settled by Yunnanese families." },
+      { name: "Golden Triangle", type: "nature", lat: 20.3525, lng: 100.0828, blurb: "Where Thailand, Laos and Myanmar meet on the Mekong." },
+    ],
+  "thailand-udonthani": [
+      { name: "Red Lotus Sea", type: "nature", lat: 17.19, lng: 103.04, blurb: "A lake of pink water lilies, best at dawn Dec–Feb." },
+      { name: "Ban Chiang", type: "culture", lat: 17.4069, lng: 103.2364, blurb: "UNESCO Bronze Age site famed for its red-painted pottery." },
+      { name: "Phu Phra Bat Historical Park", type: "culture", lat: 17.7306, lng: 102.3564, blurb: "Balanced sandstone rocks and ancient shrines, UNESCO-listed." },
+      { name: "Nong Prajak Park", type: "city", lat: 17.4215, lng: 102.7786, blurb: "The city's lakeside park, busy at sunset." },
+    ],
+  "thailand-khonkaen": [
+      { name: "Phra Mahathat Kaen Nakhon", type: "culture", lat: 16.4117, lng: 102.8344, blurb: "Nine-storey stupa with views over the city lake." },
+      { name: "Bueng Kaen Nakhon", type: "city", lat: 16.4147, lng: 102.8389, blurb: "Lakeside promenade, evening market and food stalls." },
+      { name: "Phu Wiang Dinosaur Museum", type: "nature", lat: 16.6786, lng: 102.3517, blurb: "Fossil quarries and dinosaur finds in a national park." },
+      { name: "Ubolratana Dam", type: "nature", lat: 16.775, lng: 102.618, blurb: "Reservoir viewpoints and fish restaurants north of town." },
+    ],
   "indonesia-gili": [
       { name: "Gili Trawangan", type: "beach", lat: -8.35, lng: 116.04, blurb: "Car-free island of beaches and bars." },
       { name: "Gili Meno & Air snorkeling", type: "wildlife", lat: -8.355, lng: 116.06, blurb: "Turtles and reefs off the quieter Gilis." },
