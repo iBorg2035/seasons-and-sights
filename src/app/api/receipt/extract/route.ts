@@ -3,7 +3,7 @@ import { xai } from "@ai-sdk/xai";
 import { z } from "zod";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { requireAssistantAccess } from "@/lib/assistant/access";
-import { CURRENCY_CODES, type CurrencyCode } from "@/lib/money";
+import { CURRENCY_CODES, isCurrencyCode, type CurrencyCode } from "@/lib/money";
 import { EXPENSE_CATEGORIES } from "@/lib/expenses";
 
 export const maxDuration = 30;
@@ -49,7 +49,7 @@ const ReceiptSchema = z.object({
   day: z.string().nullable(),
 });
 
-function buildPrompt(hintCurrency: string | null): string {
+function buildPrompt(hintCurrency: CurrencyCode | null): string {
   return [
     "This is a photo of a travel receipt or purchase confirmation. Extract:",
     "- the TOTAL actually paid — not a subtotal, not a single line item's price",
@@ -106,8 +106,10 @@ export async function POST(req: Request) {
     return Response.json({ error: "Image is too large" }, { status: 400 });
   }
 
+  // Goes into the prompt verbatim, so only a known code is accepted — any
+  // other string is a client deciding what the model is told.
   const hint = form.get("hintCurrency");
-  const hintCurrency = typeof hint === "string" && hint ? hint : null;
+  const hintCurrency = isCurrencyCode(hint) ? hint : null;
 
   // The image lives in this Buffer for the duration of the request only —
   // never written to disk, a database, or storage. Extract, then discard.
@@ -129,7 +131,12 @@ export async function POST(req: Request) {
     });
     return Response.json(object);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Extraction failed";
-    return Response.json({ error: message }, { status: 502 });
+    // Upstream error text can carry provider internals; it belongs in the
+    // server log, not on the traveler's screen.
+    console.error("[receipt] extraction failed", err);
+    return Response.json(
+      { error: "Couldn't read that receipt right now — try again, or enter it manually." },
+      { status: 502 }
+    );
   }
 }

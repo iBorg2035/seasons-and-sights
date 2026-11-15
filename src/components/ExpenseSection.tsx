@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DayStamp } from "@/lib/saved-trips";
 import {
   CATEGORY_META,
@@ -155,8 +155,18 @@ export function ExpenseSection({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [day, currencyForDay, editing]);
 
+  // Set by startEdit when it switches the form to a row's currency: that
+  // currency change must keep the rate the row was stored at, not swap in the
+  // trip's current one — otherwise a note-only edit on a row logged before the
+  // trip's rate was corrected would silently re-convert it.
+  const keepRowRate = useRef(false);
+
   // Show the rate this trip would use, so it can be corrected before it's used.
   useEffect(() => {
+    if (keepRowRate.current) {
+      keepRowRate.current = false;
+      return;
+    }
     if (currency === "USD") return;
     setRateInput(String(rateFor(tripId, currency)?.unitsPerUsd ?? ""));
   }, [tripId, currency]);
@@ -218,6 +228,12 @@ export function ExpenseSection({
   }
 
   function submit(force = false) {
+    // A cleared date field; saveExpense would refuse it, and its failure
+    // message blames browser storage.
+    if (!day) {
+      setError("Pick a day for this expense.");
+      return;
+    }
     const draft =
       currency === "USD" ? buildUsdDraft() : buildForeignDraft();
     if (draft === null) return;
@@ -289,8 +305,10 @@ export function ExpenseSection({
     }
 
     // Remember the rate for the rest of the trip, and push it like any other
-    // record so the other device doesn't ask again.
-    if (rateFor(tripId, currency)?.unitsPerUsd !== parsedRate) {
+    // record so the other device doesn't ask again. Not on an untouched edit:
+    // that rate is the row's historical one, and writing it back would undo a
+    // later correction to the trip's rate.
+    if (!untouched && rateFor(tripId, currency)?.unitsPerUsd !== parsedRate) {
       if (setRate(tripId, currency, parsedRate) && user) {
         void mirrorRecord(user.id, tripId, FX_ENTITY, currency);
       }
@@ -313,6 +331,9 @@ export function ExpenseSection({
     setError(null);
     if (expense.foreign) {
       const { amountMinor, currency: code, unitsPerUsd } = expense.foreign;
+      // Only when the currency actually changes — otherwise the rate effect
+      // doesn't run, and a leftover flag would swallow the next manual change.
+      if (code !== currency) keepRowRate.current = true;
       setCurrency(code);
       setAmount(
         (amountMinor / 10 ** CURRENCIES[code].digits).toFixed(
@@ -437,6 +458,13 @@ export function ExpenseSection({
               <button
                 type="button"
                 onClick={() => {
+                  // There's one confirmation slot. Filling it again would drop
+                  // the scan already waiting there, whose queue row is gone —
+                  // so this row stays queued until that one is dealt with.
+                  if (pendingExtraction) {
+                    setError("Use or dismiss the scan above before reviewing another.");
+                    return;
+                  }
                   if (row.result) handleExtracted(row.result);
                   void queue.discard(row.id);
                 }}

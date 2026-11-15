@@ -144,3 +144,23 @@ describe("/api/assistant access control", () => {
     expect(streamTextMock).not.toHaveBeenCalled();
   });
 });
+
+describe("/api/assistant upstream failure", () => {
+  it("logs the provider's error and returns a generic message instead", async () => {
+    process.env.ASSISTANT_ALLOWED_EMAILS = "owner@example.com";
+    getServerUserMock.mockResolvedValue({ id: "u1", email: "owner@example.com" });
+    streamTextMock.mockImplementation(() => {
+      throw new Error("xai: invalid api key sk-internal-detail");
+    });
+    const logSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { POST } = await import("@/app/api/assistant/route");
+
+    const res = await POST(post(VALID_BODY));
+    const body = await res.json();
+
+    expect(res.status).toBe(502);
+    expect(body.error).not.toContain("sk-internal-detail");
+    expect(logSpy).toHaveBeenCalled();
+    logSpy.mockRestore();
+  });
+});
