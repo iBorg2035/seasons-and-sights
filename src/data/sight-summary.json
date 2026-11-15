@@ -502,6 +502,29 @@
       "nature"
     ]
   },
+  "thailand-chiangrai": {
+    "count": 5,
+    "types": [
+      "culture",
+      "nature"
+    ]
+  },
+  "thailand-udonthani": {
+    "count": 4,
+    "types": [
+      "nature",
+      "culture",
+      "city"
+    ]
+  },
+  "thailand-khonkaen": {
+    "count": 4,
+    "types": [
+      "culture",
+      "city",
+      "nature"
+    ]
+  },
   "indonesia-gili": {
     "count": 4,
     "types": [
