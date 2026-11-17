@@ -525,6 +525,124 @@
       "nature"
     ]
   },
+  "vietnam-danang": {
+    "count": 5,
+    "types": [
+      "beach",
+      "nature",
+      "wildlife",
+      "city"
+    ]
+  },
+  "laos-luangprabang": {
+    "count": 5,
+    "types": [
+      "nature",
+      "culture"
+    ]
+  },
+  "laos-vientiane": {
+    "count": 5,
+    "types": [
+      "culture",
+      "city"
+    ]
+  },
+  "singapore-singapore": {
+    "count": 5,
+    "types": [
+      "nature",
+      "city",
+      "culture",
+      "wildlife"
+    ]
+  },
+  "cambodia-phnompenh": {
+    "count": 5,
+    "types": [
+      "culture",
+      "city"
+    ]
+  },
+  "indonesia-yogyakarta": {
+    "count": 5,
+    "types": [
+      "culture",
+      "nature",
+      "city"
+    ]
+  },
+  "taiwan-taipei": {
+    "count": 5,
+    "types": [
+      "city",
+      "culture",
+      "nature"
+    ]
+  },
+  "southkorea-seoul": {
+    "count": 5,
+    "types": [
+      "culture",
+      "city",
+      "nature"
+    ]
+  },
+  "hongkong-hongkong": {
+    "count": 5,
+    "types": [
+      "nature",
+      "city",
+      "culture"
+    ]
+  },
+  "thailand-pai": {
+    "count": 5,
+    "types": [
+      "nature",
+      "culture",
+      "city"
+    ]
+  },
+  "thailand-sukhothai": {
+    "count": 5,
+    "types": [
+      "culture",
+      "nature"
+    ]
+  },
+  "thailand-ayutthaya": {
+    "count": 5,
+    "types": [
+      "culture",
+      "city"
+    ]
+  },
+  "thailand-kanchanaburi": {
+    "count": 5,
+    "types": [
+      "culture",
+      "nature"
+    ]
+  },
+  "thailand-kohlanta": {
+    "count": 5,
+    "types": [
+      "beach",
+      "culture",
+      "nature",
+      "wildlife"
+    ]
+  },
+  "thailand-kohchang": {
+    "count": 5,
+    "types": [
+      "beach",
+      "nature",
+      "culture",
+      "wildlife"
+    ]
+  },
   "indonesia-gili": {
     "count": 4,
     "types": [

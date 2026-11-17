@@ -221,6 +221,12 @@
   "philippines-coron": [
     8
   ],
+  "philippines-batanes": [
+    6
+  ],
+  "maldives-atolls": [
+    7
+  ],
   "thailand-huahin": [
     4,
     8
@@ -252,6 +258,66 @@
   "thailand-khonkaen": [
     4,
     12
+  ],
+  "vietnam-danang": [
+    2,
+    6
+  ],
+  "laos-luangprabang": [
+    4,
+    10
+  ],
+  "laos-vientiane": [
+    4,
+    11
+  ],
+  "singapore-singapore": [
+    2,
+    8
+  ],
+  "cambodia-phnompenh": [
+    4,
+    11
+  ],
+  "indonesia-yogyakarta": [
+    5,
+    9
+  ],
+  "taiwan-taipei": [
+    2,
+    6
+  ],
+  "southkorea-seoul": [
+    5,
+    11
+  ],
+  "hongkong-hongkong": [
+    2,
+    9
+  ],
+  "thailand-pai": [
+    4,
+    11
+  ],
+  "thailand-sukhothai": [
+    4,
+    11
+  ],
+  "thailand-ayutthaya": [
+    4,
+    12
+  ],
+  "thailand-kanchanaburi": [
+    4,
+    11
+  ],
+  "thailand-kohlanta": [
+    3,
+    11
+  ],
+  "thailand-kohchang": [
+    1,
+    4
   ],
   "indonesia-gili": [
     2,

@@ -18,6 +18,7 @@ import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
 import { FX_ENTITY } from "@/lib/fx";
 import { mirrorRecord, syncRecords } from "@/lib/supabase/trip-records";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 /**
  * The day a new entry should default to: today while the trip is under way,
@@ -40,6 +41,8 @@ export function TripJournalView({ tripId }: { tripId: string }) {
   const [loaded, setLoaded] = useState(false);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+
+  useDocumentTitle(trip ? `${trip.name} — journal` : undefined);
 
   const reloadRecords = useCallback(() => {
     setEntries(listEntries(tripId));

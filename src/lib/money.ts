@@ -47,6 +47,7 @@ export const CURRENCIES = {
   IDR: { symbol: "Rp", digits: 2, name: "Indonesian rupiah" },
   INR: { symbol: "₹", digits: 2, name: "Indian rupee" },
   KHR: { symbol: "៛", digits: 2, name: "Cambodian riel" },
+  LAK: { symbol: "₭", digits: 2, name: "Lao kip" },
   LKR: { symbol: "Rs", digits: 2, name: "Sri Lankan rupee" },
   MAD: { symbol: "DH", digits: 2, name: "Moroccan dirham" },
   MVR: { symbol: "Rf", digits: 2, name: "Maldivian rufiyaa" },
@@ -59,6 +60,7 @@ export const CURRENCIES = {
   SGD: { symbol: "$", digits: 2, name: "Singapore dollar" },
   THB: { symbol: "฿", digits: 2, name: "Thai baht" },
   TRY: { symbol: "₺", digits: 2, name: "Turkish lira" },
+  TWD: { symbol: "NT$", digits: 2, name: "New Taiwan dollar" },
   TZS: { symbol: "TSh", digits: 2, name: "Tanzanian shilling" },
   ZAR: { symbol: "R", digits: 2, name: "South African rand" },
 } as const;

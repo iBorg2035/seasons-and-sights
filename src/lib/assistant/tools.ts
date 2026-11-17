@@ -8,6 +8,7 @@ import {
   getVisaForDestination,
   planRouteFromStops,
   searchDestinations,
+  suggestStopsFromInput,
 } from "@/lib/assistant/tools-data";
 import type { TripContextPayload } from "@/lib/assistant/types";
 
@@ -139,6 +140,23 @@ export function createAssistantTools(tripContext?: TripContextPayload | null) {
           ),
           startMonth
         ),
+    }),
+
+    suggestStops: tool({
+      description:
+        "Propose stops to add to the traveler's open trip. Call this whenever they ask to add destinations, or accept a suggestion to. It does NOT change the trip: the traveler sees the list with an 'Add to trip' button and decides. Use real destination ids from searchDestinations/getDestination.",
+      inputSchema: z.object({
+        stops: z
+          .array(
+            z.object({
+              regionId: z.string(),
+              durationMonths: z.number().min(1 / 30).max(12).default(1),
+            })
+          )
+          .min(1)
+          .max(20),
+      }),
+      execute: async ({ stops }) => suggestStopsFromInput(stops),
     }),
 
     getLiveWeather: tool({

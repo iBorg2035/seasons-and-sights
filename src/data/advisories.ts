@@ -29,6 +29,7 @@ export const ADVISORY: Record<string, AdvisoryNote> = {
   Cambodia: { level: "low", text: "Safe and welcoming; landmine risk only in remote rural areas." },
   Laos: { level: "low", text: "Very safe; unexploded ordnance in remote eastern regions." },
   Malaysia: { level: "low", text: "Safe; petty crime in Kuala Lumpur tourist areas." },
+  Singapore: { level: "low", text: "Very safe; strict laws on drugs, vaping and littering." },
   Indonesia: { level: "moderate", text: "Exercise caution in Papua; otherwise safe in tourist regions." },
   Philippines: { level: "moderate", text: "Avoid parts of Mindanao; elsewhere welcoming and safe." },
   // ── South / East Asia ──
@@ -38,6 +39,7 @@ export const ADVISORY: Record<string, AdvisoryNote> = {
   Japan: { level: "low", text: "Very safe; earthquake awareness advised." },
   "South Korea": { level: "low", text: "Very safe." },
   Taiwan: { level: "low", text: "Very safe." },
+  "Hong Kong": { level: "low", text: "Safe; national security laws are broad — steer clear of protests." },
   China: { level: "low", text: "Safe; increased surveillance and restricted topics online." },
   Maldives: { level: "low", text: "Very safe; conservative local islands." },
   // ── South America ──

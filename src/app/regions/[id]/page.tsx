@@ -1,3 +1,4 @@
+import { countryHref } from "@/lib/countries";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -103,7 +104,13 @@ export default async function RegionPage({
               {region.name}
             </h1>
             <p className="text-white/85">
-              {region.country} · {region.continent}
+              <Link
+                href={countryHref(region.country)}
+                className="underline decoration-white/40 underline-offset-2 hover:decoration-white"
+              >
+                {region.country}
+              </Link>{" "}
+              · {region.continent}
             </p>
           </div>
           <SeasonBadge season={current.season} suffix="now" />

@@ -4,10 +4,14 @@ import { useState } from "react";
 import { AssistantChat } from "@/components/AssistantChat";
 import type { TripContextPayload } from "@/lib/assistant/types";
 import type { SightType } from "@/types";
+import type { SuggestedStop } from "@/lib/assistant/suggested-stops";
 
 export function TripCopilot({
   trip,
+  onAddStops,
 }: {
+  /** Adds suggested stops to the trip's unsaved working copy. */
+  onAddStops?: (stops: SuggestedStop[]) => number;
   trip: {
     id: string;
     name: string;
@@ -51,7 +55,12 @@ export function TripCopilot({
         </button>
       </div>
       {open && (
-        <AssistantChat tripContext={tripContext} compact className="bg-white/90" />
+        <AssistantChat
+          tripContext={tripContext}
+          compact
+          className="bg-white/90"
+          onAddStops={onAddStops}
+        />
       )}
     </section>
   );

@@ -332,6 +332,46 @@ export function planRouteFromStops(
   };
 }
 
+/**
+ * Resolve a proposed list of stops against the catalog, for the chat's
+ * "Add to trip" button. Changes nothing — the traveler applies it, or doesn't.
+ */
+export function suggestStopsFromInput(
+  stops: { regionId: string; durationMonths?: number }[]
+) {
+  const resolved: {
+    regionId: string;
+    name: string;
+    country: string;
+    durationMonths: number;
+    stay: string;
+  }[] = [];
+  const unknown: string[] = [];
+  for (const stop of stops) {
+    const region = getRegion(stop.regionId);
+    if (!region) {
+      unknown.push(stop.regionId);
+      continue;
+    }
+    const durationMonths = Math.min(12, Math.max(1 / 30, stop.durationMonths ?? 1));
+    resolved.push({
+      regionId: region.id,
+      name: region.name,
+      country: region.country,
+      durationMonths,
+      stay: formatStay(durationMonths),
+    });
+  }
+  if (resolved.length === 0) {
+    return { error: "No valid destination ids in stops.", unknown };
+  }
+  return {
+    stops: resolved,
+    unknown,
+    note: "Shown to the traveler with an Add-to-trip button. Nothing is added until they press it and save.",
+  };
+}
+
 export async function getLiveWeatherForRegion(regionId: string) {
   const r = getRegion(regionId);
   if (!r) return { error: `Unknown destination id: ${regionId}` };
