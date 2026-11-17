@@ -121,6 +121,31 @@ export function createTrip(
 }
 
 /**
+ * Copy a trip's plan into a new trip — the way to try a second version of a
+ * route without losing the first.
+ *
+ * Copies the plan only: name, start, stops, interests, mode and dates. Not the
+ * journal, expenses, reservations or ticks — those record what happened on one
+ * particular trip, and a copy that arrived with someone's diary and spending
+ * already in it would be reporting things that never happened to it. Also not
+ * `ownerId`: a copy of a trip shared with you is yours, not the owner's.
+ */
+export function duplicateTrip(
+  source: Pick<
+    SavedTripLite,
+    "name" | "start" | "stops" | "interests" | "mode" | "bookedDates"
+  >
+): SavedTripLite | null {
+  return createTrip(`${source.name} (copy)`, {
+    start: source.start,
+    stops: source.stops,
+    interests: source.interests,
+    mode: source.mode,
+    bookedDates: source.bookedDates?.map((d) => (d ? { ...d } : null)),
+  });
+}
+
+/**
  * Move a stop, carrying its committed date with it. Use this rather than
  * splicing `stops` directly: `bookedDates` is index-aligned, so a bare
  * reorder would leave every date attached to the wrong destination.

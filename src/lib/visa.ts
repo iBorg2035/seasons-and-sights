@@ -19,6 +19,11 @@ const VISA_RULES: Record<string, Rule> = {
   // above; one 30-day extension (~฿1,900) is available at immigration.
   Thailand: { default: "Visa-free 30 days (+30-day extension)" },
   Indonesia: { default: "Visa on arrival (30 days)" },
+  Laos: { default: "eVisa / visa on arrival (30 days)" },
+  Singapore: { default: "Visa-free 90 days", CA: "Visa-free 30 days" },
+  Taiwan: { default: "Visa-free 90 days" },
+  "South Korea": { default: "Visa-free 90 days (K-ETA may apply)", CA: "Visa-free 6 months (K-ETA may apply)" },
+  "Hong Kong": { default: "Visa-free 90 days", UK: "Visa-free 180 days" },
   Vietnam: { default: "eVisa (up to 90 days)" },
   Cambodia: { default: "eVisa / visa on arrival" },
   Philippines: { default: "Visa-free ~30 days" },

@@ -195,6 +195,15 @@ create policy "Editors see their invites"
   to authenticated
   using (auth.uid() = editor_id);
 
+-- An editor can remove themselves, so "leave this trip" works without the
+-- owner having to do it for them. Scoped to their own row only.
+drop policy if exists "Editors can leave" on public.trip_editors;
+create policy "Editors can leave"
+  on public.trip_editors
+  for delete
+  to authenticated
+  using (auth.uid() = editor_id);
+
 -- Widen the trips RLS so editors can read AND update the owner's trip.
 drop policy if exists "Editors can read trips" on public.trips;
 create policy "Editors can read trips"

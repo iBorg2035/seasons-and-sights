@@ -4,6 +4,12 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import type { TripContextPayload } from "@/lib/assistant/types";
+import {
+  parseSuggestedStops,
+  type SuggestedStop,
+} from "@/lib/assistant/suggested-stops";
+import { getSlimRegion } from "@/data/regions-slim";
+import { formatStay } from "@/lib/season";
 
 const SUGGESTIONS_DEFAULT = [
   "Where is dry season in July for beaches under $80/day?",
@@ -40,6 +46,7 @@ function toolLabel(partType: string): string {
     assessTrip: "Scoring trip health",
     planRoute: "Optimizing route",
     getLiveWeather: "Fetching live weather",
+    suggestStops: "Suggesting stops",
   };
   return labels[name] ?? name;
 }
@@ -48,7 +55,14 @@ export function AssistantChat({
   tripContext,
   compact = false,
   className = "",
+  onAddStops,
 }: {
+  /**
+   * Puts suggested stops into the open trip, returning how many were new.
+   * Absent on the standalone assistant page, where there is no trip to add
+   * to — suggestions then render as a plain list with no button.
+   */
+  onAddStops?: (stops: SuggestedStop[]) => number;
   tripContext?: TripContextPayload | null;
   compact?: boolean;
   className?: string;
@@ -73,6 +87,10 @@ export function AssistantChat({
   });
 
   const [input, setInput] = useState("");
+  // Which suggestions have been applied, by tool-call id → how many were new.
+  // Component state, so it resets with the chat and never outlives the trip
+  // page it belongs to (TripView is keyed per trip).
+  const [applied, setApplied] = useState<Record<string, number>>({});
   const busy = status === "submitted" || status === "streaming";
   const suggestions = tripContext ? SUGGESTIONS_TRIP : SUGGESTIONS_DEFAULT;
 
@@ -163,6 +181,65 @@ export function AssistantChat({
                     ))}
                   </div>
                 )}
+                {!isUser &&
+                  toolParts.map((part, i) => {
+                    const p = part as {
+                      type: string;
+                      state?: string;
+                      output?: unknown;
+                      toolCallId?: string;
+                    };
+                    if (p.type !== "tool-suggestStops") return null;
+                    if (p.state !== "output-available") return null;
+                    const stops = parseSuggestedStops(
+                      p.output,
+                      (id) => getSlimRegion(id) !== undefined
+                    );
+                    if (stops.length === 0) return null;
+                    const key = p.toolCallId ?? `${message.id}-${i}`;
+                    const done = applied[key];
+                    return (
+                      <div
+                        key={key}
+                        className="mb-2 rounded-xl border border-teal-200 bg-white p-3 text-slate-800 dark:border-teal-900 dark:bg-zinc-950 dark:text-slate-100"
+                      >
+                        <p className="text-xs font-semibold uppercase tracking-wide text-teal-800 dark:text-teal-200">
+                          Suggested stops
+                        </p>
+                        <ul className="mt-1.5 space-y-0.5">
+                          {stops.map((s) => (
+                            <li key={s.regionId}>
+                              {s.name}{" "}
+                              <span className="text-slate-500">
+                                · {formatStay(s.durationMonths)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                        {onAddStops &&
+                          (done === undefined ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setApplied((a) => ({
+                                  ...a,
+                                  [key]: onAddStops(stops),
+                                }))
+                              }
+                              className="mt-2 rounded-lg bg-sky-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-900"
+                            >
+                              Add {stops.length === 1 ? "this stop" : `these ${stops.length} stops`} to trip
+                            </button>
+                          ) : (
+                            <p role="status" className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+                              {done === 0
+                                ? "Already in this trip — nothing to add."
+                                : `Added ${done} ${done === 1 ? "stop" : "stops"}. Review them under Stops, then Save.`}
+                            </p>
+                          ))}
+                      </div>
+                    );
+                  })}
                 {text ? (
                   <div className="whitespace-pre-wrap break-words">{text}</div>
                 ) : (

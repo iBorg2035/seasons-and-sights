@@ -232,6 +232,12 @@ export const EVENTS: Record<string, { name: string; month: number; blurb: string
     "philippines-coron": [
       { name: "Coron Town Fiesta", month: 8, blurb: "Patronal feast with boat parades around the bay." },
     ],
+    "philippines-batanes": [
+      { name: "Batanes Day", month: 6, blurb: "Province-wide founding-day parades, dances and boat races." },
+    ],
+    "maldives-atolls": [
+      { name: "Independence Day", month: 7, blurb: "Parades and cultural shows on 26 July, centred on Malé." },
+    ],
     "thailand-huahin": [
       { name: "Hua Hin Jazz Festival", month: 8, blurb: "Free seaside concerts the royal resort town is known for." },
       { name: "Songkran", month: 4, blurb: "Thai New Year water festival." },
@@ -263,6 +269,66 @@ export const EVENTS: Record<string, { name: string; month: number; blurb: string
     "thailand-khonkaen": [
       { name: "Silk Festival & Phuk Siao", month: 12, blurb: "Mudmee silk fair with the Isan friendship-binding ceremony." },
       { name: "Songkran on Khao Niao Road", month: 4, blurb: "Isan's biggest Thai New Year water fight and human wave." },
+    ],
+    "vietnam-danang": [
+      { name: "Da Nang International Fireworks Festival", month: 6, blurb: "Weeks of competing national displays over the Han River." },
+      { name: "Tet (Lunar New Year)", month: 2, blurb: "Flower markets and family celebrations; many businesses close." },
+    ],
+    "laos-luangprabang": [
+      { name: "Pi Mai (Lao New Year)", month: 4, blurb: "Three days of water-throwing, processions and sand stupas." },
+      { name: "Boun Lai Heua Fai", month: 10, blurb: "Candle-lit fire boats set adrift on the Mekong." },
+    ],
+    "laos-vientiane": [
+      { name: "Boun That Luang", month: 11, blurb: "The country's biggest festival, around its golden stupa." },
+      { name: "Pi Mai (Lao New Year)", month: 4, blurb: "Citywide water-throwing for the new year." },
+    ],
+    "singapore-singapore": [
+      { name: "Chinese New Year & Chingay", month: 2, blurb: "Chinatown lights and a huge street parade." },
+      { name: "National Day", month: 8, blurb: "Parade, flypast and fireworks over Marina Bay." },
+    ],
+    "cambodia-phnompenh": [
+      { name: "Bon Om Touk (Water Festival)", month: 11, blurb: "Dragon-boat races as the Tonlé Sap reverses its flow." },
+      { name: "Khmer New Year", month: 4, blurb: "Three days of temple visits, games and water." },
+    ],
+    "indonesia-yogyakarta": [
+      { name: "Waisak at Borobudur", month: 5, blurb: "Monks' procession and lanterns for the Buddha's birthday." },
+      { name: "Sekaten", month: 9, blurb: "A week of gamelan and fairs for the Prophet's birthday." },
+    ],
+    "taiwan-taipei": [
+      { name: "Lantern Festival", month: 2, blurb: "Sky lanterns released at Pingxi and city-wide displays." },
+      { name: "Dragon Boat Festival", month: 6, blurb: "River races and sticky-rice zongzi." },
+    ],
+    "southkorea-seoul": [
+      { name: "Lotus Lantern Festival", month: 5, blurb: "Lantern parades for the Buddha's birthday." },
+      { name: "Seoul Lantern Festival", month: 11, blurb: "Illuminated sculptures along the Cheonggyecheon stream." },
+    ],
+    "hongkong-hongkong": [
+      { name: "Chinese New Year", month: 2, blurb: "Flower markets, a night parade and harbour fireworks." },
+      { name: "Mid-Autumn & Tai Hang Fire Dragon", month: 9, blurb: "Lanterns and a 67-metre dragon of burning incense." },
+    ],
+    "thailand-pai": [
+      { name: "Pai Jazz & Blues Fest", month: 11, blurb: "Small open-air stages across the valley." },
+      { name: "Songkran", month: 4, blurb: "Thai New Year water fights on the walking street." },
+    ],
+    "thailand-sukhothai": [
+      { name: "Loy Krathong & Candle Festival", month: 11, blurb: "The festival's birthplace — lanterns and light shows in the old city." },
+      { name: "Songkran", month: 4, blurb: "Thai New Year water festival." },
+    ],
+    "thailand-ayutthaya": [
+      { name: "Ayutthaya World Heritage Fair", month: 12, blurb: "Light-and-sound shows among the ruins." },
+      { name: "Songkran", month: 4, blurb: "Water fights — with elephants joining in." },
+    ],
+    "thailand-kanchanaburi": [
+      { name: "River Kwai Bridge Week", month: 11, blurb: "Light-and-sound show re-telling the bridge's wartime story." },
+      { name: "Songkran", month: 4, blurb: "Thai New Year water festival." },
+    ],
+    "thailand-kohlanta": [
+      { name: "Laanta Lanta Festival", month: 3, blurb: "Music, food and sea-gypsy culture in the old town." },
+      { name: "Loy Rua", month: 11, blurb: "The Urak Lawoi boat-floating ceremony." },
+    ],
+    "thailand-kohchang": [
+      { name: "Yutthanavi Day", month: 1, blurb: "Commemorates the 1941 naval battle off the island." },
+      { name: "Songkran", month: 4, blurb: "Thai New Year water fights along White Sand Beach." },
     ],
     "indonesia-gili": [
       { name: "Bau Nyale", month: 2, blurb: "Lombok's sea-worm-catching festival, rooted in legend." },

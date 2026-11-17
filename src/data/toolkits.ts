@@ -49,6 +49,42 @@ const khm: Phrase[] = [
   { en: "How much?", local: "Tlay ponman?" },
   { en: "Help!", local: "Chuoy phong!" },
 ];
+const lao: Phrase[] = [
+  { en: "Hello", local: "Sabaidee (ສະບາຍດີ)" },
+  { en: "Thank you", local: "Khop chai (ຂອບໃຈ)" },
+  { en: "How much?", local: "Thao dai? (ເທົ່າໃດ)" },
+  { en: "Help!", local: "Suay dae! (ຊ່ວຍແດ່)" },
+];
+const zh: Phrase[] = [
+  { en: "Hello", local: "Nǐ hǎo (你好)" },
+  { en: "Thank you", local: "Xièxie (謝謝)" },
+  { en: "How much?", local: "Duōshǎo qián? (多少錢)" },
+  { en: "Help!", local: "Jiùmìng! (救命)" },
+];
+const yue: Phrase[] = [
+  { en: "Hello", local: "Néih hóu (你好)" },
+  { en: "Thank you", local: "M̀h'gōi (唔該)" },
+  { en: "How much?", local: "Géi dō chín? (幾多錢)" },
+  { en: "Help!", local: "Gau mehng! (救命)" },
+];
+const ko: Phrase[] = [
+  { en: "Hello", local: "Annyeonghaseyo (안녕하세요)" },
+  { en: "Thank you", local: "Gamsahamnida (감사합니다)" },
+  { en: "How much?", local: "Eolmayeyo? (얼마예요)" },
+  { en: "Help!", local: "Dowajuseyo! (도와주세요)" },
+];
+// English is the working language; these are the Malay and Mandarin you will hear.
+const sg: Phrase[] = [
+  { en: "Hello", local: "Hello / Nǐ hǎo (你好)" },
+  { en: "Thank you", local: "Terima kasih / Xièxie (谢谢)" },
+  { en: "How much?", local: "Berapa? / Duōshǎo qián? (多少钱)" },
+  { en: "Help!", local: "Tolong! / Jiùmìng! (救命)" },
+];
+const LAO = { emergency: "1191 police · 1195 ambulance · 1192 tourist police", tipping: "Not expected; small tips welcome", water: "Not potable — drink bottled" };
+const SING = { emergency: "999 police · 995 ambulance/fire", tipping: "Not expected; 10% service charge is usual", water: "Tap water safe" };
+const TAIW = { emergency: "110 police · 119 ambulance/fire", tipping: "Not customary", water: "Tap best boiled; bottled common" };
+const KOR = { emergency: "112 police · 119 ambulance/fire · 1330 tourist helpline", tipping: "No tipping", water: "Tap water safe" };
+const HK = { emergency: "999", tipping: "10% service charge usual; round up taxis", water: "Tap water safe; many prefer boiled" };
 const THAI = { emergency: "191 police · 1669 ambulance · 1155 tourist police", tipping: "Not expected; round up, ~10% at upscale spots", water: "Not potable — drink bottled" };
 const INDO = { emergency: "112 · 110 police · 118 ambulance", tipping: "Not expected; round up", water: "Not potable — drink bottled" };
 const KHM = { emergency: "117 police · 119 ambulance", tipping: "Not expected; small tips welcome", water: "Not potable — drink bottled" };
@@ -138,6 +174,21 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "thailand-chiangrai": { phrases: th, ...THAI },
   "thailand-udonthani": { phrases: th, ...THAI },
   "thailand-khonkaen": { phrases: th, ...THAI },
+  "vietnam-danang": { phrases: vn, ...VIET },
+  "laos-luangprabang": { phrases: lao, ...LAO },
+  "laos-vientiane": { phrases: lao, ...LAO },
+  "singapore-singapore": { phrases: sg, ...SING },
+  "cambodia-phnompenh": { phrases: khm, ...KHM },
+  "indonesia-yogyakarta": { phrases: idn, ...INDO },
+  "taiwan-taipei": { phrases: zh, ...TAIW },
+  "southkorea-seoul": { phrases: ko, ...KOR },
+  "hongkong-hongkong": { phrases: yue, ...HK },
+  "thailand-pai": { phrases: th, ...THAI },
+  "thailand-sukhothai": { phrases: th, ...THAI },
+  "thailand-ayutthaya": { phrases: th, ...THAI },
+  "thailand-kanchanaburi": { phrases: th, ...THAI },
+  "thailand-kohlanta": { phrases: th, ...THAI },
+  "thailand-kohchang": { phrases: th, ...THAI },
   "indonesia-gili": { phrases: idn, ...INDO },
   "indonesia-komodo": { phrases: idn, ...INDO },
   "indonesia-nusapenida": { phrases: idn, ...INDO },

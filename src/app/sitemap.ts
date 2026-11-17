@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { REGIONS } from "@/data/regions";
+import { countrySlug } from "@/lib/countries";
 
 const SITE = "https://seasons-and-sights.vercel.app";
 
@@ -28,5 +29,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
-  return [...pages, ...regions];
+  const countries = [...new Set(REGIONS.map((r) => countrySlug(r.country)))].map(
+    (slug) => ({
+      url: `${SITE}/countries/${slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })
+  );
+  return [...pages, ...countries, ...regions];
 }

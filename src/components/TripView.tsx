@@ -10,6 +10,7 @@ import {
   saveTrip,
   hasUnsavedChanges,
   deleteSavedTrip,
+  duplicateTrip,
   SAVED_TRIPS_EVENT,
   type SavedTripLite,
 } from "@/lib/saved-trips";
@@ -26,6 +27,8 @@ import {
 import { SyncBadge } from "@/components/SyncBadge";
 import { ShareTripButton } from "@/components/ShareTripButton";
 import { InviteEditorDialog } from "@/components/InviteEditorDialog";
+import { leaveSharedTrip } from "@/lib/supabase/collaborate";
+import { applySuggestedStops } from "@/lib/assistant/suggested-stops";
 import { RouteSection } from "@/components/RouteSection";
 import { StopsSection } from "@/components/StopsSection";
 import { PrepSection } from "@/components/PrepSection";
@@ -60,6 +63,7 @@ import {
 } from "@/lib/reservations";
 import { useUnsavedGuard } from "@/lib/use-unsaved-guard";
 import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 const SECTIONS = [
   { id: "copilot", label: "Co-pilot" },
@@ -94,17 +98,24 @@ export function TripView({
   const [inviteOpen, setInviteOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("route");
   const [saveError, setSaveError] = useState(false);
+  const [leaveError, setLeaveError] = useState(false);
 
   // Snapshot of the trip as it was when the page loaded, for the "reset to
   // last saved" escape hatch. In-memory only (per page session); reloading
   // makes the last auto-saved state the new baseline, which is correct.
   const dirty = !!trip && !!saved && hasUnsavedChanges(trip, saved);
 
+  // The saved name, not the draft: the tab shouldn't retitle per keystroke.
+  useDocumentTitle(saved?.name);
+
   // Covers tab close, reload, and every in-app link — including the global
   // header, which this page doesn't render and so can't guard link by link.
   useUnsavedGuard(dirty, "This trip has unsaved changes. Leave without saving?");
   const canManageEditors =
     !!user && !!trip && (!trip.ownerId || trip.ownerId === user.id);
+  // Someone else's trip, shared with this account. It can't be deleted from
+  // here — only left — because the row belongs to its owner.
+  const isSharedWithMe = !!user && !!trip?.ownerId && trip.ownerId !== user.id;
 
   /**
    * Pull the stored trip in as the new baseline. An unsaved working copy is
@@ -382,6 +393,69 @@ export function TripView({
     [trip, editDraft]
   );
 
+  /**
+   * Copy the plan into a new trip and open it. Copies the working copy, so
+   * what's on screen is what gets duplicated; any unsaved edits therefore live
+   * on in the copy but not in this trip, which is worth saying first.
+   */
+  function handleDuplicate() {
+    if (!trip) return;
+    if (
+      dirty &&
+      !window.confirm(
+        "The copy will include your unsaved changes, but they won't be saved " +
+          "to this trip. Continue?"
+      )
+    ) {
+      return;
+    }
+    const copy = duplicateTrip(trip);
+    if (!copy) {
+      setSaveError(true);
+      return;
+    }
+    setSaveError(false);
+    mirrorToCloud(copy.id);
+    router.push(`/trips/${copy.id}`);
+  }
+
+  /** Remove this trip and everything stored under it from this device. */
+  function removeLocally(id: string): boolean {
+    if (!deleteSavedTrip(id)) {
+      setSaveError(true);
+      return false;
+    }
+    setSaveError(false);
+    for (const entity of ALL_TRIP_ENTITIES) clearRecords(entity, id);
+    void clearQueue(id);
+    setActiveTripId(null);
+    return true;
+  }
+
+  /**
+   * Step out of a trip someone else shared. The cloud row goes first: removing
+   * it only locally is what used to happen via "Delete trip", and the trip
+   * simply came back on the next sync because this account was still an editor.
+   */
+  async function handleLeave() {
+    if (!trip || !user || !trip.ownerId) return;
+    const ok = window.confirm(
+      `Leave "${trip.name}"? It stays with its owner, and you'll need a new ` +
+        "invite to get it back."
+    );
+    if (!ok) return;
+    setMenuOpen(false);
+    if (!(await leaveSharedTrip(trip.id, trip.ownerId, user.id))) {
+      setLeaveError(true);
+      return;
+    }
+    setLeaveError(false);
+    // This account's own journal, expenses and ticks for the trip are stored
+    // under its own user id, so they are its to remove.
+    void deleteRemoteRecords(trip.id);
+    if (removeLocally(trip.id)) router.push("/trips");
+  }
+
   function handleDelete() {
     if (!trip) return;
     const ok = window.confirm(`Delete "${trip.name}"? This can't be undone.`);
@@ -575,11 +649,31 @@ export function TripView({
                   )}
                   <button
                     type="button"
-                    onClick={handleDelete}
-                    className="block w-full px-4 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleDuplicate();
+                    }}
+                    className="block w-full px-4 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
                   >
-                    Delete trip
+                    Duplicate trip
                   </button>
+                  {isSharedWithMe ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleLeave()}
+                      className="block w-full px-4 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50"
+                    >
+                      Leave trip
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      className="block w-full px-4 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50"
+                    >
+                      Delete trip
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -608,6 +702,15 @@ export function TripView({
             and try again.
           </p>
         )}
+        {leaveError && (
+          <p
+            role="alert"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
+          >
+            Couldn&apos;t leave this trip. Check your connection and try again,
+            or ask its owner to remove you.
+          </p>
+        )}
         <TripCopilot
           trip={{
             id: trip.id,
@@ -615,6 +718,14 @@ export function TripView({
             start: trip.start,
             stops: trip.stops,
             interests: trip.interests,
+          }}
+          // Into the working copy, not storage: the co-pilot's suggestion
+          // becomes an ordinary unsaved edit, so Save commits it and Discard
+          // undoes it like anything typed by hand.
+          onAddStops={(stops) => {
+            const added = applySuggestedStops(structuredClone(trip), stops);
+            if (added > 0) editDraft((t) => void applySuggestedStops(t, stops));
+            return added;
           }}
         />
         <section id="route" className="scroll-mt-32">

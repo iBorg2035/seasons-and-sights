@@ -54,7 +54,9 @@ function selectMonth(month: number) {
   });
 }
 
-describe("explore month picker", () => {
+// These render the whole destination grid, which grows with every region
+// added; under a full parallel run that regularly passed the 5s default.
+describe("explore month picker", { timeout: 20_000 }, () => {
   afterEach(cleanup);
 
   it("defaults to the current month and says so", () => {

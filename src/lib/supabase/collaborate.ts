@@ -71,3 +71,28 @@ export async function listEditors(
     return editors;
   }
 }
+
+/**
+ * Leave a trip someone else shared with you, by deleting your own editor row.
+ *
+ * Returns whether the row actually went. `.select()` matters: without the
+ * "Editors can leave" policy in supabase/schema.sql, RLS filters the delete to
+ * zero rows and reports no error — and telling someone they've left a trip
+ * that then reappears on the next sync is the bug this exists to fix.
+ */
+export async function leaveSharedTrip(
+  tripId: string,
+  ownerId: string,
+  editorId: string
+): Promise<boolean> {
+  const sb = await getSupabase();
+  if (!sb) return false;
+  const { data, error } = await sb
+    .from("trip_editors")
+    .delete()
+    .eq("trip_id", tripId)
+    .eq("owner_id", ownerId)
+    .eq("editor_id", editorId)
+    .select("trip_id");
+  return !error && !!data && data.length > 0;
+}
