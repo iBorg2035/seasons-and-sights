@@ -127,7 +127,12 @@ export function TripView({
     setSaved(stored);
     setTrip((current) => {
       if (!current || !stored) return stored;
-      return hasUnsavedChanges(current, stored) ? current : stored;
+      if (!hasUnsavedChanges(current, stored)) return stored;
+      // Keep the edits, but take who owns the trip from storage: it is set by
+      // sync, never by editing, and Save and Leave both act on it.
+      return stored.ownerId === current.ownerId
+        ? current
+        : { ...current, ownerId: stored.ownerId };
     });
   }, [tripId]);
 

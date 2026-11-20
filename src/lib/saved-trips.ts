@@ -221,13 +221,19 @@ export function saveTrip(trip: SavedTripLite): boolean {
   return writeSavedTrips(trips);
 }
 
-/** Whether a working copy differs from its saved counterpart, ignoring the
- *  save timestamp (which only moves when something is actually saved). */
+/**
+ * Whether a working copy differs from its saved counterpart.
+ *
+ * Ignores the fields sync writes rather than people: `updatedAt` (only moves
+ * on save) and `ownerId`, which the cloud merge stamps onto a new trip the
+ * first time it round-trips. Counting ownerId made every freshly synced trip
+ * read "Unsaved" — with a leave-page warning — though nobody had touched it.
+ */
 export function hasUnsavedChanges(
   draft: SavedTripLite,
   saved: SavedTripLite
 ): boolean {
-  const strip = ({ updatedAt: _drop, ...rest }: SavedTripLite) => rest;
+  const strip = ({ updatedAt: _u, ownerId: _o, ...rest }: SavedTripLite) => rest;
   return JSON.stringify(strip(draft)) !== JSON.stringify(strip(saved));
 }
 
