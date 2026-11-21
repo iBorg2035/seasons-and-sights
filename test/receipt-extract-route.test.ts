@@ -105,6 +105,7 @@ describe("/api/receipt/extract, a granted request", () => {
     generateObjectMock.mockResolvedValue({
       object: {
         found: true,
+        totalAsPrinted: "250.000 ₫",
         merchant: "Cua Dai restaurant",
         amount: "250000",
         currency: "VND",
@@ -193,5 +194,41 @@ describe("/api/receipt/extract, a granted request", () => {
     const body = await res.json();
 
     expect(body.found).toBe(false);
+  });
+
+  // Regression: a blank white image came back as a full coffee-shop receipt
+  // with found: true, and pre-filled the expense form with it.
+  it("rejects an invented receipt that can't show where its total was printed", async () => {
+    generateObjectMock.mockResolvedValue({
+      object: {
+        found: true,
+        totalAsPrinted: null,
+        merchant: "The Coffee Club",
+        amount: "4.50",
+        currency: "USD",
+        category: "food",
+        day: "2025-08-12",
+      },
+    });
+    const { POST } = await import("@/app/api/receipt/extract/route");
+
+    const body = await (await POST(post(formWithImage()))).json();
+
+    expect(body).toEqual({
+      found: false, merchant: null, amount: null, currency: null, category: null, day: null,
+    });
+  });
+
+  it("asks whether there is a receipt at all before asking what's on it", async () => {
+    generateObjectMock.mockResolvedValue({
+      object: { found: false, totalAsPrinted: null, merchant: null, amount: null, currency: null, category: null, day: null },
+    });
+    const { POST } = await import("@/app/api/receipt/extract/route");
+    await POST(post(formWithImage()));
+    const promptText: string = generateObjectMock.mock.calls[0][0].messages[0].content.find(
+      (p: { type: string }) => p.type === "text"
+    ).text;
+    expect(promptText.startsWith("First decide")).toBe(true);
+    expect(promptText).not.toMatch(/^This is a photo of a travel receipt/);
   });
 });

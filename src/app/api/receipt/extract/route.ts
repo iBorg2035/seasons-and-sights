@@ -1,6 +1,7 @@
 import { generateObject } from "ai";
 import { xai } from "@ai-sdk/xai";
 import { z } from "zod";
+import { checkReceipt } from "@/lib/receipt-check";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { requireAssistantAccess } from "@/lib/assistant/access";
 import { CURRENCY_CODES, isCurrencyCode, type CurrencyCode } from "@/lib/money";
@@ -36,6 +37,9 @@ const MAX_BYTES = 8 * 1024 * 1024;
 const ReceiptSchema = z.object({
   /** False when the photo isn't a receipt or purchase total at all. */
   found: z.boolean(),
+  /** The total copied exactly as printed — checked against `amount` by
+   *  checkReceipt, so an invented total doesn't get through. */
+  totalAsPrinted: z.string().nullable(),
   merchant: z.string().nullable(),
   /** Plain digits with at most one decimal point, no symbol or separators —
    *  e.g. "250000" or "12.50" — so it feeds straight into the same parser
@@ -51,10 +55,21 @@ const ReceiptSchema = z.object({
 
 function buildPrompt(hintCurrency: CurrencyCode | null): string {
   return [
-    "This is a photo of a travel receipt or purchase confirmation. Extract:",
+    // Opening with "this is a receipt" made the model find one in anything —
+    // a blank image came back as a coffee-shop bill. Ask first, and make
+    // "no" the safe answer.
+    "First decide: does this photo clearly show a receipt, bill, or purchase",
+    "confirmation with a legible total? If it is blank, blurry, cut off where",
+    "the total would be, or shows something else, set found to false and every",
+    "other field to null. Never guess or invent a value — a wrong total is",
+    "worse than none, because the traveler will enter it by hand instead.",
+    "",
+    "Only if it clearly does, extract:",
+    "- totalAsPrinted: the total copied exactly as printed, symbols and",
+    "  separators included (e.g. \"250.000 ₫\" or \"€12,50\")",
     "- the TOTAL actually paid — not a subtotal, not a single line item's price",
     "- the currency it was paid in",
-    "- a short merchant or vendor name",
+    "- a short merchant or vendor name, only if printed; otherwise null",
     `- which single category it best fits: ${EXPENSE_CATEGORIES.join(", ")}`,
     "- the date, only if it is printed and legible",
     "",
@@ -73,9 +88,6 @@ function buildPrompt(hintCurrency: CurrencyCode | null): string {
     hintCurrency
       ? `The traveler is currently somewhere using ${hintCurrency}; prefer that reading if the currency symbol is ambiguous (e.g. a bare "$").`
       : "",
-    "",
-    "If the photo doesn't show a receipt or a purchase total, set found to",
-    "false and leave every other field null rather than guessing.",
   ]
     .filter(Boolean)
     .join("\n");
@@ -129,7 +141,7 @@ export async function POST(req: Request) {
         },
       ],
     });
-    return Response.json(object);
+    return Response.json(checkReceipt(object));
   } catch (err) {
     // Upstream error text can carry provider internals; it belongs in the
     // server log, not on the traveler's screen.
