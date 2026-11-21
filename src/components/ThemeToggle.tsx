@@ -1,23 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDarkTheme } from "@/lib/use-dark-theme";
+import { THEME_KEY } from "@/lib/theme";
 
 export function ThemeToggle() {
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
-  }, []);
+  // Read from the <html> class, so the nav's desktop and mobile copies of
+  // this button always agree with each other and with the page.
+  const dark = useDarkTheme();
 
   const toggle = () => {
     const next = !document.documentElement.classList.contains("dark");
-    document.documentElement.classList.toggle("dark", next);
+    // Storage first: ThemeSync restores the class to whatever is stored.
     try {
-      localStorage.setItem("theme", next ? "dark" : "light");
+      localStorage.setItem(THEME_KEY, next ? "dark" : "light");
     } catch {
       // ignore storage failures
     }
-    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
   };
 
   return (

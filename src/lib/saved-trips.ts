@@ -217,18 +217,71 @@ export function saveTrip(trip: SavedTripLite): boolean {
   const trips = getSavedTrips();
   const i = trips.findIndex((t) => t.id === trip.id);
   if (i === -1) return false;
-  trips[i] = { ...structuredClone(trip), updatedAt: Date.now() };
+  const next: SavedTripLite = { ...structuredClone(trip), updatedAt: Date.now() };
+  // Who owns the trip is decided by sync, not by the page: take it from what
+  // is stored, so a draft opened before sync stamped it can't erase it.
+  const ownerId = trips[i].ownerId ?? trip.ownerId;
+  if (ownerId) next.ownerId = ownerId;
+  else delete next.ownerId;
+  trips[i] = next;
   return writeSavedTrips(trips);
 }
 
-/** Whether a working copy differs from its saved counterpart, ignoring the
- *  save timestamp (which only moves when something is actually saved). */
+/** JSON with object keys sorted, so two copies built in a different key
+ *  order (a cloud row vs. a local edit) still compare equal. */
+function stableJson(value: unknown): string {
+  return JSON.stringify(value, (_key, v: unknown) =>
+    v && typeof v === "object" && !Array.isArray(v)
+      ? Object.fromEntries(
+          Object.entries(v as Record<string, unknown>).sort(([a], [b]) =>
+            a < b ? -1 : a > b ? 1 : 0
+          )
+        )
+      : v
+  );
+}
+
+/**
+ * Whether a working copy differs from its saved counterpart.
+ *
+ * Ignores the fields sync writes rather than people: `updatedAt` (only moves
+ * on save) and `ownerId`, which the cloud merge stamps onto a new trip the
+ * first time it round-trips. Counting ownerId made every freshly synced trip
+ * read "Unsaved" — with a leave-page warning — though nobody had touched it.
+ */
 export function hasUnsavedChanges(
   draft: SavedTripLite,
   saved: SavedTripLite
 ): boolean {
-  const strip = ({ updatedAt: _drop, ...rest }: SavedTripLite) => rest;
-  return JSON.stringify(strip(draft)) !== JSON.stringify(strip(saved));
+  const strip = ({ updatedAt: _u, ownerId: _o, ...rest }: SavedTripLite) => rest;
+  return stableJson(strip(draft)) !== stableJson(strip(saved));
+}
+
+/**
+ * The working copy to show after the stored trip changes underneath the page
+ * (a cloud sync, another tab, an add-stop that saved straight away).
+ *
+ * Judged against the PREVIOUS stored copy, not the new one: a draft nobody
+ * has touched matches what was stored before, so it simply becomes the new
+ * stored trip. Comparing with the new copy instead made every incoming change
+ * look like a local edit — the page kept showing the old trip, said
+ * "Unsaved", and a Save then wrote the stale copy over the newer one.
+ *
+ * A draft with real edits is kept, so sync never overwrites someone mid-edit;
+ * only `ownerId`, which no one edits, is taken from storage.
+ */
+export function reconcileDraft(
+  previous: SavedTripLite | undefined,
+  current: SavedTripLite | undefined,
+  stored: SavedTripLite | undefined
+): SavedTripLite | undefined {
+  if (!current || !stored) return stored;
+  if (!previous || !hasUnsavedChanges(current, previous)) return stored;
+  if (current.ownerId === stored.ownerId) return current;
+  const next = { ...current };
+  if (stored.ownerId) next.ownerId = stored.ownerId;
+  else delete next.ownerId;
+  return next;
 }
 
 /**
