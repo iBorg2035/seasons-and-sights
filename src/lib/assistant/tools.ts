@@ -22,25 +22,11 @@ const sightTypeSchema = z.enum([
   "wildlife",
 ]);
 
-/**
- * A trip as the model may pass it to assessTrip.
- *
- * Stops are objects here, not the `[id, months]` tuples trips store: a zod
- * tuple becomes JSON Schema with an array-valued `items`, which xAI rejects
- * outright ("For tuple validation, use 'prefixItems'"). Because every tool's
- * schema goes out with every request, that one tuple failed the whole
- * assistant, not just this tool. execute() converts back to tuples.
- */
 const tripContextSchema = z.object({
   id: z.string().optional(),
   name: z.string().optional(),
   start: z.number().int().min(0).max(12),
-  stops: z.array(
-    z.object({
-      regionId: z.string(),
-      durationMonths: z.number(),
-    })
-  ),
+  stops: z.array(z.tuple([z.string(), z.number()])),
   interests: z.array(sightTypeSchema).optional(),
 });
 
@@ -121,14 +107,7 @@ export function createAssistantTools(tripContext?: TripContextPayload | null) {
           .describe("Override trip; defaults to the open trip context"),
       }),
       execute: async ({ trip }) => {
-        const ctx: TripContextPayload | null = trip
-          ? {
-              ...trip,
-              stops: trip.stops.map(
-                (s) => [s.regionId, s.durationMonths] as [string, number]
-              ),
-            }
-          : tripContext ?? null;
+        const ctx = trip ?? tripContext ?? null;
         if (!ctx) {
           return {
             error:

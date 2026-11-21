@@ -9,6 +9,7 @@ import {
   editedTrip,
   saveTrip,
   hasUnsavedChanges,
+  reconcileDraft,
   deleteSavedTrip,
   duplicateTrip,
   SAVED_TRIPS_EVENT,
@@ -111,29 +112,31 @@ export function TripView({
   // Covers tab close, reload, and every in-app link — including the global
   // header, which this page doesn't render and so can't guard link by link.
   useUnsavedGuard(dirty, "This trip has unsaved changes. Leave without saving?");
-  const canManageEditors =
-    !!user && !!trip && (!trip.ownerId || trip.ownerId === user.id);
+  // Ownership comes from the stored trip, never the draft: sync sets it, and
+  // a draft opened before that sync would otherwise still say "nobody's".
+  const ownerId = saved?.ownerId;
+  const canManageEditors = !!user && !!trip && (!ownerId || ownerId === user.id);
   // Someone else's trip, shared with this account. It can't be deleted from
   // here — only left — because the row belongs to its owner.
-  const isSharedWithMe = !!user && !!trip?.ownerId && trip.ownerId !== user.id;
+  const isSharedWithMe = !!user && !!ownerId && ownerId !== user.id;
+
+  // The stored copy the working copy was last reconciled against. A ref, not
+  // `saved`, so refresh reads the true previous value even when several
+  // refreshes land before a re-render.
+  const baselineRef = useRef<SavedTripLite | undefined>(undefined);
 
   /**
-   * Pull the stored trip in as the new baseline. An unsaved working copy is
-   * left alone — a cloud sync or another tab must not silently overwrite what
-   * someone is in the middle of editing.
+   * Pull the stored trip in as the new baseline. An untouched working copy
+   * follows it; one with unsaved edits is left alone, so a cloud sync or
+   * another tab can't overwrite what someone is in the middle of editing.
+   * See reconcileDraft.
    */
   const refresh = useCallback(() => {
     const stored = getTrip(tripId);
+    const previous = baselineRef.current;
+    baselineRef.current = stored;
     setSaved(stored);
-    setTrip((current) => {
-      if (!current || !stored) return stored;
-      if (!hasUnsavedChanges(current, stored)) return stored;
-      // Keep the edits, but take who owns the trip from storage: it is set by
-      // sync, never by editing, and Save and Leave both act on it.
-      return stored.ownerId === current.ownerId
-        ? current
-        : { ...current, ownerId: stored.ownerId };
-    });
+    setTrip((current) => reconcileDraft(previous, current, stored));
   }, [tripId]);
 
   /** Apply an edit to the working copy. Does not touch storage. */
@@ -185,7 +188,9 @@ export function TripView({
       return;
     }
     setSaveError(false);
-    setSaved(getTrip(trip.id));
+    const stored = getTrip(trip.id);
+    baselineRef.current = stored;
+    setSaved(stored);
     mirrorToCloud(trip.id);
   }, [trip, mirrorToCloud]);
 
@@ -241,6 +246,7 @@ export function TripView({
   useEffect(() => {
     setActiveTripId(tripId);
     const initial = getTrip(tripId);
+    baselineRef.current = initial;
     setTrip(initial);
     setSaved(initial);
     setLoaded(true);
@@ -443,14 +449,14 @@ export function TripView({
    * simply came back on the next sync because this account was still an editor.
    */
   async function handleLeave() {
-    if (!trip || !user || !trip.ownerId) return;
+    if (!trip || !user || !ownerId) return;
     const ok = window.confirm(
       `Leave "${trip.name}"? It stays with its owner, and you'll need a new ` +
         "invite to get it back."
     );
     if (!ok) return;
     setMenuOpen(false);
-    if (!(await leaveSharedTrip(trip.id, trip.ownerId, user.id))) {
+    if (!(await leaveSharedTrip(trip.id, ownerId, user.id))) {
       setLeaveError(true);
       return;
     }
@@ -477,7 +483,7 @@ export function TripView({
     // Held receipt photos are not trip-records, but they are just as much
     // this trip's data — a deleted trip must not leave its photos behind.
     void clearQueue(trip.id);
-    if (user && (!trip.ownerId || trip.ownerId === user.id)) {
+    if (user && (!ownerId || ownerId === user.id)) {
       void deleteRemoteTrip(trip.id);
       // trip_records has no FK to trips (a journal write can race ahead of the
       // trip's own upsert), so nothing cascades — the rows must go explicitly.
@@ -801,7 +807,7 @@ export function TripView({
       {inviteOpen && user && canManageEditors && (
         <InviteEditorDialog
           tripId={trip.id}
-          ownerId={trip.ownerId ?? user.id}
+          ownerId={ownerId ?? user.id}
           onClose={() => setInviteOpen(false)}
         />
       )}

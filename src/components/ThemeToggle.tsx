@@ -1,40 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDarkTheme } from "@/lib/use-dark-theme";
+import { THEME_KEY } from "@/lib/theme";
 
 export function ThemeToggle() {
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    // Re-apply the stored theme rather than trusting the class on <html>. The
-    // inline script in the root layout sets it before paint, but when a
-    // dynamic route calls notFound() React re-renders <html> with its own
-    // className and the "dark" class is lost — a mistyped /regions/ link
-    // flashed a dark-mode reader into light mode. Same rule as that script:
-    // anything but an explicit "light" is dark.
-    let stored: string | null = null;
-    try {
-      stored = localStorage.getItem("theme");
-    } catch {
-      // storage blocked — fall back to whatever the page already has
-    }
-    const isDark =
-      stored === null
-        ? document.documentElement.classList.contains("dark")
-        : stored !== "light";
-    document.documentElement.classList.toggle("dark", isDark);
-    setDark(isDark);
-  }, []);
+  // Read from the <html> class, so the nav's desktop and mobile copies of
+  // this button always agree with each other and with the page.
+  const dark = useDarkTheme();
 
   const toggle = () => {
     const next = !document.documentElement.classList.contains("dark");
-    document.documentElement.classList.toggle("dark", next);
+    // Storage first: ThemeSync restores the class to whatever is stored.
     try {
-      localStorage.setItem("theme", next ? "dark" : "light");
+      localStorage.setItem(THEME_KEY, next ? "dark" : "light");
     } catch {
       // ignore storage failures
     }
-    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
   };
 
   return (

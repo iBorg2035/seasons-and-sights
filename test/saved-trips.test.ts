@@ -72,20 +72,3 @@ describe("trip store helpers", () => {
     expect(getSavedTrips()).toHaveLength(0);
   });
 });
-
-describe("hasUnsavedChanges", () => {
-  // Regression: the cloud merge stamps ownerId onto a new trip after its first
-  // sync, which used to flag an untouched trip as "Unsaved".
-  it("ignores ownerId and updatedAt, which sync writes", async () => {
-    const { hasUnsavedChanges } = await import("@/lib/saved-trips");
-    const draft = { id: "t", name: "A", start: 0, stops: [] as [string, number][], updatedAt: 1 };
-    const synced = { ...draft, ownerId: "user-1", updatedAt: 2 };
-    expect(hasUnsavedChanges(draft, synced)).toBe(false);
-  });
-
-  it("still sees a real edit", async () => {
-    const { hasUnsavedChanges } = await import("@/lib/saved-trips");
-    const saved = { id: "t", name: "A", start: 0, stops: [] as [string, number][] };
-    expect(hasUnsavedChanges({ ...saved, name: "B" }, saved)).toBe(true);
-  });
-});

@@ -10,18 +10,15 @@ import { AuthProvider } from "@/lib/contexts/auth-context";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { REGIONS } from "@/data/regions";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, TITLE_TEMPLATE } from "@/lib/site";
+import { THEME_SCRIPT } from "@/lib/theme";
+import { ThemeSync } from "@/components/ThemeSync";
 import "./globals.css";
 
 export const viewport: Viewport = {
   themeColor: "#0d9488",
 };
 
-// Set the theme class before paint to avoid a flash of the wrong theme.
-// Default to dark when the user hasn't expressed a preference — the app's
-// primary aesthetic is the dark Modern Explorer palette. The 🌙 toggle still
-// overrides and persists the choice.
-const themeScript = `try{var t=localStorage.getItem('theme');if(t!=='light'){document.documentElement.classList.add('dark')}}catch(e){}`;
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -42,7 +39,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: "Seasons & Sights — travel in the right season",
-    template: "%s · Seasons & Sights",
+    template: TITLE_TEMPLATE,
   },
   description:
     "Know the dry and wet seasons (and the crowds) for destinations across Asia, the Americas, Europe, Africa, and Oceania — find local sights and book your stay at the right time of year.",
@@ -72,7 +69,10 @@ export default function RootLayout({
       className={`${fraunces.variable} ${inter.variable}`}
     >
       <body className="min-h-screen antialiased">
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Sets the theme class before paint, so there's no flash of the
+            wrong theme; ThemeSync keeps it set afterwards. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <ThemeSync />
         <ServiceWorkerRegister />
         <ErrorReporter />
         <a

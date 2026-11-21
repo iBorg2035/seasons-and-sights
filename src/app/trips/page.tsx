@@ -9,8 +9,8 @@
  * three storage events (SAVED_TRIPS_EVENT, ACTIVE_TRIP_EVENT, "storage").
  *
  * This is the target of the trip page's "← Trips" back-link and the header
- * badge. No metadata export is possible from a client page, so the browser tab
- * falls back to the default title.
+ * badge. No metadata export is possible from a client page, so its tab title
+ * comes from src/app/trips/layout.tsx.
  */
 
 import { useCallback, useEffect, useState } from "react";
