@@ -34,19 +34,19 @@ describe("the entity list", () => {
 });
 
 describe("wiping a trip's data", () => {
-  const accountMenu = read("src/components/AccountMenu.tsx");
+  const localUserData = read("src/lib/local-user-data.ts");
   const tripView = read("src/components/TripView.tsx");
 
   it("iterates the shared list rather than naming entities by hand", () => {
     // Hand-written lists are what drifted. Both callers must loop.
-    expect(accountMenu).toContain("ALL_TRIP_ENTITIES");
+    expect(localUserData).toContain("ALL_TRIP_ENTITIES");
     expect(tripView).toContain("ALL_TRIP_ENTITIES");
   });
 
   it("also clears held receipt photos, which are not trip-records", () => {
     // IndexedDB, outside the entity list, so it needs its own call in both
     // places — and leaving photos behind is the worst failure of the set.
-    expect(accountMenu).toContain("clearQueue(");
+    expect(localUserData).toContain("clearQueue(");
     expect(tripView).toContain("clearQueue(");
   });
 });

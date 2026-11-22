@@ -83,13 +83,19 @@ function reportSync(
 
 /** All of the signed-in user's trips (RLS scopes this to them). */
 export async function fetchRemoteTrips(): Promise<SavedTrip[]> {
+  return (await fetchRemoteTripsOrNull()) ?? [];
+}
+
+/** Like fetchRemoteTrips, but null when the read failed — for callers that
+ *  must tell "no trips" from "couldn't ask" (sign-out's final sync). */
+export async function fetchRemoteTripsOrNull(): Promise<SavedTrip[] | null> {
   const sb = await getSupabase();
-  if (!sb) return [];
+  if (!sb) return null;
   const { data, error } = await sb
     .from("trips")
     .select("id, user_id, name, data, updated_at")
     .order("updated_at", { ascending: false });
-  if (!reportSync("read", error) || !data) return [];
+  if (!reportSync("read", error) || !data) return null;
   return (data as TripRow[]).map(fromRow);
 }
 

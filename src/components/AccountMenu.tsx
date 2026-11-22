@@ -5,15 +5,12 @@ import { useAuth } from "@/lib/contexts/auth-context";
 import { AuthDialog } from "@/components/AuthDialog";
 import { SharedLinksDialog } from "@/components/SharedLinksDialog";
 import { deleteAccount } from "@/lib/supabase/trips";
-import {
-  SAVED_TRIPS_KEY as SAVED_KEY,
-  getSavedTrips,
-  notifySavedTripsChanged,
-} from "@/lib/saved-trips";
 import { downloadExport } from "@/lib/data-export";
-import { clearRecords } from "@/lib/trip-records";
-import { ALL_TRIP_ENTITIES } from "@/lib/trip-entities";
-import { clearQueue } from "@/lib/receipt-queue";
+import {
+  clearLocalUserData,
+  flushToCloud,
+  heldReceiptCount,
+} from "@/lib/local-user-data";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
 import { RESERVATION_ENTITY } from "@/lib/reservations";
@@ -27,6 +24,7 @@ export function AccountMenu() {
   const [sharesOpen, setSharesOpen] = useState(false);
   const [deleteError, setDeleteError] = useState(false);
   const [exportError, setExportError] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -96,13 +94,46 @@ export function AccountMenu() {
             Shared links
           </button>
           <button
+            disabled={signingOut}
             onClick={async () => {
-              setMenu(false);
-              await signOut();
+              // Sign-out takes the traveler's data off this device (it may be
+              // a shared computer), so first make sure it's all in their
+              // account, and ask before losing anything that isn't.
+              setSigningOut(true);
+              try {
+                const synced = await flushToCloud(user.id);
+                const held = await heldReceiptCount();
+                const losses: string[] = [];
+                if (!synced) {
+                  losses.push(
+                    "Some changes haven't reached your account yet (you may be offline) and will be lost."
+                  );
+                }
+                if (held > 0) {
+                  losses.push(
+                    `${held} receipt photo${held === 1 ? "" : "s"} waiting to be scanned will be deleted.`
+                  );
+                }
+                if (
+                  losses.length > 0 &&
+                  !confirm(
+                    `Signing out removes your trips from this device.\n\n${losses.join(
+                      "\n"
+                    )}\n\nSign out anyway?`
+                  )
+                ) {
+                  return;
+                }
+                setMenu(false);
+                await signOut();
+                await clearLocalUserData();
+              } finally {
+                setSigningOut(false);
+              }
             }}
-            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+            className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60"
           >
-            Sign out
+            {signingOut ? "Signing out…" : "Sign out"}
           </button>
           <button
             onClick={async () => {
@@ -119,24 +150,9 @@ export function AccountMenu() {
               }
               setDeleteError(false);
               setMenu(false);
-              try {
-                // Cloud rows cascade off auth.users; local ones don't cascade
-                // off anything. Clear every per-trip entity too, or deleting
-                // the account would leave the diary sitting in localStorage.
-                for (const trip of getSavedTrips()) {
-                  for (const entity of ALL_TRIP_ENTITIES) {
-                    clearRecords(entity, trip.id);
-                  }
-                  // Not a trip-record and not in that list: held receipt
-                  // photos live in IndexedDB, and an account deletion that
-                  // left them on the device would be the worst of the lot.
-                  void clearQueue(trip.id);
-                }
-                localStorage.removeItem(SAVED_KEY);
-                notifySavedTripsChanged();
-              } catch {
-                /* ignore */
-              }
+              // Cloud rows cascade off auth.users; local ones don't cascade
+              // off anything, so the device is cleared explicitly.
+              await clearLocalUserData();
               await signOut();
             }}
             className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-600 transition hover:bg-rose-50"
