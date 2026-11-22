@@ -81,14 +81,22 @@ export async function fetchRemoteRecords<T extends TripRecord>(
   tripId: string,
   entity: string
 ): Promise<T[]> {
+  return (await fetchRemoteRecordsOrNull<T>(tripId, entity)) ?? [];
+}
+
+/** Like fetchRemoteRecords, but null when the read failed. */
+export async function fetchRemoteRecordsOrNull<T extends TripRecord>(
+  tripId: string,
+  entity: string
+): Promise<T[] | null> {
   const sb = await getSupabase();
-  if (!sb) return [];
+  if (!sb) return null;
   const { data, error } = await sb
     .from("trip_records")
     .select("trip_id, entity, id, data, updated_at, deleted_at")
     .eq("trip_id", tripId)
     .eq("entity", entity);
-  if (!reportSync("read", error) || !data) return [];
+  if (!reportSync("read", error) || !data) return null;
   return (data as ReadRow[]).map((r) => fromRow<T>(r));
 }
 
