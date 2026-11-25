@@ -4,6 +4,17 @@ import { useEffect } from "react";
 import { shouldGuardNavigation } from "@/lib/unsaved-nav";
 
 /**
+ * Unsaved work currently on screen, described for a person. Actions that
+ * don't navigate — signing out, which clears the device in place — can't rely
+ * on the link and unload guards below, so they ask this instead.
+ */
+const pending = new Map<symbol, string>();
+
+export function unsavedWork(): string[] {
+  return [...pending.values()];
+}
+
+/**
  * Warn before unsaved work is lost — on tab close, reload, and any in-app
  * link, including the ones in the global header that this page doesn't own.
  *
@@ -17,7 +28,21 @@ import { shouldGuardNavigation } from "@/lib/unsaved-nav";
  * pushing a decoy history entry and unwinding it on popstate, which breaks
  * ordinary back navigation in ways that are worse than the gap.
  */
-export function useUnsavedGuard(dirty: boolean, message: string): void {
+export function useUnsavedGuard(
+  dirty: boolean,
+  message: string,
+  /** What's unsaved, for unsavedWork() — e.g. `changes to "Peru"`. */
+  label?: string
+): void {
+  useEffect(() => {
+    if (!dirty || !label) return;
+    const key = Symbol(label);
+    pending.set(key, label);
+    return () => {
+      pending.delete(key);
+    };
+  }, [dirty, label]);
+
   useEffect(() => {
     if (!dirty) return;
 

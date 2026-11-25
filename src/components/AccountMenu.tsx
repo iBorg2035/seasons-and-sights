@@ -11,6 +11,7 @@ import {
   flushToCloud,
   heldReceiptCount,
 } from "@/lib/local-user-data";
+import { unsavedWork } from "@/lib/use-unsaved-guard";
 import { JOURNAL_ENTITY } from "@/lib/journal";
 import { EXPENSE_ENTITY } from "@/lib/expenses";
 import { RESERVATION_ENTITY } from "@/lib/reservations";
@@ -91,6 +92,11 @@ export function AccountMenu() {
     try {
       const synced = await flushToCloud(userId);
       const held = await heldReceiptCount().catch(() => 0);
+      // Drafts only live in the page: clearing the device drops them, and
+      // sign-out doesn't navigate, so the page's own leave guard never fires.
+      for (const what of unsavedWork()) {
+        losses.push(`Unsaved ${what} will be lost.`);
+      }
       if (!synced) {
         losses.push(
           "Some changes haven't reached your account yet (you may be offline) and will be lost."

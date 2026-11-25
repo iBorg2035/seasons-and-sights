@@ -56,6 +56,7 @@ import {
   flushToCloud,
 } from "@/lib/local-user-data";
 import { AccountMenu } from "@/components/AccountMenu";
+import { unsavedWork, useUnsavedGuard } from "@/lib/use-unsaved-guard";
 
 function seed() {
   const t = createTrip("Mine", { start: 3, stops: [["peru-cusco", 1]] })!;
@@ -297,5 +298,39 @@ describe("Sign out", () => {
     await clickSignOut();
     expect(signOutMock).toHaveBeenCalled();
     expect(getSavedTrips()).toEqual([]);
+  });
+
+  it("warns about an unsaved trip draft, which clearing the device would drop", async () => {
+    // Sign-out clears in place without navigating, so the trip page's
+    // leave-guard never fired and the draft vanished with no question asked.
+    seed();
+    function Draft() {
+      useUnsavedGuard(true, "Leave?", 'changes to "Mine"');
+      return null;
+    }
+    render(<Draft />);
+    await clickSignOut();
+    expect(screen.getByRole("alertdialog").textContent).toMatch(/Unsaved changes to "Mine" will be lost/);
+    fireEvent.click(screen.getByText("Stay signed in"));
+    expect(signOutMock).not.toHaveBeenCalled();
+    expect(getSavedTrips()).toHaveLength(1);
+  });
+});
+
+describe("unsavedWork", () => {
+  it("lists a draft only while it's dirty and mounted", () => {
+    function Draft({ dirty }: { dirty: boolean }) {
+      useUnsavedGuard(dirty, "Leave?", "changes to \"A\"");
+      return null;
+    }
+    const { rerender, unmount } = render(<Draft dirty={false} />);
+    expect(unsavedWork()).toEqual([]);
+    rerender(<Draft dirty />);
+    expect(unsavedWork()).toEqual(['changes to "A"']);
+    rerender(<Draft dirty={false} />);
+    expect(unsavedWork()).toEqual([]);
+    rerender(<Draft dirty />);
+    unmount();
+    expect(unsavedWork()).toEqual([]);
   });
 });

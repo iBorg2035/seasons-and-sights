@@ -110,7 +110,13 @@ export function TripView({
 
   // Covers tab close, reload, and every in-app link — including the global
   // header, which this page doesn't render and so can't guard link by link.
-  useUnsavedGuard(dirty, "This trip has unsaved changes. Leave without saving?");
+  // The label also lets sign-out (which clears the device without navigating)
+  // warn about the draft before it's thrown away.
+  useUnsavedGuard(
+    dirty,
+    "This trip has unsaved changes. Leave without saving?",
+    saved ? `changes to "${saved.name}"` : undefined
+  );
   // Ownership comes from the stored trip, never the draft: sync sets it, and
   // a draft opened before that sync would otherwise still say "nobody's".
   const ownerId = saved?.ownerId;
