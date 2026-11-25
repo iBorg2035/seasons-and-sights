@@ -13,6 +13,7 @@ import {
   notifySavedTripsChanged,
 } from "@/lib/saved-trips";
 import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
+import { sessionEpoch } from "@/lib/session-epoch";
 
 /**
  * Pull the signed-in user's cloud trips, merge them into localStorage
@@ -37,7 +38,11 @@ export function TripCloudSync() {
 
   const sync = useCallback(async () => {
     if (!userId) return;
+    const epoch = sessionEpoch();
     const remote = await fetchRemoteTrips();
+    // Signed out while the read was in flight: writing now would put the
+    // account's trips back on a device that was just cleared.
+    if (sessionEpoch() !== epoch) return;
 
     let local: SavedTrip[] = [];
     try {

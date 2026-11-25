@@ -10,6 +10,8 @@ import {
 } from "@/lib/saved-trips";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { deleteRemoteTrip } from "@/lib/supabase/trips";
+import { deleteRemoteRecords } from "@/lib/supabase/trip-records";
+import { clearTripData } from "@/lib/local-user-data";
 import { eventsInMonthForRegions } from "@/data/events-slim";
 import {
   climateForMonth,
@@ -145,8 +147,13 @@ export function CalendarView() {
       return;
     }
     setDeleteError(false);
+    // Same cleanup as deleting from the trip page: the diary, spending and
+    // held photos used to outlive a trip deleted from here.
+    clearTripData(row.trip.id);
     if (user && (!row.trip.ownerId || row.trip.ownerId === user.id)) {
       void deleteRemoteTrip(row.trip.id);
+      // trip_records has no FK to trips, so nothing cascades.
+      void deleteRemoteRecords(row.trip.id);
     }
   }
 

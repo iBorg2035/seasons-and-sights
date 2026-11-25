@@ -74,7 +74,11 @@ describe("every record entity is reconciled on the trip page", () => {
   it("takes held receipt photos with the trip when it's deleted", () => {
     // Not a trip-record, but just as much this trip's data — and a photo of a
     // deleted trip lingering in IndexedDB is a privacy problem, not just a leak.
-    expect(tripView).toContain("clearQueue(trip.id)");
+    // Via the shared helper, which every trip-deleting path calls.
+    expect(tripView).toContain("clearTripData(trip.id)");
+    expect(readFileSync(`${process.cwd()}/src/lib/local-user-data.ts`, "utf8")).toMatch(
+      /export function clearTripData[\s\S]*?clearQueue\(tripId\)/
+    );
   });
 
   it("clears every entity when the trip is deleted", () => {
@@ -83,6 +87,9 @@ describe("every record entity is reconciled on the trip page", () => {
     // copy, so an account deletion cleared three entities while a trip
     // deletion cleared six. Completeness of that list is owned by
     // test/trip-entities.test.ts.
-    expect(tripView).toMatch(/for \(const entity of ALL_TRIP_ENTITIES\)/);
+    expect(tripView).toContain("clearTripData(trip.id)");
+    expect(readFileSync(`${process.cwd()}/src/lib/local-user-data.ts`, "utf8")).toMatch(
+      /export function clearTripData[\s\S]*?for \(const entity of ALL_TRIP_ENTITIES\)/
+    );
   });
 });

@@ -263,3 +263,20 @@ describe("round trip", () => {
     expect(await fetchRemoteRecords<Note>("t", "journal")).toEqual(local);
   });
 });
+
+describe("syncRecords racing a sign-out", () => {
+  it("drops the write when the session ended while the read was in flight", async () => {
+    // auth-js doesn't hold requests behind /logout, so a read sent just
+    // before sign-out resolves after the device was cleared. Writing it then
+    // leaves the account's rows on a signed-out device.
+    const { endSessionEpoch } = await import("@/lib/session-epoch");
+    fake.remoteRows = [remoteRow("n1", T0, { text: "theirs" })];
+
+    const pending = syncRecords<Note>("u", "t", "journal");
+    endSessionEpoch();
+    expect(await pending).toEqual([]);
+
+    expect(loadRecordsRaw("journal", "t")).toEqual([]);
+    expect(fake.upserted).toBeNull();
+  });
+});

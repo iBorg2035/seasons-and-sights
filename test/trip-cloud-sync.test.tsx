@@ -146,3 +146,23 @@ describe("where the sync is mounted", () => {
     expect(tripView).not.toContain("fetchRemoteTrips");
   });
 });
+
+describe("a sync still in flight at sign-out", () => {
+  it("doesn't write the account's trips back onto the cleared device", async () => {
+    // The GET went out with the old token just before /logout; it resolves
+    // after the device was cleared. Writing it would show the trips to the
+    // next person while signed out.
+    const { endSessionEpoch } = await import("@/lib/session-epoch");
+    let resolve!: (t: SavedTrip[]) => void;
+    fetchRemoteTrips.mockReturnValue(new Promise((r) => (resolve = r)));
+
+    render(<TripCloudSync />);
+    await waitFor(() => expect(fetchRemoteTrips).toHaveBeenCalled());
+    endSessionEpoch(); // what clearLocalUserData does first
+    resolve([CLOUD_TRIP]);
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(getSavedTrips()).toHaveLength(0);
+    expect(localStorage.getItem(SAVED_TRIPS_KEY)).toBeNull();
+  });
+});

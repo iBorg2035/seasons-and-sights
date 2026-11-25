@@ -44,12 +44,11 @@ import {
   wouldReorder,
 } from "@/lib/trip-plan";
 import { tripSlimLegs } from "@/lib/trip-plan-slim";
-import { clearRecords, TRIP_RECORDS_EVENT } from "@/lib/trip-records";
+import { TRIP_RECORDS_EVENT } from "@/lib/trip-records";
+import { clearTripData } from "@/lib/local-user-data";
 import { CHECKLIST_ENTITY, migrateLegacyTicks } from "@/lib/checklist-progress";
 import { PACKING_ENTITY } from "@/lib/packing-progress";
 import { FX_ENTITY } from "@/lib/fx";
-import { clearQueue } from "@/lib/receipt-queue";
-import { ALL_TRIP_ENTITIES } from "@/lib/trip-entities";
 import {
   deleteRemoteRecords,
   mirrorRecord,
@@ -437,8 +436,7 @@ export function TripView({
       return false;
     }
     setSaveError(false);
-    for (const entity of ALL_TRIP_ENTITIES) clearRecords(entity, id);
-    void clearQueue(id);
+    clearTripData(id);
     setActiveTripId(null);
     return true;
   }
@@ -479,10 +477,8 @@ export function TripView({
     // Deleting the trip must take its journal and expenses with it — leaving
     // personal entries in localStorage under a trip the user just deleted
     // would be both a leak and a surprise. (Cloud rows: Stage 4.)
-    for (const entity of ALL_TRIP_ENTITIES) clearRecords(entity, trip.id);
-    // Held receipt photos are not trip-records, but they are just as much
-    // this trip's data — a deleted trip must not leave its photos behind.
-    void clearQueue(trip.id);
+    // Held receipt photos too: they're just as much this trip's data.
+    clearTripData(trip.id);
     if (user && (!ownerId || ownerId === user.id)) {
       void deleteRemoteTrip(trip.id);
       // trip_records has no FK to trips (a journal write can race ahead of the

@@ -1,5 +1,6 @@
 import { getSupabase } from "@/lib/supabase/client";
 import { recordSyncResult } from "@/lib/sync-status";
+import { sessionEpoch } from "@/lib/session-epoch";
 import {
   loadRecordsRaw,
   mergeRecords,
@@ -129,7 +130,11 @@ export async function syncRecords<T extends TripRecord>(
   tripId: string,
   entity: string
 ): Promise<T[]> {
+  const epoch = sessionEpoch();
   const remote = await fetchRemoteRecords<T>(tripId, entity);
+  // Signed out mid-read: the device was cleared, and this account's rows
+  // must not be written back onto it.
+  if (sessionEpoch() !== epoch) return [];
   const local = loadRecordsRaw<T>(entity, tripId);
   const { merged, toPush } = mergeRecords(local, remote);
 

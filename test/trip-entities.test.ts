@@ -36,18 +36,27 @@ describe("the entity list", () => {
 describe("wiping a trip's data", () => {
   const localUserData = read("src/lib/local-user-data.ts");
   const tripView = read("src/components/TripView.tsx");
+  const calendarView = read("src/components/CalendarView.tsx");
+  const accountMenu = read("src/components/AccountMenu.tsx");
 
-  it("iterates the shared list rather than naming entities by hand", () => {
-    // Hand-written lists are what drifted. Both callers must loop.
+  it("has one helper that iterates the shared list and clears held photos", () => {
+    // Hand-written lists are what drifted. The helper loops the entity list
+    // and also clears IndexedDB, which the list doesn't cover.
+    expect(localUserData).toContain("export function clearTripData");
     expect(localUserData).toContain("ALL_TRIP_ENTITIES");
-    expect(tripView).toContain("ALL_TRIP_ENTITIES");
+    expect(localUserData).toContain("clearQueue(");
   });
 
-  it("also clears held receipt photos, which are not trip-records", () => {
-    // IndexedDB, outside the entity list, so it needs its own call in both
-    // places — and leaving photos behind is the worst failure of the set.
-    expect(localUserData).toContain("clearQueue(");
-    expect(tripView).toContain("clearQueue(");
+  it("is used by every path that deletes a trip", () => {
+    // Deleting from /calendar used to skip it, leaving the diary, spending
+    // and photos under a trip id nothing listed — so even sign-out missed them.
+    expect(tripView).toContain("clearTripData(");
+    expect(calendarView).toContain("clearTripData(");
+  });
+
+  it("sign-out and account deletion clear the whole device, photos included", () => {
+    expect(localUserData).toContain("clearAllQueues(");
+    expect(accountMenu.match(/clearLocalUserData\(\)/g)?.length).toBeGreaterThanOrEqual(2);
   });
 });
 
