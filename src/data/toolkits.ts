@@ -201,5 +201,8 @@ export const TOOLKITS: Record<string, TravelToolkit> = {
   "mexico-playadelcarmen": { phrases: es, emergency: "911", tipping: "~10–15% (propina)", water: "Not potable — drink bottled" },
   "puerto-rico-sanjuan": { phrases: es, emergency: "911", tipping: "15–20% (US-standard)", water: "Tap water safe" },
   "brazil-florianopolis": { phrases: [{ en: "Hello", local: "Olá" }, { en: "Thank you", local: "Obrigado/a" }, { en: "How much?", local: "Quanto custa?" }, { en: "Help!", local: "Socorro!" }], emergency: "190 police · 192 ambulance · 193 fire", tipping: "~10%, often included", water: "Tap safe in cities" },
+  "dominicanrepublic-lasterrenas": { phrases: es, emergency: "911", tipping: "10% service is added by law; ~10% more for good service", water: "Not potable — drink bottled" },
+  "dominicanrepublic-puertoplata": { phrases: es, emergency: "911", tipping: "10% service is added by law; ~10% more for good service", water: "Not potable — drink bottled" },
+  "mexico-cancun": { phrases: es, emergency: "911", tipping: "~10–15% (propina)", water: "Not potable — drink bottled" },
   "brazil-curitiba": { phrases: [{ en: "Hello", local: "Olá" }, { en: "Thank you", local: "Obrigado/a" }, { en: "How much?", local: "Quanto custa?" }, { en: "Help!", local: "Socorro!" }], emergency: "190 police · 192 ambulance · 193 fire", tipping: "~10%, often included", water: "Tap safe" },
 };

@@ -48,6 +48,7 @@ const VISA_RULES: Record<string, Rule> = {
   Greece: { default: "Visa-free 90 days (Schengen)" },
   "South Africa": { default: "Visa-free up to 90 days" },
   "Costa Rica": { default: "Visa-free 90 days" },
+  "Dominican Republic": { default: "Visa-free 30 days (tourist card in airfare)" },
   France: { default: "Visa-free 90 days (Schengen)" },
   Italy: { default: "Visa-free 90 days (Schengen)" },
   Australia: { default: "ETA / eVisitor required" },

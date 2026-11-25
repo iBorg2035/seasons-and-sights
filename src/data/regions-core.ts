@@ -1779,6 +1779,59 @@ export const REGIONS_CORE: Region[] = [
     }),
     sights: [],
   },
+  // ───────────────────── Caribbean & Riviera Maya ─────────────────────
+  {
+    id: "dominicanrepublic-lasterrenas",
+    name: "Las Terrenas",
+    country: "Dominican Republic",
+    continent: "North America",
+    lat: 19.311,
+    lng: -69.542,
+    bookingDest: "Las Terrenas, Dominican Republic",
+    climateBlurb:
+      "A laid-back, French-flavoured beach town on the Samaná Peninsula — palm-lined sand, El Limón waterfall and humpback whales in the bay. Driest and sunniest January–June; wetter August–November, when hurricane season peaks.",
+    months: climate("DDDDDDSWWWWS", {
+      2: "humpback whales in Samaná Bay (Jan–Mar)",
+      6: "driest month",
+      9: "wettest month — peak hurricane season",
+    }),
+    sights: [],
+  },
+  {
+    id: "dominicanrepublic-puertoplata",
+    name: "Puerto Plata",
+    country: "Dominican Republic",
+    continent: "North America",
+    lat: 19.7934,
+    lng: -70.6884,
+    bookingDest: "Puerto Plata, Dominican Republic",
+    climateBlurb:
+      "The Amber Coast's Victorian port town, with a cable car up Isabel de Torres and Sosúa and kitesurfing Cabarete just east. Unusually for the Caribbean, its wetter spell is winter, when northerly fronts bring showers November–March; May–August is the sunniest stretch, with hurricane risk peaking in September.",
+    months: climate("SSSSDDDDSSWW", {
+      3: "occasional heavy downpours from northerly fronts",
+      6: "driest month",
+      9: "peak hurricane season",
+      12: "wettest stretch — winter fronts",
+    }),
+    sights: [],
+  },
+  {
+    id: "mexico-cancun",
+    name: "Cancún",
+    country: "Mexico",
+    continent: "North America",
+    lat: 21.1619,
+    lng: -86.8515,
+    bookingDest: "Cancún, Mexico",
+    climateBlurb:
+      "The Riviera Maya's big resort gateway — a 22 km Hotel Zone of white sand, with Isla Mujeres, cenotes and Chichén Itzá in reach. Dry and sunny December–April (peak); a hot, wet season May–October with hurricane risk strongest August–October, and sargassum seaweed possible May–August.",
+    months: climate("DDDDSWWWWWSD", {
+      3: "driest — spring-break crowds mid-March",
+      6: "sargassum seaweed can wash up",
+      10: "wettest month — peak hurricane risk",
+    }),
+    sights: [],
+  },
 ];
 
 // Rough mid-range cost per person per day (USD): lodging + food + activities +
@@ -1880,6 +1933,9 @@ const DAILY_BUDGET: Record<string, number> = {
   "puerto-rico-sanjuan": 85,
   "brazil-florianopolis": 65,
   "brazil-curitiba": 55,
+  "dominicanrepublic-lasterrenas": 70,
+  "dominicanrepublic-puertoplata": 60,
+  "mexico-cancun": 90,
 };
 
 // Wikipedia article titles for representative photos. Single source of truth in
@@ -1992,6 +2048,9 @@ const TRAVEL_INFO: Record<string, TravelInfo> = {
   "puerto-rico-sanjuan": { visa: "No passport needed for US citizens; others need ESTA / visa", currency: "US dollar (USD)", language: "Spanish & English", plugs: "Types A/B · 120V", gettingThere: "San Juan (SJU) · ~4h from Miami, ~9h from London", health: "Strong sun; Zika/dengue — repellent; hurricane season Aug–Oct" },
   "brazil-florianopolis": { visa: "Visa-free ~90 days for many", currency: "Brazilian real (BRL)", language: "Portuguese", plugs: "Types C/N · 127/220V", gettingThere: "Florianópolis (FLN) via São Paulo · ~15h from London", health: "Strong sun; undertow on the eastern beaches" },
   "brazil-curitiba": { visa: "Visa-free ~90 days for many", currency: "Brazilian real (BRL)", language: "Portuguese", plugs: "Types C/N · 127/220V", gettingThere: "Curitiba (CWB) via São Paulo · ~14h from London", health: "Cool highland climate; unpredictable weather — layer up" },
+  "dominicanrepublic-lasterrenas": { visa: "Visa-free 30 days for many (tourist card in airfare)", currency: "Dominican peso (DOP); USD common", language: "Spanish", plugs: "Types A/B · 110V", gettingThere: "El Catey (AZS), ~40 min; or Santo Domingo (SDQ), ~2.5h by road", health: "Bottled water; strong sun; dengue — repellent; hurricane season Aug–Oct" },
+  "dominicanrepublic-puertoplata": { visa: "Visa-free 30 days for many (tourist card in airfare)", currency: "Dominican peso (DOP); USD common", language: "Spanish", plugs: "Types A/B · 110V", gettingThere: "Puerto Plata (POP), ~15 min; Santiago (STI), ~1.5h", health: "Bottled water; strong sun; dengue — repellent; hurricane season Aug–Oct" },
+  "mexico-cancun": { visa: "Visa-free up to 180 days for many", currency: "Mexican peso (MXN); USD common in the Hotel Zone", language: "Spanish", plugs: "Types A/B · 127V", gettingThere: "Cancún (CUN), ~20 min to the Hotel Zone · ~11h from London", health: "Bottled water; strong sun; hurricane season Aug–Oct; sargassum May–Aug" },
 };
 
 for (const region of REGIONS_CORE) {
