@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { endSessionEpoch } from "@/lib/session-epoch";
 
 interface AuthState {
   user: User | null;
@@ -25,7 +26,13 @@ interface AuthState {
    * so this only ever *returns* when something went wrong.
    */
   signInWithGoogle: (next?: string) => Promise<{ error?: string }>;
-  signOut: () => Promise<void>;
+  /**
+   * Ends the session. `error` is set when the session is still alive
+   * afterwards (e.g. offline): auth-js keeps the session when /logout fails
+   * for any reason other than an already-dead token, and callers that clear
+   * the device must not do so while still signed in.
+   */
+  signOut: () => Promise<{ error?: string }>;
 }
 
 /**
@@ -82,7 +89,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // account menu hides itself while loading, so leave it resolved.
           if (active) setLoading(false);
         });
-      const { data: sub } = sb.auth.onAuthStateChange((_event, session) => {
+      const { data: sub } = sb.auth.onAuthStateChange((event, session) => {
+        // Any way the session ends, in-flight syncs must not write back.
+        if (event === "SIGNED_OUT") endSessionEpoch();
         setUser(session?.user ?? null);
       });
       unsub = () => sub.subscription.unsubscribe();
@@ -127,7 +136,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut: AuthState["signOut"] = async () => {
     const sb = await getSupabase();
-    await sb?.auth.signOut();
+    if (!sb) return {};
+    let message: string | undefined;
+    try {
+      const { error } = await sb.auth.signOut();
+      if (!error) return {};
+      message = error.message;
+    } catch (e) {
+      message = e instanceof Error ? e.message : String(e);
+    }
+    // The call failed — but a 401/403/404 still removes the session, so the
+    // only thing that matters is whether one is left.
+    try {
+      const { data } = await sb.auth.getSession();
+      if (!data.session) return {};
+    } catch {
+      // Can't tell: assume still signed in, the safe side for the caller.
+    }
+    return { error: message ?? "Sign-out failed." };
   };
 
   return (

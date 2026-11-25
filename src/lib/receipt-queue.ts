@@ -317,6 +317,19 @@ export async function clearQueue(tripId: string): Promise<void> {
   db.close();
 }
 
+/**
+ * Drop every held photo on this device, whatever trip it belongs to — for
+ * sign-out, where photos of trips already gone from the list must go too.
+ */
+export async function clearAllQueues(): Promise<void> {
+  const db = await openDb();
+  try {
+    await runTx(db, "readwrite", (store) => store.clear());
+  } finally {
+    db.close();
+  }
+}
+
 /** Whether IndexedDB is usable at all — private modes can refuse it. */
 export function isQueueAvailable(): boolean {
   return typeof indexedDB !== "undefined";
