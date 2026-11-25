@@ -599,4 +599,26 @@ export const SIGHTS: Record<string, Sight[]> = {
       { name: "Óscar Niemeyer Museum", type: "culture", lat: -25.41, lng: -49.267, blurb: "The 'Eye' — Niemeyer's striking modern art museum." },
       { name: "Vila Velha State Park", type: "nature", lat: -25.25, lng: -50.08, blurb: "Sandstone pillars and a sinkhole crater, ~1.5h from the city." },
     ],
+  "dominicanrepublic-lasterrenas": [
+      { name: "Playa Bonita & Playa Cosón", type: "beach", lat: 19.318, lng: -69.585, blurb: "Long, quiet palm-fringed beaches just west of town." },
+      { name: "El Limón waterfall", type: "nature", lat: 19.279, lng: -69.439, blurb: "40 m cascade reached on foot or horseback through the hills." },
+      { name: "Whale watching, Samaná Bay", type: "wildlife", lat: 19.19, lng: -69.32, blurb: "Thousands of humpbacks gather to breed, January–March." },
+      { name: "Los Haitises National Park", type: "nature", lat: 19.06, lng: -69.6, blurb: "Mangroves, karst islets and Taíno cave paintings by boat." },
+      { name: "Playa Rincón", type: "beach", lat: 19.296, lng: -69.234, blurb: "Wild, 3 km beach often ranked among the Caribbean's best." },
+    ],
+  "dominicanrepublic-puertoplata": [
+      { name: "Teleférico & Isabel de Torres", type: "nature", lat: 19.759, lng: -70.712, blurb: "The Caribbean's only cable car, up to a cloud-forest summit garden." },
+      { name: "27 Waterfalls of Damajagua", type: "nature", lat: 19.677, lng: -70.832, blurb: "Climb, jump and slide down a chain of limestone falls." },
+      { name: "Fortaleza San Felipe & old town", type: "culture", lat: 19.803, lng: -70.694, blurb: "16th-century fort and pastel Victorian streets by the sea." },
+      { name: "Cabarete", type: "beach", lat: 19.75, lng: -70.41, blurb: "World-class kitesurfing and windsurfing bay, 25 km east." },
+      { name: "Sosúa Bay", type: "beach", lat: 19.761, lng: -70.519, blurb: "Calm, clear cove with easy snorkelling off the beach." },
+    ],
+  "mexico-cancun": [
+      { name: "Playa Delfines", type: "beach", lat: 21.06, lng: -86.781, blurb: "The Hotel Zone's big public beach — turquoise water, no resort walls." },
+      { name: "Isla Mujeres", type: "beach", lat: 21.231, lng: -86.731, blurb: "Ferry-hop island with Playa Norte's calm, shallow water." },
+      { name: "MUSA underwater museum", type: "wildlife", lat: 21.2, lng: -86.75, blurb: "Hundreds of submerged sculptures turned artificial reef." },
+      { name: "Chichén Itzá", type: "culture", lat: 20.684, lng: -88.568, blurb: "The great Maya pyramid of El Castillo, ~2.5h inland." },
+      { name: "Whale sharks off Holbox", type: "wildlife", lat: 21.52, lng: -87.38, blurb: "Snorkel beside whale sharks, June–September." },
+      { name: "El Rey ruins", type: "culture", lat: 21.062, lng: -86.781, blurb: "Small Maya site in the Hotel Zone, roamed by iguanas." },
+    ],
 };

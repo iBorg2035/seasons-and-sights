@@ -42,6 +42,7 @@ export const CURRENCIES = {
   CNY: { symbol: "¥", digits: 2, name: "Chinese yuan" },
   COP: { symbol: "$", digits: 2, name: "Colombian peso" },
   CRC: { symbol: "₡", digits: 2, name: "Costa Rican colón" },
+  DOP: { symbol: "RD$", digits: 2, name: "Dominican peso" },
   EGP: { symbol: "E£", digits: 2, name: "Egyptian pound" },
   HKD: { symbol: "$", digits: 2, name: "Hong Kong dollar" },
   IDR: { symbol: "Rp", digits: 2, name: "Indonesian rupiah" },

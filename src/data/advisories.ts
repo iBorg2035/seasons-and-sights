@@ -54,6 +54,7 @@ export const ADVISORY: Record<string, AdvisoryNote> = {
   // ── Central / North America ──
   Mexico: { level: "moderate", text: "Avoid cartel-affected states; tourist regions generally safe." },
   "Costa Rica": { level: "low", text: "Very safe; petty theft is the main concern." },
+  "Dominican Republic": { level: "moderate", text: "Street crime in cities; resort and beach towns generally fine — use licensed taxis." },
   "Puerto Rico": { level: "low", text: "Safe (US territory); hurricane season June–November." },
   "United States": { level: "low", text: "Safe; healthcare is expensive — travel insurance strongly advised." },
   // ── Europe ──

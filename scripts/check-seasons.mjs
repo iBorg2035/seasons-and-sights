@@ -84,6 +84,9 @@ const REGIONS = [
   ["indonesia-nusapenida", -8.7278, 115.5444, "WWWSDDDDDSWW"],
   ["frenchpolynesia-borabora", -16.5004, -151.7415, "WWWSDDDDDSWW"],
   ["usa-maui", 20.7984, -156.3319, "WWSSDDDDDSWW"],
+  ["dominicanrepublic-lasterrenas", 19.311, -69.542, "DDDDDDSWWWWS"],
+  ["dominicanrepublic-puertoplata", 19.7934, -70.6884, "SSSSDDDDSSWW"],
+  ["mexico-cancun", 21.1619, -86.8515, "DDDDSWWWWWSD"],
 ];
 const M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 

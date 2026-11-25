@@ -735,5 +735,29 @@
       "nature",
       "culture"
     ]
+  },
+  "dominicanrepublic-lasterrenas": {
+    "count": 5,
+    "types": [
+      "beach",
+      "nature",
+      "wildlife"
+    ]
+  },
+  "dominicanrepublic-puertoplata": {
+    "count": 5,
+    "types": [
+      "nature",
+      "culture",
+      "beach"
+    ]
+  },
+  "mexico-cancun": {
+    "count": 6,
+    "types": [
+      "beach",
+      "wildlife",
+      "culture"
+    ]
   }
 }

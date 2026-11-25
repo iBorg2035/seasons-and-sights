@@ -360,4 +360,16 @@ export const EVENTS: Record<string, { name: string; month: number; blurb: string
     "brazil-curitiba": [
       { name: "Festival de Teatro de Curitiba", month: 3, blurb: "One of Latin America's largest theatre festivals." },
     ],
+    "dominicanrepublic-lasterrenas": [
+      { name: "Humpback whale season peak", month: 2, blurb: "Samaná Bay's breeding season at its height — book boat trips ahead." },
+      { name: "Carnaval", month: 2, blurb: "Weekend parades of masked diablos cojuelos, ending on Independence Day (27 Feb)." },
+    ],
+    "dominicanrepublic-puertoplata": [
+      { name: "Carnaval", month: 2, blurb: "Puerto Plata's taimáscaros in mirrored masks lead the February parades." },
+      { name: "Semana Santa", month: 4, blurb: "Easter week, when half the country heads for the north-coast beaches." },
+    ],
+    "mexico-cancun": [
+      { name: "Spring Break", month: 3, blurb: "College crowds fill the Hotel Zone — prices and noise peak." },
+      { name: "Día de los Muertos", month: 11, blurb: "Altars, face paint and candle-lit cemeteries for the Day of the Dead." },
+    ],
   };
